@@ -176,6 +176,9 @@
       <div class="hero-score" id="heroScore">58</div>
       <div class="hero-status" id="heroStatus">等待确认</div>
       <div class="hero-desc" id="heroDesc">微盘已经跌到有吸引力的位置，但资金还没有真正回来。现在是观察区，不是重仓区。</div>
+      <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
+        📅 数据截至：2026-06-12 收盘 | 更新频率：交易日盘后 | 非实时盘中信号
+      </div>
       <div class="hero-tags" id="heroTags">
         <span class="tag tag-yellow">🟡 科技尚未退潮</span>
         <span class="tag tag-green">🟢 赚钱效应改善</span>
@@ -281,7 +284,7 @@
           <span class="fund-tier-title">主动博弈型</span>
           <span class="tag tag-red" style="font-size: 10px;">高弹性 / 高波动</span>
         </div>
-        <div class="fund-tier-desc">这类产品更像微盘行情的进攻前锋。行情顺的时候弹性大，风格逆的时候回撤也快。</div>
+        <div class="fund-tier-desc">代表：诺安多策略、中信保诚景气优选。这类产品更像微盘行情的进攻前锋。行情顺的时候弹性大，风格逆的时候回撤也快。</div>
         <div class="fund-grid" id="fundActive"></div>
       </div>
       
@@ -292,7 +295,7 @@
           <span class="fund-tier-title">稳健参与型</span>
           <span class="tag tag-green" style="font-size: 10px;">分散持仓 / 风控优先</span>
         </div>
-        <div class="fund-tier-desc">这类产品更适合观察微盘策略的长期可持有性，不一定是反弹最快的品种。</div>
+        <div class="fund-tier-desc">代表：金元顺安元启、建信灵活配置、华夏新锦绣。这类产品更适合观察微盘策略的长期可持有性，不一定是反弹最快的品种。</div>
         <div class="fund-grid" id="fundStable"></div>
       </div>
       
@@ -303,7 +306,7 @@
           <span class="fund-tier-title">灵活配置型</span>
           <span class="tag tag-blue" style="font-size: 10px;">风格切换 / 阶段参与</span>
         </div>
-        <div class="fund-tier-desc">这类产品不一定始终重仓微盘，而是把微盘作为阶段性增强工具。</div>
+        <div class="fund-tier-desc">代表：中信保诚多策略、汇安多策略。这类产品不一定始终重仓微盘，而是把微盘作为阶段性增强工具。</div>
         <div class="fund-grid" id="fundFlexible"></div>
       </div>
       
@@ -314,7 +317,7 @@
           <span class="fund-tier-title">指数增强型</span>
           <span class="tag tag-yellow" style="font-size: 10px;">小盘Beta / 工具属性</span>
         </div>
-        <div class="fund-tier-desc">这类产品不是纯微盘，但更适合观察小盘风格是否系统性回归。</div>
+        <div class="fund-tier-desc">代表：华泰柏瑞中证2000增强、招商中证2000增强、国证2000增强。这类不是纯微盘，但更适合观察小盘风格是否系统性回归。</div>
         <div class="fund-grid" id="fundIndex"></div>
       </div>
     </div>
@@ -416,23 +419,23 @@
       // 手动数据可以从localStorage读取
     };
     
-    // 基金观察池数据（按PRD分类）
+    // 基金观察池数据（按PRD分类，含代表产品）
     const FUND_POOL = {
       active: [
-        { name: '诺安多策略A', code: '320016', m1: -13.53, m3: -12.69, ytd: -2.42, note: '高弹性品种，近1月跌13.53%' },
-        { name: '新华策略精选A', code: '001040', m1: 5.66, m3: 35.06, ytd: 67.37, note: '科技成长风格，近1年涨158%' }
+        { name: '诺安多策略A', code: '320016', m1: -13.53, m3: -12.69, ytd: -2.42, note: '代表：诺安多策略 | 高弹性，近1月跌13.53%，微盘暴露最高' },
+        { name: '新华策略精选A', code: '001040', m1: 5.66, m3: 35.06, ytd: 67.37, note: '代表：新华策略精选 | 科技成长风格，已脱离微盘' }
       ],
       stable: [
-        { name: '金元顺安元启', code: '004685', m1: -7.56, m3: -8.28, ytd: -2.06, note: '人肉量化天花板，回撤控制好' },
-        { name: '国金量化多因子A', code: '006195', m1: -7.58, m3: 2.52, ytd: 13.72, note: '微盘量化标杆，持仓300-500只' }
+        { name: '金元顺安元启', code: '004685', m1: -7.56, m3: -8.28, ytd: -2.06, note: '代表：金元顺安元启 | 人肉量化天花板，回撤控制好' },
+        { name: '国金量化多因子A', code: '006195', m1: -7.58, m3: 2.52, ytd: 13.72, note: '代表：国金量化多因子 | 微盘量化标杆，持仓300-500只' }
       ],
       flexible: [
-        { name: '国金量化精选A', code: '014805', m1: -7.91, m3: 1.22, ytd: 11.93, note: '同门互补，小盘风格明显' },
-        { name: '大成动态量化A', code: '003147', m1: -6.51, m3: -0.27, ytd: 8.44, note: '市值下沉型，多数持仓<20亿' }
+        { name: '国金量化精选A', code: '014805', m1: -7.91, m3: 1.22, ytd: 11.93, note: '代表：国金量化精选 | 同门互补，不完全押注微盘' },
+        { name: '大成动态量化A', code: '003147', m1: -6.51, m3: -0.27, ytd: 8.44, note: '代表：大成动态量化 | 市值下沉型，多数持仓<20亿' }
       ],
       index: [
-        { name: '万家精选A', code: '519185', m1: 5.27, m3: 1.55, ytd: 28.82, note: '黄海管理，已脱离微盘风格' },
-        { name: '中证2000指数', code: '000010', m1: -2.1, m3: 8.5, ytd: 12.3, note: '小盘Beta工具' }
+        { name: '万家精选A', code: '519185', m1: 5.27, m3: 1.55, ytd: 28.82, note: '代表：万家精选（黄海）| 已脱离微盘风格，偏向资源/周期' },
+        { name: '中证2000指数', code: '000010', m1: -2.1, m3: 8.5, ytd: 12.3, note: '代表：中证2000指数 | 小盘Beta工具，不等同于微盘' }
       ]
     };
 
