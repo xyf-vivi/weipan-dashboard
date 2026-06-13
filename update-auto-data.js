@@ -55,7 +55,9 @@ try {
 // 3. 生成auto-data.js的更新代码
 console.log('\n3. 生成auto-data.js更新代码...');
 if (zz2000Data) {
-  const code = `  // === 中证2000 (000905.SH) 日K线（Wind MCP数据） ===
+  const code = `  // === 中证2000 (932000.CSI) 日K线（Wind MCP数据） ===
+  // 注意：中证2000代码为 932000.CSI，不是 000905.SH（那是中证500）
+  // 中证2000是小票环境代理指标，不等于万得微盘指数
   zz2000: [
 ${zz2000Data.map(d => `    {date:"${d.date}", open:${d.open}, close:${d.close}, high:${d.high}, low:${d.low}, turnover:${d.turnover}, volume:${d.volume}, changeRate:${d.changeRate}}`).join(',\n')}
   ],`;

@@ -41,7 +41,7 @@ const DataSource = {
     { key: 'fund_signal', label: '资金和拥挤是否健康', dataType: 'estimate', desc: '偏黄/健康/过热' },
     { key: 'quant_signal', label: '市场是否适合量化赚钱', dataType: 'auto', desc: '部分改善/友好/不友好' },
     { key: 'product_signal', label: '产品端是否开始确认', dataType: 'auto', desc: '仍在修复/开始确认' },
-    { key: 'add_signal_count', label: '加仓信号完成度', dataType: 'auto', desc: '满足几项' },
+    { key: 'add_signal_count', label: '确认信号完成度', dataType: 'auto', desc: '满足几项' },
     { key: 'tomorrow_focus', label: '明天重点看什么', dataType: 'manual', desc: '观察清单' }
   ],
 
