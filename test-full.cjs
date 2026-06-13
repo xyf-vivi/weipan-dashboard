@@ -90,41 +90,67 @@ const validFunds = vm.runInContext(`
 `, context);
 console.log('有净值数据的基金:', validFunds);
 
-// 6. 模拟评分计算
+// 6. 模拟评分计算（与index.html init()一致的字段映射）
 console.log('\n=== 评分模拟计算 ===');
 const scoreResult = vm.runInContext(`
   const data = {};
   
-  // 从 AUTO_DATA 构建评分数据
+  // 基础指标
+  data.weipanRatio = (AUTO_DATA.weipanRatio || 0) * 100;
+  data.weipan20d = AUTO_DATA.weipan20d || 0;
+  data.weipan1m = AUTO_DATA.weipan1m || 0;
+
+  // 风格方向
   data.zz2000_20d_change = AUTO_DATA.zz2000_20d || 0;
   data.kc50_20d_change = AUTO_DATA.kc50_20d || 0;
-  data.weipanRatio = (AUTO_DATA.weipanRatio || 0);
-  data.weipan1m = AUTO_DATA.weipan1m || 0;
-  
+  data.wp_slope20 = (AUTO_DATA.weipan20d || 0) / 20;
+  data.wp_ma243_pos = (AUTO_DATA.weipanDrawdown || -20) > -5 ? 0.02 : (AUTO_DATA.weipanDrawdown || -20) / 100;
+  data.wp_mao_rel = AUTO_DATA.relativeExcess20d || 0;
+
+  // 拥挤与流动性
+  data.wp_volume_ratio = (AUTO_DATA.weipanRatio || 0) * 100;
+  data.small_volume_ratio = data.wp_volume_ratio * 18;
+
+  // 换手率分位
+  const wpArr = AUTO_DATA.weipan || [];
+  if (wpArr.length > 0) {
+    const tRates = wpArr.map(d => d.turnoverRate || 0).sort((a,b) => a - b);
+    const lastR = wpArr[wpArr.length-1].turnoverRate || 0;
+    data.wp_turnover_pct = tRates.filter(r => r <= lastR).length / tRates.length;
+  }
+
+  // 量化友好度
+  const wpQ = AUTO_DATA.quotes && AUTO_DATA.quotes["868008.WI"];
+  if (wpQ) {
+    const total = (wpQ.upCount || 0) + (wpQ.downCount || 0);
+    data.up_ratio = total > 0 ? (wpQ.upCount || 0) / total : 0.5;
+  } else {
+    data.up_ratio = 0.5;
+  }
+  data.allA_median_chg = AUTO_DATA.weipan5d || 0;
+  data.market_concentration = 0.4;
+  data.cross_section_diff = 0.3;
+
   // 基金平均收益
   const validFunds = FUND_PRODUCTS.filter(f => f.dayChange !== null && f.dayChange !== undefined);
   const sum1d = validFunds.reduce((s,f) => s + f.dayChange, 0);
   data.fund_avg_1d = sum1d / validFunds.length;
-  
+
   const validW = FUND_PRODUCTS.filter(f => f.week1 !== null && f.week1 !== undefined);
   data.fund_avg_1w = validW.reduce((s,f) => s + f.week1, 0) / validW.length;
-  
+
   const validM = FUND_PRODUCTS.filter(f => f.month1 !== null && f.month1 !== undefined);
   data.fund_avg_1m = validM.reduce((s,f) => s + f.month1, 0) / validM.length;
-  
+
   data.fund_rel_zz2000 = data.fund_avg_1m - data.weipan1m;
   data.fund_cont_days = data.fund_avg_1d > 0 ? 1 : 0;
-  
-  // 上涨家数占比
-  data.up_ratio = 0.55; // 默认
-  
+
   // 硬风控状态
   data.hard_risk_volatility = 'wait';
   data.hard_risk_rate = 'watch';
   data.hard_risk_liquidity = 'ok';
   data.hard_risk_homogenization = 'wait';
-  
-  // 计算
+
   const result = ScoringEngine.calculate(data);
   JSON.stringify({
     total: result.total,

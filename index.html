@@ -935,31 +935,60 @@
       // 1. 渲染基金观察池
       renderFunds();
       
-      // 2. 动态计算评分所需指标
+      // 2. 动态计算评分所需指标（映射到 scoring.js 期望的字段名）
       const data = {};
       
       if (typeof AUTO_DATA !== 'undefined') {
-        // 从auto-data.js读取计算好的指标
-        data.weipanRatio = (AUTO_DATA.weipanRatio || 0) * 100; // 转为百分比
+        // --- 基础指标（页面展示用） ---
+        data.weipanRatio = (AUTO_DATA.weipanRatio || 0) * 100; // 百分比形式，页面展示
         data.weipan20d = AUTO_DATA.weipan20d || 0;
         data.weipan1m = AUTO_DATA.weipan1m || 0;
         data.relativeExcess20d = AUTO_DATA.relativeExcess20d || 0;
-        data.weipanSpread = (AUTO_DATA.weipanSpread || 0) * 100; // 转为百分比
+        data.weipanSpread = (AUTO_DATA.weipanSpread || 0) * 100;
         data.weipanDrawdown = AUTO_DATA.weipanDrawdown || 0;
-        
-        // 估算代理指标（后续接入真实数据）
-        data.zz2000_20d_change = AUTO_DATA.zz2000_20d || data.weipan20d; // Wind MCP真实数据
-        data.kc50_20d_change = AUTO_DATA.kc50_20d || 0; // Wind MCP真实数据
-        data.small_volume_ratio = data.weipanRatio; // 使用微盘占比作为代理
-        
-        // 上涨家数占比（从微盘指数获取）
+
+        // --- 风格方向模块（styleDirection, 25分） ---
+        data.zz2000_20d_change = AUTO_DATA.zz2000_20d || data.weipan20d;
+        data.kc50_20d_change = AUTO_DATA.kc50_20d || 0;
+        // 20日斜率（近似：用20日涨跌幅/20）
+        data.wp_slope20 = (AUTO_DATA.weipan20d || 0) / 20;
+        // 243日均线位置（数据不足，用回撤幅度代理：回撤<5%视为线上）
+        data.wp_ma243_pos = (AUTO_DATA.weipanDrawdown || -20) > -5 ? 0.02 : (AUTO_DATA.weipanDrawdown || -20) / 100;
+        // 微盘/茅指数相对净值（暂无茅指数数据，用相对沪深300超额代理）
+        data.wp_mao_rel = AUTO_DATA.relativeExcess20d || 0;
+
+        // --- 拥挤与流动性模块（crowdingLiquidity, 20分） ---
+        // 微盘成交占比 → scoring期望百分比形式（如0.81表示0.81%）
+        data.wp_volume_ratio = (AUTO_DATA.weipanRatio || 0) * 100;
+        // 小票成交占比（无直接数据，用微盘占比的合理倍数估算，约15-20倍）
+        data.small_volume_ratio = data.wp_volume_ratio * 18;
+        // 换手率分位（从微盘K线计算当前换手率在历史中的位置）
+        const wpArr = AUTO_DATA.weipan || [];
+        if (wpArr.length > 0) {
+          const turnoverRates = wpArr.map(d => d.turnoverRate || 0).sort((a,b) => a - b);
+          const lastRate = wpArr[wpArr.length-1].turnoverRate || 0;
+          data.wp_turnover_pct = turnoverRates.filter(r => r <= lastRate).length / turnoverRates.length;
+          // 相对均值的换手率
+          const avgRate = turnoverRates.reduce((s,r) => s+r, 0) / turnoverRates.length;
+          data.wp_rel_turnover = avgRate > 0 ? lastRate / avgRate : 1;
+          // 日均成交额
+          data.wp_avg_volume = wpArr.slice(-20).reduce((s,d) => s + (d.turnover||0), 0) / Math.min(20, wpArr.length) / 1e8;
+        }
+
+        // --- 量化友好度模块（quantFriendliness, 20分） ---
         const wpQuote = AUTO_DATA.quotes && AUTO_DATA.quotes["868008.WI"];
         if (wpQuote) {
           const total = (wpQuote.upCount || 0) + (wpQuote.downCount || 0);
-          data.up_ratio = total > 0 ? (wpQuote.upCount || 0) / total : 0.55;
+          data.up_ratio = total > 0 ? (wpQuote.upCount || 0) / total : 0.5;
         } else {
-          data.up_ratio = 0.55; // 默认值
+          data.up_ratio = 0.5;
         }
+        // 全A中位数涨跌幅（无直接数据，用微盘近5日代理）
+        data.allA_median_chg = AUTO_DATA.weipan5d || 0;
+        // 市场集中度（暂无数据，给中性值）
+        data.market_concentration = 0.4;
+        // 横截面分化度（暂无数据，给中性值）
+        data.cross_section_diff = 0.3;
       }
       
       // 从FUND_PRODUCTS计算基金平均收益（只统计有数据的基金）
