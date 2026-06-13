@@ -116,6 +116,28 @@
     /* 缺失数据 */
     .missing-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px}
     .missing-item{padding:4px 8px;background:var(--bg-hover);border-radius:4px;color:var(--text-muted)}
+    .missing-section-title{font-size:12px;font-weight:600;margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border-color)}
+    .missing-section-title.t1{color:var(--accent-red)} .missing-section-title.t2{color:var(--accent-yellow)} .missing-section-title.t3{color:var(--text-secondary)}
+
+    /* 首屏三点摘要 */
+    .hero-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:14px 0}
+    .hero-summary-item{background:var(--bg-hover);border-radius:8px;padding:12px;border-top:3px solid var(--accent-yellow)}
+    .hero-summary-num{font-size:18px;font-weight:800;color:var(--accent-yellow);margin-bottom:4px}
+    .hero-summary-text{font-size:12px;color:var(--text-secondary);line-height:1.5}
+
+    /* 信号灯折叠 */
+    .signal-detail-toggle{font-size:11px;color:var(--accent-blue);cursor:pointer;margin-top:6px}
+    .signal-detail-toggle:hover{text-decoration:underline}
+    .signal-detail{display:none;margin-top:8px;padding:10px;background:rgba(0,0,0,.1);border-radius:6px;font-size:11px;color:var(--text-muted);line-height:1.8}
+    .signal-detail.open{display:block}
+
+    /* 待接入折叠 */
+    .pending-fold-toggle{font-size:12px;color:var(--accent-blue);cursor:pointer;margin-top:10px;padding:8px;background:var(--bg-hover);border-radius:6px;text-align:center}
+    .pending-fold-toggle:hover{text-decoration:underline}
+    .pending-content{display:none;margin-top:8px}
+
+    /* 风格对照弱化 */
+    .style-compare-note{font-size:11px;color:var(--text-muted);margin-top:8px;padding:6px 8px;background:rgba(59,130,246,.08);border-radius:6px}
 
     @media(max-width:768px){
       .user-cards{grid-template-columns:1fr}
@@ -136,6 +158,12 @@
     <div class="hero-action-line" id="heroActionLine">不重仓，不追涨，只能观察仓</div>
     <div class="hero-sub-score">信号评分 <span class="score-num" id="heroScore">—</span> / 100</div>
     <div class="hero-conf" id="heroConf">评分置信度：—</div>
+    <div style="font-size:11px;color:var(--accent-yellow);margin-bottom:8px">
+      ⚠️ 部分指标使用代理口径，不能作为交易信号。
+    </div>
+    <!-- 首屏三点摘要 -->
+    <div style="font-size:13px;font-weight:600;margin-top:16px;margin-bottom:6px;text-align:left;color:var(--text-primary)">今天为什么是观察区？</div>
+    <div class="hero-summary" id="heroSummary"></div>
     <div class="hero-desc" id="heroDesc"></div>
     <div style="font-size:12px;color:var(--text-muted);margin:10px 0;padding:8px;background:rgba(100,116,139,.1);border-radius:6px">
       <span style="color:var(--text-secondary)">分数说明：</span>辅助判断工具，<strong style="color:var(--accent-yellow)">不等于买入或加仓建议</strong>。
@@ -181,21 +209,21 @@
   <div class="card">
     <h2>硬风控状态</h2>
     <div class="risk-bar" id="hardRiskBar">
-      <div style="font-size:14px;font-weight:600" id="hardRiskStatus">硬风控未完整接入，当前只确认未见流动性踩踏信号</div>
+      <div style="font-size:14px;font-weight:600" id="hardRiskStatus">硬风控尚未完整接入，不能证明风险安全</div>
     </div>
     <div class="risk-items">
       <div class="risk-item"><span class="risk-dot dot-wait"></span><span>波动拥挤：待接入</span></div>
-      <div class="risk-item"><span class="risk-dot dot-wait"></span><span>利率约束：待接入（10年国债 <span id="bond10yVal">—</span>，风控阈值未接入）</span></div>
       <div class="risk-item"><span class="risk-dot dot-ok"></span><span>流动性踩踏：未见触发</span></div>
       <div class="risk-item"><span class="risk-dot dot-wait"></span><span>产品同质化：低频观察</span></div>
     </div>
     <div style="font-size:11px;color:var(--text-muted);margin-top:8px;padding:8px;background:var(--bg-hover);border-radius:6px">
-      ⚠️ 波动拥挤和利率约束数据待接入，硬风控尚未完整检查。4项中仅1项（流动性踩踏）已确认。当前评分置信度受此影响。
+      ⚠️ 硬风控4项中仅1项（流动性踩踏）已确认。<strong style="color:var(--accent-red)">"未见触发"不等于"风险安全"</strong>。波动拥挤和利率约束待接入，当前评分置信度受此影响。利率约束（10年国债 <span id="bond10yVal">—</span>%）已移至"待接入专业指标"。
     </div>
 
     <h2 style="margin-top:20px">当前市场风格对照</h2>
-    <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">近20日涨跌幅 · 风格含义（不构成买入建议）</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">近20日涨跌幅 · 风格含义（不构成买入建议）· <strong>只用于比较，不参与产品端确认</strong></div>
     <div class="style-compare" id="styleCompareGrid"></div>
+    <div class="style-compare-note" id="stylePendingNote"></div>
   </div>
 
   <!-- ========== 5. 当前最关键的三个结论 ========== -->
@@ -256,7 +284,7 @@
       <div style="margin-top:10px;font-size:11px;display:grid;grid-template-columns:1fr 1fr;gap:4px;color:var(--text-muted)">
         <div><span style="color:var(--accent-green)">●</span> 已纳入今日评分：自动真实数据</div>
         <div><span style="color:var(--accent-yellow)">●</span> 估算代理：近似指标，精度有限</div>
-        <div><span style="color:var(--text-muted)">●</span> 待接入：不影响今日分数</div>
+        <div><span style="color:var(--text-muted)">●</span> 待接入：未纳入今日分数，但会降低评分置信度</div>
         <div><span style="color:var(--text-muted)">●</span> 低频观察：不参与日频评分</div>
       </div>
     </div>
@@ -279,7 +307,7 @@
       <span class="fold-icon" id="foldIcon_missing">▼</span>
     </div>
     <div class="fold-content" id="foldContent_missing">
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">以下指标暂无数据源，<strong style="color:var(--accent-yellow)">不纳入今日评分</strong>。接入后会影响评分。</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">以下指标暂无数据源或精度不足。<strong style="color:var(--accent-yellow)">代理纳入</strong>的已影响评分；<strong style="color:var(--text-muted)">未纳入</strong>的不影响今日分数，但会降低评分置信度。接入后可能改变评分。</div>
       <div class="missing-grid" id="missingGrid"></div>
     </div>
   </div>
@@ -356,46 +384,49 @@ function renderFundTables() {
   const container = document.getElementById('fundTables');
   if (!container) return;
 
-  // #4: 共性风险放表头描述里
-  // #5: 加产品角色
   const tierConfigs = [
     { title: '高微盘/量化观察', desc: '观察微盘量化是否真正修复（含微盘暴露型+微盘量化）。共性风险：弹性高、回撤快、风格暴露高、流动性敏感', funds: [...tiers.exposure], tagClass: 'tag-red', tagText: '高弹性/高波动',
       roles: { '诺安多策略A': '高暴露', '国金量化多因子A': '量化标杆', '大成动态量化A': '市值下沉', '富荣价值精选A': '数据待接入', '金元顺安元启': '人肉量化' } },
     { title: '分散量化观察', desc: '观察分散持仓、偏稳健的小微盘策略回撤控制能力。共性风险：分散持仓、波动较低，但仍有微盘敞口', funds: tiers.stable, tagClass: 'tag-green', tagText: '分散/风控优先',
       roles: {} },
-    { title: '风格对照观察', desc: '判断市场是否偏离微盘转向其他风格。共性风险：非微盘策略，风格暴露不同。跑赢微盘不等于微盘量化变好', funds: tiers.control, tagClass: 'tag-blue', tagText: '风格对照/非买入对象',
+    { title: '风格对照观察', desc: '判断市场是否偏离微盘转向其他风格。共性风险：非微盘策略，风格暴露不同。<strong>跑赢微盘不等于微盘量化变好，只用于比较，不参与产品端确认</strong>', funds: tiers.control, tagClass: 'tag-blue', tagText: '风格对照/非买入对象',
       roles: { '万家精选A': '黄海管理', '新华策略精选A': '科技成长' } }
   ];
 
+  // #17: 隐藏待接入产品到折叠区，只展示已接入产品
+  // #19: 有效样本数
+  const allProdFunds = (FUND_PRODUCTS || []).filter(f => f.tier !== '风格对照型');
+  const validProdFunds = allProdFunds.filter(f => f.dayChange !== null && f.dayChange !== undefined);
+
+  // 产品端标题下的有效样本数
+  const sampleInfo = document.createElement ? `<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;padding:6px 8px;background:rgba(59,130,246,.08);border-radius:6px">
+    当前有效样本 <strong style="color:var(--accent-blue)">${validProdFunds.length}</strong> / 总样本 <strong>${allProdFunds.length}</strong>（产品端信号基于有效样本均值计算）
+  </div>` : '';
+
   container.innerHTML = tierConfigs.map(tc => {
-    // #2: 三档数据状态
+    // 分离已接入和待接入
+    const activeFunds = tc.funds.filter(f => f.dayChange !== null && f.dayChange !== undefined);
+    const pendingFunds = tc.funds.filter(f => f.dayChange === null || f.dayChange === undefined);
+
+    // #18: 三档数据状态（完整/部分/待接入）
     const dataStatusOf = (f) => {
       const fields = [f.dayChange, f.week1, f.month1, f.month3, f.month6, f.ytd];
       const valid = fields.filter(v => v !== null && v !== undefined).length;
-      if (valid === 6) return { text: '完整', cls: 'tag-green' };
+      if (valid >= 6) return { text: '完整', cls: 'tag-green' };
       if (valid >= 3) return { text: '部分', cls: 'tag-yellow' };
-      if (valid > 0) return { text: '部分', cls: 'tag-yellow' };
       return { text: '待接入', cls: 'tag-gray' };
     };
 
-    return `
-    <div style="margin-bottom:20px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <span style="font-size:14px;font-weight:600">${tc.title}</span>
-        <span class="tag ${tc.tagClass}">${tc.tagText}</span>
-      </div>
-      <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;padding:6px 8px;background:var(--bg-hover);border-radius:6px">${tc.desc}</div>
-      <table class="fund-table">
+    // 渲染已接入表格
+    let tableHtml = '';
+    if (activeFunds.length > 0) {
+      tableHtml = `<table class="fund-table">
         <thead><tr><th>基金</th><th>角色</th><th>近1日</th><th>近1周</th><th>近1月</th><th>数据状态</th><th>观察结论</th></tr></thead>
         <tbody>
-          ${tc.funds.map(f => {
+          ${activeFunds.map(f => {
             const ds = dataStatusOf(f);
-            // #3: 无数据显示"数据待接入，暂不判断"
-            const hasAnyData = f.dayChange !== null && f.dayChange !== undefined;
             let conclusion = '仍在修复';
-            if (!hasAnyData) {
-              conclusion = '数据待接入，暂不判断';
-            } else if (f.tier === '风格对照型') {
+            if (f.tier === '风格对照型') {
               conclusion = '非微盘确认信号';
             } else if (f.month1 !== null && f.month1 !== undefined && f.month1 > 0) {
               conclusion = '近1月已修复';
@@ -403,7 +434,7 @@ function renderFundTables() {
               conclusion = '仍在调整';
             }
             const role = tc.roles[f.name] || '—';
-            return `<tr${!hasAnyData ? ' style="opacity:0.6"' : ''}>
+            return `<tr>
               <td><strong>${f.name}</strong><br><span style="font-size:10px;color:var(--text-muted)">${f.code}</span></td>
               <td style="font-size:11px;color:var(--text-secondary)">${role}</td>
               <td style="color:${pctColor(f.dayChange)};font-weight:600">${fmtPct(f.dayChange)}</td>
@@ -414,9 +445,50 @@ function renderFundTables() {
             </tr>`;
           }).join('')}
         </tbody>
-      </table>
+      </table>`;
+    } else {
+      tableHtml = `<div style="font-size:12px;color:var(--text-muted);padding:12px;background:var(--bg-hover);border-radius:6px">本组暂无已接入数据</div>`;
+    }
+
+    // 渲染待接入折叠
+    let pendingHtml = '';
+    if (pendingFunds.length > 0) {
+      const foldId = 'pending_' + tc.title.replace(/[^a-zA-Z]/g, '');
+      pendingHtml = `
+        <div class="pending-fold-toggle" onclick="togglePendingFold('${foldId}')">
+          待接入观察名单（${pendingFunds.length}只）▼
+        </div>
+        <div class="pending-content" id="${foldId}" style="display:none">
+          <table class="fund-table" style="opacity:0.7">
+            <thead><tr><th>基金</th><th>代码</th><th>状态</th></tr></thead>
+            <tbody>
+              ${pendingFunds.map(f => `<tr>
+                <td style="color:var(--text-muted)">${f.name}</td>
+                <td style="font-size:10px;color:var(--text-muted)">${f.code}</td>
+                <td><span class="tag tag-gray">待接入</span></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    }
+
+    return `
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:14px;font-weight:600">${tc.title}</span>
+        <span class="tag ${tc.tagClass}">${tc.tagText}</span>
+        ${activeFunds.length > 0 ? `<span style="font-size:11px;color:var(--text-muted)">已接入 ${activeFunds.length} / ${tc.funds.length}</span>` : ''}
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;padding:6px 8px;background:var(--bg-hover);border-radius:6px">${tc.desc}</div>
+      ${tableHtml}
+      ${pendingHtml}
     </div>`;
   }).join('');
+
+  // 在容器顶部插入有效样本数信息（通过前插HTML）
+  if (validProdFunds.length > 0) {
+    container.insertAdjacentHTML('afterbegin', sampleInfo);
+  }
 }
 
 // ========== 市场风格对照 ==========
@@ -426,12 +498,12 @@ function renderStyleCompare() {
   const fmt = v => (v === null || v === undefined) ? '待接入' : ((v > 0 ? '+' : '') + v.toFixed(1) + '%');
   const vc = v => (v === null || v === undefined) ? 'var(--text-muted)' : (v > 0 ? 'var(--accent-red)' : v < 0 ? 'var(--accent-green)' : 'var(--text-muted)');
 
+  // #6: 拆开万得微盘和中证2000；红利移到待接入说明
   const items = [
-    { name: '万得微盘 · 868008.WI', val: AUTO_DATA.weipan20d, desc: '微盘本体', dataType: 'auto' },
-    { name: '中证2000 · 932000.CSI', val: AUTO_DATA.zz2000_20d, desc: '小票环境代理', dataType: 'auto' },
+    { name: '万得微盘 · 868008.WI', val: AUTO_DATA.weipan20d, desc: '微盘本体（全市场市值最小股票）', dataType: 'auto' },
+    { name: '中证2000 · 932000.CSI', val: AUTO_DATA.zz2000_20d, desc: '小票环境代理（不等于微盘指数）', dataType: 'auto' },
     { name: '科创50 · 000688.SH', val: AUTO_DATA.kc50_20d, desc: '科技抱团代理', dataType: 'auto' },
-    { name: '沪深300 · 000300.SH', val: AUTO_DATA.hs300_20d, desc: '核心资产代理', dataType: 'auto' },
-    { name: '中证红利 · 000922.SH', val: AUTO_DATA.zzlh_20d, desc: AUTO_DATA.zzlh_20d !== undefined ? '防守风格代理' : '防守风格代理（已接入但暂不参与主判断）', dataType: 'auto' }
+    { name: '沪深300 · 000300.SH', val: AUTO_DATA.hs300_20d, desc: '核心资产代理', dataType: 'auto' }
   ];
 
   const vals = items.filter(i => i.val !== undefined && i.val !== null).map(i => i.val);
@@ -448,6 +520,17 @@ function renderStyleCompare() {
       <div class="style-item-desc">${it.desc}</div>
     </div>`;
   }).join('');
+
+  // 红利放到待接入说明
+  const noteEl = document.getElementById('stylePendingNote');
+  if (noteEl) {
+    const zzlh = AUTO_DATA.zzlh_20d;
+    let zzlhStr = '—';
+    if (zzlh !== undefined && zzlh !== null) {
+      zzlhStr = (zzlh > 0 ? '+' : '') + zzlh.toFixed(1) + '%';
+    }
+    noteEl.innerHTML = '待接入风格：中证红利 · 000922.SH 近20日 ' + zzlhStr + '（防守风格代理，已接入但暂不参与主视觉判断）';
+  }
 }
 
 // ========== 信号灯渲染 ==========
@@ -505,9 +588,9 @@ function renderSignals(data) {
       obs: `微盘成交占比${wpR.toFixed(2)}%，资金${wpR>0.8?'有回升但仍需观察':'回流迹象不强'}。`,
       metrics: [
         {label:'微盘成交占比', val:wpR.toFixed(2)+'%'},
-        {label:'微盘近5日均额', val:wpAvg5},
+        {label:'万得微盘近5日均额', val:wpAvg5 + '（亿元）'},
         {label:'小票成交占比', pending:true},
-        {label:'换手率分位（样本内）', val: tpPct !== undefined ? (tpPct*100).toFixed(0)+'%（近28日）' : '—'}
+        {label:'换手率分位（近样本28日）', val: tpPct !== undefined ? (tpPct*100).toFixed(0)+'%' : '—'}
       ], why: '微盘不是跌多了就会涨，必须看到资金回来。过热也不好，会带来踩踏风险。',
       good: '成交占比从低位连续回升，未到极端拥挤', bad: '占比快速冲高，换手率进入极端高分位' },
 
@@ -530,18 +613,19 @@ function renderSignals(data) {
         {label:'有效样本', val: prodSampleText}
       ], why: '指数涨不代表微盘量化基金一定跟得上。最终看产品端是否真的修复。',
       good: '微盘量化基金净值连续修复，并跑赢基准', bad: '指数反弹但基金不跟，甚至继续回撤' }
-  ].map(s => `
+  ].map((s, idx) => `
     <div class="signal-card">
       <div class="signal-header">
         <span class="signal-title">${s.title}</span>
         <span class="signal-judge" style="color:${s.jColor}">${s.judge}</span>
       </div>
       <div class="signal-metrics">${setMetrics(s.metrics)}</div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">${s.obs}</div>
-      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px">为什么重要：${s.why}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
-        <span style="color:var(--accent-green)">✓ 变好：${s.good}</span>
-        <span style="color:var(--accent-red)">✗ 变坏：${s.bad}</span>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">${s.obs}</div>
+      <div style="font-size:12px;color:var(--accent-green);margin-bottom:2px">下一步看：${s.good}</div>
+      <div class="signal-detail-toggle" onclick="toggleSignalDetail(${idx})">展开解释（为什么重要 / 变坏信号）</div>
+      <div class="signal-detail" id="signalDetail_${idx}">
+        <div style="margin-bottom:6px"><strong style="color:var(--text-secondary)">为什么重要：</strong>${s.why}</div>
+        <div><strong style="color:var(--accent-red)">变坏信号：</strong>${s.bad}</div>
       </div>
     </div>
   `).join('');
@@ -569,15 +653,16 @@ function renderChecklists(data) {
     { text: '微盘相对核心资产长期趋势没有破坏', status: 'wait',
       note: '需微盘/茅指数相对净值+243日均线判断，当前待接入（微盘从高点回撤约' + (AUTO_DATA.weipanDrawdown||0).toFixed(1) + '%，但回撤不等于趋势破坏）' },
     // #7: 20日斜率标"代理斜率"
-    { text: '微盘20日斜率转正，并强于核心资产', status: (data.wp_slope20||0) > 0 ? 'half' : 'cross',
-      note: '20日代理斜率' + (data.wp_slope20||0).toFixed(3) + '（' + ((data.wp_slope20||0)>0?'正':'负') + '），非真实回归斜率，强于核心资产待接入' },
+    { text: '微盘20日代理斜率转正', status: (data.wp_slope20||0) > 0 ? 'half' : 'cross',
+      note: '代理斜率' + (data.wp_slope20||0).toFixed(3) + '（20日涨跌幅/20，非真实回归斜率）。强于核心资产待接入' },
     // #8: 连续3日跑赢科技 — 现在可以计算了！
     { text: '连续3个交易日，小票跑赢科技', status: canCalc3d ? (beatCount >= 3 ? 'check' : 'cross') : 'wait',
       note: canCalc3d ? `近3个交易日小票跑赢${beatCount}次` : '日K线数据不足' },
-    { text: '小票成交占比连续回升', status: 'wait', note: '小票成交占比待接入' },
-    // #9: 上涨家数文案改"单日满足，连续性待确认"
+    // #12: 改用已有微盘成交占比判断连续回升
+    { text: '微盘成交占比连续回升', status: 'half', note: '微盘当日成交占比' + (data.weipanRatio||0).toFixed(2) + '%，连续性需接入小票成交占比后确认' },
+    // #9: 上涨家数文案改"单日满足，连续性待接入"
     { text: '上涨家数占比连续高于60%', status: 'half',
-      note: '当日占比约' + ((data.up_ratio||0)*100).toFixed(0) + '%，单日满足，连续性待确认' },
+      note: '当日占比约' + ((data.up_ratio||0)*100).toFixed(0) + '%，单日满足；连续性需逐日序列，待接入' },
     { text: '跌停家数没有明显扩散', status: 'wait', note: '跌停家数待接入（NeoData只返回排行，无汇总值）' },
     // #10: 产品净值文案改"单日修复，但未达到连续修复"
     { text: '观察池微盘量化基金净值连续修复', status: 'half',
@@ -607,7 +692,7 @@ function renderChecklists(data) {
     // #11: 改"科技相对重新占优"（不写"放量"）
     { text: '科技相对重新占优，小票再次跑输', triggered: rel20d < 0,
       note: rel20d < 0 ? `已触发：近20日科技跑赢小票${Math.abs(rel20d).toFixed(1)}pct（成交量待接入，暂无法判断是否放量）` : `未触发：近20日小票${rel20d>=0?'未跑输':'跑赢'}科技` },
-    { text: '小票成交占比只反弹一天就回落', triggered: false, note: '小票成交占比待接入，暂不确认' },
+    { text: '微盘成交占比只反弹一天就回落', triggered: false, note: '微盘当日占比' + (data.weipanRatio||0).toFixed(2) + '%，小票成交占比待接入，暂无法判断连续性' },
     { text: '上涨家数占比跌回50%以下', triggered: (data.up_ratio||1) < 0.5, note: `当日占比${((data.up_ratio||0)*100).toFixed(0)}%（单日快照，非连续判断）` },
     { text: '跌停家数明显扩散', triggered: false, note: '跌停家数待接入（暂看下跌家数代理）' },
     // #12: 同周期比较
@@ -664,34 +749,49 @@ function renderScoreTable(scoreResult, data) {
   }
 }
 
-// ========== 缺失数据清单 ==========
+// ========== 缺失数据清单（分三类）==========
 function renderMissingData() {
   const container = document.getElementById('missingGrid');
   if (!container) return;
-  // #16: 区分"代理纳入已影响评分" vs "不纳入今日评分"
-  const missing = [
-    { name: '全A中位数涨跌幅（真实口径）', type: 'proxy', note: '当前用微盘近5日代理，已影响评分' },
-    { name: '20日斜率（真实回归口径）', type: 'proxy', note: '当前用代理斜率（涨跌幅/20），已影响评分' },
-    { name: '243日均线（真实口径）', type: 'proxy', note: '当前用回撤幅度代理，已影响评分' },
-    { name: '小票成交占比', type: 'excluded', note: '不纳入今日评分' },
-    { name: '换手率分位（历史长期口径）', type: 'partial', note: '当前只有样本内分位（近28日），已纳入评分但精度有限' },
-    { name: '相对换手率', type: 'excluded', note: '不纳入今日评分' },
-    { name: '市场集中度', type: 'excluded', note: '不纳入今日评分' },
-    { name: '横截面分化度', type: 'excluded', note: '不纳入今日评分' },
-    { name: '跌停家数', type: 'excluded', note: 'NeoData只返回排行，无汇总值，不纳入今日评分' },
-    { name: '微盘/茅指数相对净值', type: 'excluded', note: '不纳入今日评分' },
-    { name: '波动率拥挤度', type: 'excluded', note: '不纳入今日评分' },
-    { name: '持仓重叠度', type: 'excluded', note: '不纳入今日评分' },
-    { name: '基金规模', type: 'excluded', note: '不纳入今日评分' },
-    { name: '基金连续修复天数序列', type: 'excluded', note: '不纳入今日评分' }
+  // #21: 分三类：影响评分的代理 / 影响置信度的未纳入 / 低频专题
+  // #22: 待接入文案改"未纳入今日分数，但会降低评分置信度"
+
+  const cat1 = [ // 影响今日评分（代理纳入，已影响评分精度）
+    { name: '全A中位数涨跌幅', note: '当前用微盘近5日代理，已影响量化友好度评分' },
+    { name: '20日斜率（真实回归口径）', note: '当前用代理斜率（涨跌幅/20），已影响风格方向评分' },
+    { name: '243日均线（真实口径）', note: '当前用回撤幅度代理，已影响风格方向评分' },
+    { name: '换手率分位（历史长期口径）', note: '当前只有样本内分位（近28日），已纳入评分但精度有限' }
   ];
-  container.innerHTML = missing.map(m => {
-    let badge = '';
-    if (m.type === 'proxy') badge = '<span style="color:var(--accent-yellow)">代理纳入，已影响评分</span>';
-    else if (m.type === 'partial') badge = '<span style="color:var(--accent-yellow)">部分纳入，精度有限</span>';
-    else badge = '<span style="color:var(--text-muted)">不纳入今日评分</span>';
-    return `<div class="missing-item">○ ${m.name}：${badge}<div style="font-size:10px;color:var(--text-muted);margin-top:2px">${m.note}</div></div>`;
-  }).join('');
+
+  const cat2 = [ // 未纳入今日评分，但会降低置信度
+    { name: '小票成交占比', note: '无法判断资金扩散连续性，降低资金信号置信度' },
+    { name: '相对换手率', note: '无法判断拥挤程度，降低拥挤与流动性置信度' },
+    { name: '市场集中度', note: '无法判断成交是否过度集中，降低量化友好度置信度' },
+    { name: '横截面分化度', note: '无法判断个股分化程度，降低量化友好度置信度' },
+    { name: '跌停家数', note: 'NeoData只返回排行无汇总值，降低硬风控置信度' },
+    { name: '微盘/茅指数相对净值', note: '无法判断长期趋势是否破坏，降低风格方向置信度' },
+    { name: '基金连续修复天数序列', note: '只有区间收益无逐日序列，降低产品验证置信度' }
+  ];
+
+  const cat3 = [ // 低频专题数据
+    { name: '波动率拥挤度', note: '低频观察，不参与日频评分' },
+    { name: '持仓重叠度', note: '低频观察，不参与日频评分' },
+    { name: '基金规模', note: '低频观察，不参与日频评分' },
+    { name: '利率约束（10年国债风控阈值）', note: '已获取10年国债收益率' + (AUTO_DATA.bond_10y ? AUTO_DATA.bond_10y.toFixed(2)+'%' : '—') + '，但风控触发阈值待定义' }
+  ];
+
+  const renderCat = (items, badgeColor) => items.map(m =>
+    `<div class="missing-item">○ ${m.name}<div style="font-size:10px;color:var(--text-muted);margin-top:2px">${m.note}</div></div>`
+  ).join('');
+
+  container.innerHTML = `
+    <div class="missing-section-title t1">一、影响今日评分（代理口径，已影响精度）</div>
+    <div class="missing-grid">${renderCat(cat1)}</div>
+    <div class="missing-section-title t2">二、未纳入今日评分，但会降低置信度</div>
+    <div class="missing-grid">${renderCat(cat2)}</div>
+    <div class="missing-section-title t3">三、低频专题数据（不参与日频评分）</div>
+    <div class="missing-grid">${renderCat(cat3)}</div>
+  `;
 }
 
 // ========== Hero ==========
@@ -719,11 +819,66 @@ function renderHero(scoreResult) {
   }
 }
 
+// ========== 首屏三点摘要 ==========
+function renderHeroSummary(data) {
+  const container = document.getElementById('heroSummary');
+  if (!container) return;
+
+  // 1. 资金回流连续性
+  const zzArr = AUTO_DATA.zz2000 || [];
+  const kcArr = AUTO_DATA.kc50 || [];
+  let beatCount = 0;
+  if (zzArr.length >= 4 && kcArr.length >= 4) {
+    const zzLast4 = zzArr.slice(-4);
+    const kcLast4 = kcArr.slice(-4);
+    for (let i = 1; i < zzLast4.length; i++) {
+      const zzRet = zzLast4[i-1].close > 0 ? (zzLast4[i].close / zzLast4[i-1].close - 1) * 100 : 0;
+      const kcRet = kcLast4[i-1].close > 0 ? (kcLast4[i].close / kcLast4[i-1].close - 1) * 100 : 0;
+      if (zzRet > kcRet) beatCount++;
+    }
+  }
+  const fundReason = beatCount >= 2
+    ? `资金回流开始连续（近3日跑赢${beatCount}次）`
+    : `资金回流不连续（近3日跑赢科技仅${beatCount}次）`;
+
+  // 2. 产品端修复
+  const fund1d = data.fund_avg_1d;
+  const prodReason = (fund1d !== null && fund1d > 0)
+    ? `产品端单日有修复（${fmtPct(fund1d)}），但未连续确认`
+    : '产品端未连续修复';
+
+  // 3. 硬风控
+  const riskReason = '硬风控未完整接入（4项仅1项已确认）';
+
+  container.innerHTML = [
+    { num: '1', text: fundReason },
+    { num: '2', text: prodReason },
+    { num: '3', text: riskReason }
+  ].map(item => `
+    <div class="hero-summary-item">
+      <div class="hero-summary-num">${item.num}</div>
+      <div class="hero-summary-text">${item.text}</div>
+    </div>
+  `).join('');
+}
+
 // ========== 折叠 ==========
 function toggleFold(id) {
   const content = document.getElementById('foldContent_' + id);
   const icon = document.getElementById('foldIcon_' + id);
   if (content && icon) { content.classList.toggle('open'); icon.classList.toggle('open'); }
+}
+
+function togglePendingFold(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+function toggleSignalDetail(idx) {
+  const el = document.getElementById('signalDetail_' + idx);
+  if (el) el.classList.toggle('open');
 }
 
 // ========== 关键结论（动态生成）==========
@@ -737,11 +892,14 @@ function renderKeyConclusions(data) {
   const zzArr = AUTO_DATA.zz2000 || [];
   const kcArr = AUTO_DATA.kc50 || [];
   let beatCount = 0;
+  let canCalc3d = false;
   if (zzArr.length >= 4 && kcArr.length >= 4) {
-    for (let i = zzArr.length - 3; i < zzArr.length; i++) {
-      if (i < 1) continue;
-      const zzRet = zzArr[i-1].close > 0 ? (zzArr[i].close / zzArr[i-1].close - 1) * 100 : 0;
-      const kcRet = kcArr[i-1].close > 0 ? (kcArr[i].close / kcArr[i-1].close - 1) * 100 : 0;
+    canCalc3d = true;
+    const zzLast4 = zzArr.slice(-4);
+    const kcLast4 = kcArr.slice(-4);
+    for (let i = 1; i < zzLast4.length; i++) {
+      const zzRet = zzLast4[i-1].close > 0 ? (zzLast4[i].close / zzLast4[i-1].close - 1) * 100 : 0;
+      const kcRet = kcLast4[i-1].close > 0 ? (kcLast4[i].close / kcLast4[i-1].close - 1) * 100 : 0;
       if (zzRet > kcRet) beatCount++;
     }
   }
@@ -831,6 +989,7 @@ function init() {
 
   // 4. 渲染
   renderHero(scoreResult);
+  renderHeroSummary(data);
   renderKeyConclusions(data);
   // 设置10年国债显示
   const bondEl = document.getElementById('bond10yVal');
