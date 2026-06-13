@@ -365,13 +365,40 @@ function calcScore(d, s) {
   else if (!riskWindow) { scores.risk = 7; details.risk = '非风险窗口但回撤偏大'; }
   else { scores.risk = 3; details.risk = '处于财报风险窗口'; }
 
-  // 6. 产品验证 (10分)
-  const fund5d = s.fundNetValue5d ? parseFloat(s.fundNetValue5d) : null;
-  const fund1d = s.fundNetValue1d ? parseFloat(s.fundNetValue1d) : null;
-  if (fund5d !== null && fund5d > 0) { scores.product = 10; details.product = '产品跟随修复'; }
-  else if (fund1d !== null && fund1d > 0) { scores.product = 5; details.product = '产品短线修复'; }
-  else if (fund5d !== null) { scores.product = 2; details.product = '产品未跟随'; }
-  else { scores.product = 0; details.product = '待填入产品数据'; }
+  // 6. 产品验证 (10分) - 从天天基金自动数据读取
+  const autoFunds = typeof FUND_PRODUCTS !== 'undefined' ? FUND_PRODUCTS : null;
+  if (autoFunds && autoFunds.length > 0) {
+    // 统计微盘型产品（非高弹性非纯微盘类）的近1周和近1月表现
+    const weipanFunds = autoFunds.filter(f => f.status !== '高弹性非纯微盘');
+    const avgWeek1 = weipanFunds.reduce((a,f) => a + f.week1, 0) / weipanFunds.length;
+    const avgMonth1 = weipanFunds.reduce((a,f) => a + f.month1, 0) / weipanFunds.length;
+    const avgDay = weipanFunds.reduce((a,f) => a + f.dayChange, 0) / weipanFunds.length;
+    const positiveWeek1 = weipanFunds.filter(f => f.week1 > 0).length;
+    
+    if (avgWeek1 > 0 && avgMonth1 > 0) {
+      scores.product = 10;
+      details.product = `微盘基金近1周均涨${avgWeek1.toFixed(2)}%，近1月均涨${avgMonth1.toFixed(2)}%，跟随修复`;
+    } else if (avgWeek1 > 0) {
+      scores.product = 7;
+      details.product = `微盘基金近1周均涨${avgWeek1.toFixed(2)}%，短线修复中`;
+    } else if (avgDay > 0 && positiveWeek1 >= weipanFunds.length / 2) {
+      scores.product = 5;
+      details.product = `产品日涨幅为正(${avgDay.toFixed(2)}%)，但周度未确认`;
+    } else if (avgDay > 0) {
+      scores.product = 3;
+      details.product = `部分产品短线反弹，但整体偏弱`;
+    } else {
+      scores.product = 2;
+      details.product = `产品净值未跟随，近1周均跌${avgWeek1.toFixed(2)}%`;
+    }
+  } else {
+    // 兜底：手动字段
+    const fund5d = s.fundNetValue5d ? parseFloat(s.fundNetValue5d) : null;
+    const fund1d = s.fundNetValue1d ? parseFloat(s.fundNetValue1d) : null;
+    if (fund5d !== null && fund5d > 0) { scores.product = 10; details.product = '产品跟随修复'; }
+    else if (fund1d !== null && fund1d > 0) { scores.product = 5; details.product = '产品短线修复'; }
+    else { scores.product = 0; details.product = '待填入产品数据'; }
+  }
 
   const total = Object.values(scores).reduce((a,b) => a+b, 0);
   return { scores, details, total };
@@ -820,7 +847,12 @@ function renderChecklist(d, s) {
     {text:'微盘指数20日跑赢沪深300', met: d.relativeExcess20d > 0},
     {text:'微盘扩散指数站上50%（当前' + (spread*100).toFixed(0) + '%）', met: spread > 0.5},
     {text:'大盘成交占比降到45%以下', met: false},
-    {text:'关注基金净值开始跟随修复', met: s.fundNetValue5d && parseFloat(s.fundNetValue5d) > 0},
+    {text:'关注基金净值开始跟随修复', met: (() => {
+      const af = typeof FUND_PRODUCTS !== 'undefined' ? FUND_PRODUCTS : null;
+      if (!af) return false;
+      const wf = af.filter(f => f.status !== '高弹性非纯微盘');
+      return wf.length > 0 && wf.filter(f => f.week1 > 0).length >= wf.length / 2;
+    })()},
   ];
   
   const saved = JSON.parse(localStorage.getItem('weipan_checklist') || '{}');
