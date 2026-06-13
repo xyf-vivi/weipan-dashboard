@@ -329,9 +329,9 @@ const FUND_PRODUCTS = [
   { tier: "风格对照型", name: "万家精选A", code: "519185", type: "混合型-偏股",
     navDate: "2026-06-12", nav: 2.1792, dayChange: 1.25, week1: -2.75, month1: 5.27, month3: 1.55, month6: 26.65, year1: 47.30, ytd: 28.82,
     status: "黄海管理", statusNote: "NeoData真实数据" },
-  { tier: "风格对照型", name: "新华策略精选A", code: "001040", type: "股票型",
-    navDate: "2026-06-12", nav: 3.7465, dayChange: -1.28, week1: -0.46, month1: 5.66, month3: 35.06, month6: 66.08, year1: 158.97, ytd: 67.37,
-    status: "科技成长风格", statusNote: "NeoData真实数据" },
+  { tier: "风格对照型", name: "富国创新科技A", code: "002692", type: "偏股混合型",
+    navDate: "2026-06-12", nav: 5.1790, dayChange: -0.81, week1: -1.89, month1: 7.29, month3: 61.34, month6: 81.91, year1: 313.99, ytd: 81.27,
+    status: "科技成长主动权益", statusNote: "Wind真实数据·基金经理罗擎·规模45.78亿" },
   // === 微盘量化 ===
   { tier: "微盘量化", name: "国金量化多因子A", code: "006195", type: "股票型",
     navDate: "2026-06-12", nav: 3.4213, dayChange: 0.68, week1: -1.35, month1: -7.58, month3: 2.52, month6: 17.41, year1: 45.69, ytd: 13.72,
