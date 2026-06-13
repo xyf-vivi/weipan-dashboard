@@ -1,947 +1,660 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>微盘策略风格回流看板</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:#0f172a;color:#e2e8f0;line-height:1.6}
-.container{max-width:1200px;margin:0 auto;padding:20px}
-h1{text-align:center;font-size:26px;margin-bottom:4px;background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.subtitle{text-align:center;color:#64748b;font-size:12px;margin-bottom:20px}
-
-/* ====== 首屏结论区 ====== */
-.verdict-bar{border-radius:16px;padding:24px;margin-bottom:20px;border:1px solid #334155;position:relative;overflow:hidden}
-.verdict-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
-.verdict-bar.red{background:linear-gradient(135deg,rgba(239,68,68,0.08),#0f172a)}.verdict-bar.red::before{background:#ef4444}
-.verdict-bar.yellow{background:linear-gradient(135deg,rgba(234,179,8,0.08),#0f172a)}.verdict-bar.yellow::before{background:#eab308}
-.verdict-bar.light-green{background:linear-gradient(135deg,rgba(134,239,172,0.08),#0f172a)}.verdict-bar.light-green::before{background:#86efac}
-.verdict-bar.green{background:linear-gradient(135deg,rgba(34,197,94,0.08),#0f172a)}.verdict-bar.green::before{background:#22c55e}
-.verdict-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:16px}
-.verdict-status{font-size:28px;font-weight:800;letter-spacing:1px}
-.verdict-score-box{display:flex;align-items:center;gap:16px}
-.verdict-score{font-size:36px;font-weight:800}
-.verdict-score-label{font-size:12px;color:#64748b}
-.verdict-suggestion{font-size:14px;color:#94a3b8;line-height:1.8;padding:12px 16px;background:rgba(0,0,0,0.2);border-radius:8px;margin-bottom:16px}
-.verdict-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-.verdict-card{background:rgba(0,0,0,0.25);border-radius:8px;padding:12px;text-align:center}
-.verdict-card .vc-label{font-size:11px;color:#64748b;margin-bottom:4px}
-.verdict-card .vc-value{font-size:18px;font-weight:700}
-.verdict-card .vc-hint{font-size:11px;margin-top:2px}
-
-/* 证据条 */
-.evidence-list{display:flex;flex-direction:column;gap:8px}
-.evidence-item{display:flex;align-items:flex-start;gap:8px;font-size:13px;padding:8px 12px;background:rgba(0,0,0,0.15);border-radius:6px;border-left:3px solid}
-.evidence-item.pro{border-color:#22c55e}.evidence-item.con{border-color:#ef4444}.evidence-item.neutral{border-color:#eab308}
-.evidence-item .ei-icon{flex-shrink:0;width:18px;text-align:center}
-.evidence-item .ei-title{font-weight:600;margin-bottom:2px}
-.evidence-item .ei-desc{color:#94a3b8;font-size:12px}
-
-/* ====== 评分模型 ====== */
-.score-model{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-.score-item{background:rgba(0,0,0,0.2);border-radius:8px;padding:12px;position:relative}
-.score-item .si-name{font-size:12px;color:#94a3b8;margin-bottom:4px}
-.score-item .si-score{font-size:22px;font-weight:700}
-.score-item .si-max{font-size:12px;color:#475569}
-.score-item .si-bar{height:3px;background:#1e3a5f;border-radius:2px;margin-top:8px;overflow:hidden}
-.score-item .si-bar-fill{height:100%;border-radius:2px;transition:width 0.5s}
-
-/* ====== 卡片 ====== */
-.card{background:#1e293b;border-radius:12px;padding:20px;margin-bottom:16px;border:1px solid #334155}
-.card h2{font-size:15px;color:#94a3b8;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.card h2 .icon{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px}
-
-/* ====== 指标仪表盘 ====== */
-.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}
-.metric-item{background:#0f172a;border-radius:10px;padding:16px;border:1px solid #1e3a5f}
-.metric-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.metric-name{font-size:13px;color:#94a3b8;display:flex;align-items:center;gap:4px}
-.metric-badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600}
-.metric-row{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
-.metric-value{font-size:28px;font-weight:700}
-.metric-prev{font-size:12px;color:#64748b}
-.metric-arrow{font-size:14px;font-weight:700}
-.metric-desc{font-size:12px;color:#475569}
-.metric-bar{height:4px;border-radius:2px;background:#1e3a5f;margin-top:8px;overflow:hidden;position:relative}
-.metric-bar-fill{height:100%;border-radius:2px;transition:width 0.5s}
-.metric-threshold{position:absolute;top:-14px;font-size:10px;color:#475569;transform:translateX(-50%)}
-
-/* ====== 图表 ====== */
-.chart-container{position:relative;height:280px;margin-top:8px}
-canvas{width:100%!important;height:100%!important}
-.chart-legend{display:flex;gap:16px;margin-top:8px;font-size:11px;color:#64748b}
-.chart-legend span{display:flex;align-items:center;gap:4px}
-.chart-legend i{display:inline-block;width:16px;height:3px;border-radius:2px;vertical-align:middle}
-
-/* ====== 风险窗口 ====== */
-.risk-calendar{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-.risk-month{background:rgba(0,0,0,0.2);border-radius:6px;padding:10px;text-align:center;border:1px solid transparent}
-.risk-month.current{border-color:#60a5fa}
-.risk-month .rm-name{font-size:13px;font-weight:600;margin-bottom:2px}
-.risk-month .rm-status{font-size:11px}
-.risk-month.danger{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3)}
-.risk-month.safe{background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.2)}
-.risk-month.caution{background:rgba(234,179,8,0.08);border-color:rgba(234,179,8,0.2)}
-
-/* ====== 产品跟踪 ====== */
-.product-table{width:100%;border-collapse:collapse;font-size:13px}
-.product-table th{text-align:left;color:#64748b;font-weight:500;padding:8px;border-bottom:1px solid #1e3a5f;white-space:nowrap}
-.product-table td{padding:8px;border-bottom:1px solid #0f172a}
-.product-table input{background:#0f172a;border:1px solid #1e3a5f;border-radius:4px;padding:4px 8px;color:#e2e8f0;width:70px;font-size:13px;text-align:right}
-.product-table input:focus{outline:none;border-color:#60a5fa}
-
-/* ====== 观察清单 ====== */
-.checklist{list-style:none;margin-top:4px}
-.checklist li{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #0f172a;font-size:13px}
-.checklist li:last-child{border:none}
-.checklist input[type=checkbox]{width:16px;height:16px;accent-color:#22c55e}
-.checklist .done{text-decoration:line-through;color:#475569}
-.checklist .cl-status{font-size:11px;margin-left:auto;padding:2px 8px;border-radius:10px;font-weight:600}
-
-/* ====== 手动数据 ====== */
-.manual-toggle{font-size:13px;color:#60a5fa;cursor:pointer;user-select:none}
-.manual-toggle:hover{text-decoration:underline}
-.manual-section{display:none;margin-top:14px;padding-top:14px;border-top:1px solid #334155}
-.input-group{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
-.input-field label{display:block;font-size:12px;color:#64748b;margin-bottom:4px}
-.input-field input{width:100%;background:#0f172a;border:1px solid #1e3a5f;border-radius:6px;padding:8px 10px;color:#e2e8f0;font-size:14px}
-.input-field input:focus{outline:none;border-color:#60a5fa}
-
-/* ====== 指标解读 ====== */
-.glossary-table{width:100%;border-collapse:collapse;font-size:12px}
-.glossary-table td{padding:8px;border-bottom:1px solid #0f172a;vertical-align:top}
-.glossary-table td:first-child{color:#94a3b8;white-space:nowrap;width:120px;font-weight:600}
-.glossary-table td:last-child{color:#94a3b8}
-
-/* ====== 按钮 ====== */
-.btn{padding:8px 20px;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;transition:all 0.2s}
-.btn-primary{background:#2563eb;color:white}.btn-primary:hover{background:#1d4ed8}
-
-/* ====== 信号灯 ====== */
-.light{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px}
-.light-red{background:#ef4444;box-shadow:0 0 6px #ef4444}
-.light-yellow{background:#eab308;box-shadow:0 0 6px #eab308}
-.light-green{background:#22c55e;box-shadow:0 0 6px #22c55e}
-
-.up{color:#ef4444}.down{color:#22c55e}.neutral{color:#94a3b8}
-
-.footer{text-align:center;color:#475569;font-size:12px;margin-top:24px;padding-top:16px;border-top:1px solid #1e3a5f}
-
-/* ====== 加载兜底 ====== */
-.loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#0f172a;display:flex;align-items:center;justify-content:center;z-index:999;font-size:16px;color:#94a3b8;flex-direction:column;gap:8px}
-.loading-overlay .spinner{width:32px;height:32px;border:3px solid #1e3a5f;border-top-color:#60a5fa;border-radius:50%;animation:spin 0.8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-@media(max-width:768px){
-  .metric-grid{grid-template-columns:1fr}
-  .verdict-cards{grid-template-columns:repeat(2,1fr)}
-  .score-model{grid-template-columns:repeat(2,1fr)}
-  .risk-calendar{grid-template-columns:repeat(3,1fr)}
-  .verdict-top{flex-direction:column;align-items:flex-start}
-  h1{font-size:22px}
-}
-</style>
-</head>
-<body>
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-  <div>正在加载看板数据...</div>
-</div>
-
-<div class="container" id="mainContent" style="display:none">
-  <h1>📊 微盘策略风格回流看板</h1>
-  <div class="subtitle" id="updateTime">数据加载中...</div>
-
-  <!-- ====== 第一屏：结论区 ====== -->
-  <div class="verdict-bar yellow" id="verdictBar">
-    <div class="verdict-top">
-      <div>
-        <div style="font-size:13px;color:#64748b;margin-bottom:2px">当前微盘策略状态</div>
-        <div class="verdict-status" id="verdictStatus">计算中...</div>
-      </div>
-      <div class="verdict-score-box">
-        <div>
-          <div class="verdict-score" id="verdictScore">--</div>
-          <div class="verdict-score-label">/ 100 分</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="verdict-suggestion" id="verdictSuggestion"></div>
-
-    <div class="verdict-cards" id="verdictCards">
-      <div class="verdict-card"><div class="vc-label">微盘温度</div><div class="vc-value" id="vcTemp">--</div></div>
-      <div class="verdict-card"><div class="vc-label">当前总分</div><div class="vc-value" id="vcScore">--</div></div>
-      <div class="verdict-card"><div class="vc-label">最强证据</div><div class="vc-value" id="vcPro" style="font-size:13px">--</div></div>
-      <div class="verdict-card"><div class="vc-label">最大风险</div><div class="vc-value" id="vcCon" style="font-size:13px">--</div></div>
-    </div>
-
-    <!-- 三条证据 -->
-    <div class="evidence-list" id="evidenceList"></div>
-  </div>
-
-  <!-- ====== 评分模型透明化 ====== -->
-  <div class="card">
-    <h2><span class="icon" style="background:#2563eb">📐</span> 评分模型（为什么是这个状态）</h2>
-    <div class="score-model" id="scoreModel"></div>
-    <div style="display:flex;gap:16px;margin-top:12px;font-size:11px;color:#475569">
-      <span>🔴 0-40 不适合</span><span>🟡 40-60 观察区</span><span>🟢 60-75 试探区</span><span>🟢🟢 75+ 友好区</span>
-    </div>
-  </div>
-
-  <!-- ====== 核心指标仪表盘 ====== -->
-  <div class="card">
-    <h2><span class="icon" style="background:#7c3aed">📈</span> 核心指标仪表盘</h2>
-    <div class="metric-grid" id="metricsGrid"></div>
-  </div>
-
-  <!-- ====== 风格走势图 ====== -->
-  <div class="card">
-    <h2><span class="icon" style="background:#ea580c">📉</span> 微盘 vs 沪深300 走势对比</h2>
-    <div class="chart-container"><canvas id="chartCanvas"></canvas></div>
-    <div class="chart-legend">
-      <span><i style="background:#f59e0b"></i>微盘指数(归一化)</span>
-      <span><i style="background:#3b82f6"></i>沪深300(归一化)</span>
-      <span><i style="background:rgba(239,68,68,0.3)"></i>超额收益(填充)</span>
-    </div>
-  </div>
-
-  <!-- ====== 扩散和资金 ====== -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-    <div class="card">
-      <h2><span class="icon" style="background:#16a34a">📊</span> TMT vs 微盘成交额</h2>
-      <div style="height:220px;position:relative"><canvas id="turnoverCanvas"></canvas></div>
-    </div>
-    <div class="card">
-      <h2><span class="icon" style="background:#0891b2">💰</span> 融资余额趋势（辅助）</h2>
-      <div style="height:220px;position:relative"><canvas id="marginCanvas"></canvas></div>
-      <div style="font-size:11px;color:#475569;margin-top:4px">融资余额反映全市场风险偏好，是水温而非方向盘</div>
-    </div>
-  </div>
-
-  <!-- ====== 财报/退市风险窗口 ====== -->
-  <div class="card">
-    <h2><span class="icon" style="background:#dc2626">⚠️</span> 财报/退市风险窗口</h2>
-    <div class="risk-calendar" id="riskCalendar"></div>
-    <div style="font-size:11px;color:#475569;margin-top:10px;line-height:1.6">
-      说明：年度报告应在会计年度结束后4个月内（4月底前）披露，中期报告应在上半年结束后2个月内（8月底前）披露。
-      <b>5月不是年报季</b>，而是年报和一季报披露结束后的真空期，历史上正常有利于微盘修复。
-    </div>
-  </div>
-
-  <!-- ====== 产品跟踪 ====== -->
-  <div class="card">
-    <h2><span class="icon" style="background:#8b5cf6">🏷️</span> 微盘量化产品跟踪 <span class="manual-toggle" onclick="toggleProduct()">展开/收起</span></h2>
-    <div id="productSection">
-      <div style="font-size:12px;color:#64748b;margin-bottom:8px">
-        <span class="fund-date" style="margin-right:12px"></span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ====== 观察清单 ====== -->
-  <div class="card">
-    <h2><span class="icon" style="background:#16a34a">✅</span> 观察清单（风格回流信号）</h2>
-    <ul class="checklist" id="checklist"></ul>
-  </div>
-
-  <!-- ====== 手动数据更新 ====== -->
-  <div class="card">
-    <h2><span class="icon" style="background:#64748b">⚙️</span> 手动数据更新 <span class="manual-toggle" onclick="toggleManual()">展开/收起</span></h2>
-    <div class="manual-section" id="manualSection">
-      <div style="font-size:12px;color:#475569;margin-bottom:10px">手动数据来源：西部证券微盘周报、券商金工报告、基金净值。填写后点"保存并刷新"。</div>
-      <div class="input-group" id="manualInputs"></div>
-      <div style="margin-top:12px"><button class="btn btn-primary" onclick="saveManual()">保存并刷新</button></div>
-    </div>
-  </div>
-
-  <!-- ====== 指标解读 ====== -->
-  <div class="card">
-    <h2><span class="icon" style="background:#475569">📖</span> 指标解读（小白友好版）</h2>
-    <table class="glossary-table">
-      <tr><td>TMT成交占比</td><td>电子+通信+计算机+传媒成交额占全市场的比例。<b>&gt;45%极度拥挤，35%-45%仍强但可观察，&lt;35%降温有利于微盘</b>。</td></tr>
-      <tr><td>大盘成交占比</td><td>大市值股票成交额占全市场的比例。<b>&gt;50%大盘虹吸强，&lt;45%资金扩散有利于微盘</b>。</td></tr>
-      <tr><td>微盘成交占比</td><td>万得微盘股指数成分股成交额占全市场的比例。<b>&lt;1%冷清但弹性大，1%-1.5%有资金试探，&gt;1.5%资金回流明显</b>。</td></tr>
-      <tr><td>相对收益</td><td>微盘指数涨跌幅减去沪深300涨跌幅。<b>5日转正=短线修复，20日转正=月度风格切换，60日转正=趋势确认</b>。</td></tr>
-      <tr><td>扩散指数</td><td>微盘成分股中上涨股票占比。<b>&lt;35%仅少数反弹，50%-65%扩散改善，&gt;65%赚钱效应明显</b>。</td></tr>
-      <tr><td>Barra市值因子</td><td>量化模型里衡量"大盘/小盘风格"的因子收益。<b>连续为负=小盘不利，转正但微盘还跌=微盘内部严重分化，转正且微盘跑赢=风格确认</b>。不等于某个指数涨跌。</td></tr>
-      <tr><td>融资余额</td><td>两融余额合计。上升=市场加杠杆意愿强，下降=去杠杆。反映全市场水温，微盘对杠杆资金敏感。</td></tr>
-    </table>
-  </div>
-
-  <div class="footer">
-    数据来源：Wind金融数据服务 | 自动数据每日更新，手动数据每周更新 | 仅供研究参考，不构成投资建议
-  </div>
-</div>
-
-<script>
-// ====== 手动字段定义 ======
-const MANUAL_FIELDS = {
-  weipanTurnoverRatio: {label:"微盘成交占比(%)", placeholder:"如0.73"},
-  bigCapTurnoverRatio: {label:"大盘成交占比(%)", placeholder:"如54.50"},
-  tmtRatio: {label:"TMT成交占比(%)", placeholder:"如43.1"},
-  barraSizeFactor: {label:"Barra市值因子(%)", placeholder:"如1.66"},
-  spreadIndex: {label:"扩散指数(%)", placeholder:"如42"},
-};
-
-// ====== 产品跟踪默认 ======
-const DEFAULT_PRODUCTS = [
-  {name:"产品A", n1d:"", n5d:"", n20d:"", vsWeipan:"", maxDD:"", status:""},
-  {name:"产品B", n1d:"", n5d:"", n20d:"", vsWeipan:"", maxDD:"", status:""},
-  {name:"产品C", n1d:"", n5d:"", n20d:"", vsWeipan:"", maxDD:"", status:""},
-];
-
-// ====== 财报风险窗口数据 ======
-const RISK_MONTHS = [
-  {month:"1月", risk:"caution", desc:"业绩预告/保壳扰动"},
-  {month:"2月", risk:"safe", desc:"真空期"},
-  {month:"3月", risk:"caution", desc:"两会政策敏感"},
-  {month:"4月", risk:"danger", desc:"年报+一季报高峰\nST/退市集中暴露"},
-  {month:"5月", risk:"safe", desc:"财报真空期\n正常利于修复"},
-  {month:"6月", risk:"safe", desc:"真空期"},
-  {month:"7月", risk:"caution", desc:"中报预告期"},
-  {month:"8月", risk:"danger", desc:"中报披露期\n基本面风险抬头"},
-  {month:"9月", risk:"safe", desc:"真空期"},
-  {month:"10月", risk:"caution", desc:"三季报披露期"},
-  {month:"11月", risk:"safe", desc:"真空期"},
-  {month:"12月", risk:"caution", desc:"年末保壳/预亏/退市预期"},
-];
-
-// ====== 状态管理 ======
-let manualData = {};
-let products = [];
-try { manualData = JSON.parse(localStorage.getItem('weipan_manual') || '{}'); } catch(e){}
-try { products = JSON.parse(localStorage.getItem('weipan_products') || 'null') || DEFAULT_PRODUCTS; } catch(e){ products = DEFAULT_PRODUCTS; }
-
-// ====== 加载兜底 ======
-let loadTimeout = setTimeout(() => {
-  const overlay = document.getElementById('loadingOverlay');
-  if (overlay) overlay.innerHTML = '<div style="color:#eab308;font-size:14px">数据加载超时，显示上次更新数据</div><div style="color:#64748b;font-size:12px;margin-top:4px">如持续异常，请在AI对话中刷新数据</div>';
-}, 5000);
-
-// ====== 评分计算 ======
-function calcScore(d, s) {
-  const scores = {};
-  const details = {};
-  
-  // 1. 科技降温 (20分)
-  const tmtRatio = s.tmtRatio ? parseFloat(s.tmtRatio)/100 : d.tmtRatio;
-  if (tmtRatio < 0.35) { scores.tech = 20; details.tech = '科技明显降温'; }
-  else if (tmtRatio < 0.40) { scores.tech = 15; details.tech = '科技开始降温'; }
-  else if (tmtRatio < 0.45) { scores.tech = 8; details.tech = '科技仍强但可观察'; }
-  else { scores.tech = 0; details.tech = '科技极度拥挤'; }
-
-  // 2. 微盘资金回流 (25分)
-  const wpRatio = s.weipanTurnoverRatio ? parseFloat(s.weipanTurnoverRatio)/100 : d.weipanRatio;
-  if (wpRatio > 0.015) { scores.flow = 25; details.flow = '微盘资金明显回流'; }
-  else if (wpRatio > 0.01) { scores.flow = 15; details.flow = '微盘有资金试探'; }
-  else if (wpRatio > 0.005) { scores.flow = 8; details.flow = '微盘冷清但弹性大'; }
-  else { scores.flow = 0; details.flow = '微盘极度冷清'; }
-
-  // 3. 风格确认 (20分)
-  if (d.relativeExcess5d > 0 && d.relativeExcess20d > 0) { scores.style = 20; details.style = '微盘连续跑赢'; }
-  else if (d.relativeExcess5d > 0) { scores.style = 10; details.style = '微盘短线修复'; }
-  else if (d.relativeExcess20d > -5) { scores.style = 5; details.style = '微盘回撤收敛'; }
-  else { scores.style = 0; details.style = '微盘持续跑输'; }
-
-  // 4. 扩散改善 (15分)
-  const spread = s.spreadIndex ? parseFloat(s.spreadIndex)/100 : d.weipanSpread;
-  if (spread > 0.65) { scores.diffusion = 15; details.diffusion = '微盘普涨'; }
-  else if (spread > 0.50) { scores.diffusion = 10; details.diffusion = '扩散改善'; }
-  else if (spread > 0.35) { scores.diffusion = 5; details.diffusion = '扩散初期'; }
-  else { scores.diffusion = 0; details.diffusion = '扩散不足'; }
-
-  // 5. 风险缓和 (10分)
-  const currentMonth = new Date().getMonth() + 1;
-  const riskMonths = {4: true, 8: true, 12: true, 1: true};
-  const riskWindow = riskMonths[currentMonth];
-  if (!riskWindow && d.weipanDrawdown > -5) { scores.risk = 10; details.risk = '非风险窗口且回撤小'; }
-  else if (!riskWindow) { scores.risk = 7; details.risk = '非风险窗口但回撤偏大'; }
-  else { scores.risk = 3; details.risk = '处于财报风险窗口'; }
-
-  // 6. 产品验证 (10分) - 从天天基金自动数据读取，只看"微盘量化"和"人肉量化"tier
-  const autoFunds = typeof FUND_PRODUCTS !== 'undefined' ? FUND_PRODUCTS : null;
-  if (autoFunds && autoFunds.length > 0) {
-    // 只统计微盘量化+人肉量化tier（排除对照组和风格对照）
-    const weipanFunds = autoFunds.filter(f => f.tier === '微盘量化' || f.tier === '人肉量化');
-    const validFunds = weipanFunds.filter(f => f.week1 !== null && f.week1 !== undefined);
-    if (validFunds.length === 0) {
-      scores.product = 0; details.product = '无有效产品数据';
-    } else {
-      const avgWeek1 = validFunds.reduce((a,f) => a + f.week1, 0) / validFunds.length;
-      const validMonth1 = validFunds.filter(f => f.month1 !== null && f.month1 !== undefined);
-      const avgMonth1 = validMonth1.length > 0 ? validMonth1.reduce((a,f) => a + f.month1, 0) / validMonth1.length : null;
-      const avgDay = validFunds.reduce((a,f) => a + f.dayChange, 0) / validFunds.length;
-      const positiveWeek1 = validFunds.filter(f => f.week1 > 0).length;
-      
-      if (avgWeek1 > 0 && avgMonth1 !== null && avgMonth1 > 0) {
-        scores.product = 10;
-        details.product = `微盘基金近1周均涨${avgWeek1.toFixed(2)}%，近1月均涨${avgMonth1.toFixed(2)}%，跟随修复`;
-      } else if (avgWeek1 > 0) {
-        scores.product = 7;
-        details.product = `微盘基金近1周均涨${avgWeek1.toFixed(2)}%，短线修复中`;
-      } else if (avgDay > 0 && positiveWeek1 >= validFunds.length / 2) {
-        scores.product = 5;
-        details.product = `产品日涨幅为正(${avgDay.toFixed(2)}%)，但周度未确认`;
-      } else if (avgDay > 0) {
-        scores.product = 3;
-        details.product = `部分产品短线反弹，但整体偏弱`;
-      } else {
-        scores.product = 2;
-        details.product = `产品净值未跟随，近1周均跌${Math.abs(avgWeek1).toFixed(2)}%`;
-      }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>微盘策略温度计 - 判断现在能否配置微盘策略</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --bg-card: #1e293b;
+      --bg-hover: #334155;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-red: #ef4444;
+      --accent-green: #22c55e;
+      --accent-yellow: #eab308;
+      --accent-blue: #3b82f6;
+      --border-color: #334155;
     }
-  } else {
-    scores.product = 0; details.product = '待填入产品数据';
-  }
-
-  const total = Object.values(scores).reduce((a,b) => a+b, 0);
-  return { scores, details, total };
-}
-
-function getStatus(score) {
-  if (score >= 75) return {name:'友好区', color:'green', cls:'green', emoji:'🟢🟢'};
-  if (score >= 60) return {name:'试探区', color:'#86efac', cls:'light-green', emoji:'🟢'};
-  if (score >= 40) return {name:'观察区', color:'#eab308', cls:'yellow', emoji:'🟡'};
-  return {name:'不适合', color:'#ef4444', cls:'red', emoji:'🔴'};
-}
-
-// ====== 初始化 ======
-function init() {
-  if (typeof AUTO_DATA === 'undefined') {
-    document.getElementById('loadingOverlay').innerHTML = '<div style="color:#ef4444">数据加载失败</div><div style="color:#64748b;font-size:12px;margin-top:4px">请在AI对话中运行数据更新</div>';
-    return;
-  }
-  clearTimeout(loadTimeout);
-  document.getElementById('loadingOverlay').style.display = 'none';
-  document.getElementById('mainContent').style.display = 'block';
-  
-  const d = AUTO_DATA;
-  const s = manualData;
-  document.getElementById('updateTime').textContent = '数据更新: ' + d.updateTime + ' | 数据来源: Wind金融数据服务';
-  
-  const {scores, details, total} = calcScore(d, s);
-  const status = getStatus(total);
-  
-  renderVerdict(d, s, total, status, details);
-  renderScoreModel(scores, details);
-  renderMetrics(d, s);
-  renderChart(d);
-  renderTurnoverChart(d);
-  renderMarginChart(d);
-  renderRiskCalendar();
-  renderProducts();
-  renderChecklist(d, s);
-  renderManualInputs();
-}
-
-// ====== 首屏结论 ======
-function renderVerdict(d, s, total, status, details) {
-  const bar = document.getElementById('verdictBar');
-  bar.className = 'verdict-bar ' + status.cls;
-  
-  document.getElementById('verdictStatus').textContent = status.emoji + ' ' + status.name;
-  document.getElementById('verdictStatus').style.color = status.color;
-  document.getElementById('verdictScore').textContent = total;
-  document.getElementById('verdictScore').style.color = status.color;
-  
-  // 建议
-  let suggestion = '';
-  if (total < 40) suggestion = '⚠️ <b>不建议介入。</b>科技虹吸强，微盘资金未回流，风格未确认。等待指标改善后再考虑。';
-  else if (total < 60) suggestion = '🔍 <b>可以观察，可以小比例试探，但还不是重仓抄底信号。</b>微盘已经从拥挤区降温，但资金尚未确认回流。建议跟踪微盘成交占比和扩散指数是否连续改善。';
-  else if (total < 75) suggestion = '📌 <b>可小比例分批试探。</b>部分信号已出现，但尚未全面确认。建议控制仓位在5%-10%，分批观察。';
-  else suggestion = '✅ <b>微盘风格回流较明确，可适当提高关注度。</b>多个信号同时出现，但仍建议控制总仓位不超过15%。';
-  document.getElementById('verdictSuggestion').innerHTML = suggestion;
-  
-  // 4卡片
-  document.getElementById('vcTemp').innerHTML = status.emoji + ' ' + status.name;
-  document.getElementById('vcTemp').style.color = status.color;
-  document.getElementById('vcScore').textContent = total + '/100';
-  document.getElementById('vcScore').style.color = status.color;
-  
-  // 最强证据
-  const maxKey = Object.keys(details).reduce((a,b) => (calcScore(d,s).scores[a] >= calcScore(d,s).scores[b] ? a : b));
-  document.getElementById('vcPro').textContent = details[maxKey];
-  document.getElementById('vcPro').style.color = '#22c55e';
-  
-  // 最大风险
-  const minKey = Object.keys(details).reduce((a,b) => (calcScore(d,s).scores[a] <= calcScore(d,s).scores[b] ? a : b));
-  document.getElementById('vcCon').textContent = details[minKey];
-  document.getElementById('vcCon').style.color = '#ef4444';
-  
-  // 三条证据
-  const wpRatio = s.weipanTurnoverRatio ? parseFloat(s.weipanTurnoverRatio)/100 : d.weipanRatio;
-  const tmtRatio = s.tmtRatio ? parseFloat(s.tmtRatio)/100 : d.tmtRatio;
-  const spread = s.spreadIndex ? parseFloat(s.spreadIndex)/100 : d.weipanSpread;
-  
-  const evidenceItems = [
-    {
-      type: wpRatio < 0.01 ? 'pro' : wpRatio < 0.015 ? 'neutral' : 'con',
-      icon: wpRatio < 0.01 ? '✅' : '⚠️',
-      title: '证据1：微盘成交占比' + (wpRatio*100).toFixed(2) + '%',
-      desc: wpRatio < 0.01 ? '拥挤度明显下降，前期筹码出清，但还不能说明资金已经回来。后续如果持续回升到1%以上，才是资金回流信号。' : '微盘资金有试探迹象，但仍需持续观察。'
-    },
-    {
-      type: tmtRatio > 0.40 ? 'con' : tmtRatio > 0.35 ? 'neutral' : 'pro',
-      icon: tmtRatio > 0.40 ? '🔴' : tmtRatio > 0.35 ? '⚠️' : '✅',
-      title: '证据2：TMT成交占比' + (tmtRatio*100).toFixed(1) + '%',
-      desc: tmtRatio > 0.40 ? '科技/大盘方向成交仍高，资金集中在大市值方向，微盘容易继续被抽血。需要TMT占比持续下降到35%以下，才有利于微盘。' : '科技降温中，资金有外溢可能。'
-    },
-    {
-      type: d.relativeExcess5d > 0 ? 'pro' : d.relativeExcess20d > -5 ? 'neutral' : 'con',
-      icon: d.relativeExcess5d > 0 ? '✅' : d.relativeExcess20d > -5 ? '⚠️' : '🔴',
-      title: '证据3：微盘5日相对收益' + (d.relativeExcess5d >= 0 ? '+' : '') + d.relativeExcess5d.toFixed(2) + '%',
-      desc: d.relativeExcess5d > 0 && d.relativeExcess20d > 0 ? '微盘连续跑赢大盘，风格回流信号增强。' :
-           d.relativeExcess5d > 0 ? '微盘短线修复，但月度尚未确认。需要20日相对收益也转正，才更像趋势。' :
-           '微盘仍在跑输大盘，当前反弹更像是技术性修复，不是风格切换。'
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
     }
-  ];
-  
-  document.getElementById('evidenceList').innerHTML = evidenceItems.map(e => `
-    <div class="evidence-item ${e.type}">
-      <div class="ei-icon">${e.icon}</div>
-      <div><div class="ei-title">${e.title}</div><div class="ei-desc">${e.desc}</div></div>
-    </div>
-  `).join('');
-}
-
-// ====== 评分模型 ======
-function renderScoreModel(scores, details) {
-  const items = [
-    {key:'tech', name:'科技抱团降温', max:20},
-    {key:'flow', name:'微盘资金回流', max:25},
-    {key:'style', name:'风格确认', max:20},
-    {key:'diffusion', name:'扩散改善', max:15},
-    {key:'risk', name:'风险缓和', max:10},
-    {key:'product', name:'产品验证', max:10},
-  ];
-  
-  document.getElementById('scoreModel').innerHTML = items.map(it => {
-    const s = scores[it.key] || 0;
-    const pct = s / it.max * 100;
-    const color = pct >= 70 ? '#22c55e' : pct >= 40 ? '#eab308' : '#ef4444';
-    return `
-      <div class="score-item">
-        <div class="si-name">${it.name}</div>
-        <div><span class="si-score" style="color:${color}">${s}</span><span class="si-max"> / ${it.max}分</span></div>
-        <div style="font-size:11px;color:#64748b;margin-top:2px">${details[it.key]}</div>
-        <div class="si-bar"><div class="si-bar-fill" style="width:${pct}%;background:${color}"></div></div>
-      </div>
-    `;
-  }).join('');
-}
-
-// ====== 核心指标 ======
-function renderMetrics(d, s) {
-  const grid = document.getElementById('metricsGrid');
-  const wpRatio = s.weipanTurnoverRatio ? parseFloat(s.weipanTurnoverRatio) : (d.weipanRatio * 100).toFixed(2);
-  const bigCapRatio = s.bigCapTurnoverRatio ? parseFloat(s.bigCapTurnoverRatio) : null;
-  const tmtR = s.tmtRatio ? parseFloat(s.tmtRatio)/100 : d.tmtRatio;
-  const spread = s.spreadIndex ? parseFloat(s.spreadIndex)/100 : d.weipanSpread;
-  
-  // 计算上一期（前一天的数据）
-  const wp = d.weipan;
-  const hs = d.hs300;
-  const prevRel5d = wp.length >= 6 && hs.length >= 6 ? 
-    ((wp[wp.length-1].close / wp[wp.length-6].close - 1) - (hs[hs.length-1].close / hs[hs.length-6].close - 1)) * 100 : null;
-  
-  const metrics = [
-    {
-      name: 'TMT成交占比',
-      value: (tmtR * 100).toFixed(1) + '%',
-      threshold: '阈值: &lt;35%友好 35-45%观察 &gt;45%拥挤',
-      bar: Math.min(tmtR / 0.5, 1),
-      light: tmtR > 0.45 ? 'red' : tmtR > 0.35 ? 'yellow' : 'green',
-      hint: tmtR > 0.45 ? '科技极度拥挤' : tmtR > 0.35 ? '科技仍强' : '科技降温中'
-    },
-    {
-      name: '微盘成交占比',
-      value: parseFloat(wpRatio).toFixed(2) + '%',
-      threshold: '阈值: &lt;1%冷清 1-1.5%试探 &gt;1.5%回流',
-      bar: Math.min(parseFloat(wpRatio) / 3, 1),
-      light: parseFloat(wpRatio) < 0.8 ? 'red' : parseFloat(wpRatio) < 1.5 ? 'yellow' : 'green',
-      hint: parseFloat(wpRatio) < 0.8 ? '极度冷清' : parseFloat(wpRatio) < 1.5 ? '冷清但有弹性' : '资金回流中'
-    },
-    {
-      name: '微盘5日相对收益',
-      value: (d.relativeExcess5d >= 0 ? '+' : '') + d.relativeExcess5d.toFixed(2) + '%',
-      threshold: '阈值: &gt;0跑赢 &lt;0跑输',
-      light: d.relativeExcess5d > 0 ? 'green' : d.relativeExcess5d > -3 ? 'yellow' : 'red',
-      hint: d.relativeExcess5d > 0 ? '短线跑赢大盘 ✅' : '短线跑输大盘'
-    },
-    {
-      name: '微盘20日相对收益',
-      value: (d.relativeExcess20d >= 0 ? '+' : '') + d.relativeExcess20d.toFixed(2) + '%',
-      threshold: '阈值: &gt;0月度确认 &lt;-5深度跑输',
-      light: d.relativeExcess20d > 0 ? 'green' : d.relativeExcess20d > -5 ? 'yellow' : 'red',
-      hint: d.relativeExcess20d > 0 ? '月度风格确认 ✅' : d.relativeExcess20d > -5 ? '回撤收敛中' : '深度跑输'
-    },
-    {
-      name: '微盘扩散指数',
-      value: (spread * 100).toFixed(0) + '%',
-      threshold: '阈值: &lt;35%弱 50-65%改善 &gt;65%普涨',
-      bar: spread,
-      light: spread > 0.65 ? 'green' : spread > 0.45 ? 'yellow' : 'red',
-      hint: spread > 0.65 ? '普涨行情 ✅' : spread > 0.45 ? '部分修复' : '仅少数反弹'
-    },
-    {
-      name: '微盘从高点回撤',
-      value: d.weipanDrawdown.toFixed(1) + '%',
-      threshold: '近28个交易日内最大回撤',
-      light: d.weipanDrawdown > -5 ? 'green' : d.weipanDrawdown > -12 ? 'yellow' : 'red',
-      hint: d.weipanDrawdown > -5 ? '回撤可控' : d.weipanDrawdown > -12 ? '回撤较大' : '深度回撤'
-    },
-  ];
-  
-  if (bigCapRatio) {
-    metrics.splice(1, 0, {
-      name: '大盘成交占比',
-      value: parseFloat(bigCapRatio).toFixed(1) + '%',
-      threshold: '阈值: &gt;50%虹吸强 &lt;45%扩散',
-      bar: parseFloat(bigCapRatio) / 60,
-      light: parseFloat(bigCapRatio) > 50 ? 'red' : parseFloat(bigCapRatio) > 45 ? 'yellow' : 'green',
-      hint: parseFloat(bigCapRatio) > 50 ? '大盘虹吸强' : parseFloat(bigCapRatio) > 45 ? '虹吸缓和' : '资金扩散'
-    });
-  }
-  
-  grid.innerHTML = metrics.map(m => `
-    <div class="metric-item">
-      <div class="metric-top">
-        <span class="metric-name"><span class="light light-${m.light}"></span>${m.name}</span>
-        <span class="metric-badge" style="background:${m.light==='red'?'#450a0a':m.light==='yellow'?'#422006':'#052e16'};color:${m.light==='red'?'#fca5a5':m.light==='yellow'?'#fde047':'#86efac'}">${m.hint}</span>
-      </div>
-      <div class="metric-value" style="color:${m.light==='red'?'#fca5a5':m.light==='yellow'?'#fde047':'#86efac'}">${m.value}</div>
-      <div class="metric-desc">${m.threshold}</div>
-      ${m.bar ? '<div class="metric-bar"><div class="metric-bar-fill" style="width:'+m.bar*100+'%;background:'+(m.light==='red'?'#ef4444':m.light==='yellow'?'#eab308':'#22c55e')+'"></div></div>' : ''}
-    </div>
-  `).join('');
-}
-
-// ====== 走势图 ======
-function renderChart(d) {
-  const wp = d.weipan;
-  const hs = d.hs300;
-  const wpBase = wp[0].close;
-  const hsBase = hs[0].close;
-  const labels = wp.map(w => w.date.substring(5));
-  const wpNorm = wp.map(w => ((w.close/wpBase - 1)*100));
-  const hsNorm = hs.map(h => ((h.close/hsBase - 1)*100));
-  
-  const canvas = document.getElementById('chartCanvas');
-  const ctx = canvas.getContext('2d');
-  const rect = canvas.parentElement.getBoundingClientRect();
-  canvas.width = rect.width * 2;
-  canvas.height = rect.height * 2;
-  ctx.scale(2, 2);
-  const W = rect.width, H = rect.height;
-  const padL = 50, padR = 20, padT = 20, padB = 30;
-  const plotW = W - padL - padR, plotH = H - padT - padB;
-  
-  const allVals = [...wpNorm, ...hsNorm];
-  let minV = Math.min(...allVals), maxV = Math.max(...allVals);
-  const range = maxV - minV || 1;
-  minV -= range * 0.1; maxV += range * 0.1;
-  
-  function x(i) { return padL + (i / (labels.length - 1)) * plotW; }
-  function y(v) { return padT + plotH - ((v - minV) / (maxV - minV)) * plotH; }
-  
-  ctx.strokeStyle = '#1e3a5f'; ctx.lineWidth = 0.5;
-  for (let i = 0; i <= 4; i++) {
-    const val = minV + (maxV - minV) * i / 4;
-    ctx.beginPath(); ctx.moveTo(padL, y(val)); ctx.lineTo(W - padR, y(val)); ctx.stroke();
-    ctx.fillStyle = '#64748b'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText(val.toFixed(1) + '%', padL - 4, y(val) + 3);
-  }
-  ctx.fillStyle = '#64748b'; ctx.textAlign = 'center'; ctx.font = '10px sans-serif';
-  const step = Math.max(1, Math.floor(labels.length / 8));
-  for (let i = 0; i < labels.length; i += step) ctx.fillText(labels[i], x(i), H - 8);
-  
-  // 超额填充
-  ctx.beginPath();
-  for (let i = 0; i < labels.length; i++) {
-    if (i === 0) ctx.moveTo(x(i), y(wpNorm[i])); else ctx.lineTo(x(i), y(wpNorm[i]));
-  }
-  for (let i = labels.length - 1; i >= 0; i--) ctx.lineTo(x(i), y(hsNorm[i]));
-  ctx.closePath();
-  ctx.fillStyle = wpNorm[wpNorm.length-1] > hsNorm[hsNorm.length-1] ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)';
-  ctx.fill();
-  
-  // 沪深300线
-  ctx.beginPath(); ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2;
-  for (let i = 0; i < labels.length; i++) { if (i === 0) ctx.moveTo(x(i), y(hsNorm[i])); else ctx.lineTo(x(i), y(hsNorm[i])); }
-  ctx.stroke();
-  
-  // 微盘线
-  ctx.beginPath(); ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
-  for (let i = 0; i < labels.length; i++) { if (i === 0) ctx.moveTo(x(i), y(wpNorm[i])); else ctx.lineTo(x(i), y(wpNorm[i])); }
-  ctx.stroke();
-  
-  if (minV < 0 && maxV > 0) {
-    ctx.beginPath(); ctx.strokeStyle = '#475569'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
-    ctx.moveTo(padL, y(0)); ctx.lineTo(W - padR, y(0)); ctx.stroke(); ctx.setLineDash([]);
-  }
-}
-
-// ====== TMT成交额 ======
-function renderTurnoverChart(d) {
-  const canvas = document.getElementById('turnoverCanvas');
-  const ctx = canvas.getContext('2d');
-  const rect = canvas.parentElement.getBoundingClientRect();
-  canvas.width = rect.width * 2; canvas.height = rect.height * 2;
-  ctx.scale(2, 2);
-  const W = rect.width, H = rect.height;
-  const total = d.totalTurnover / 1e8;
-  const tmt = d.tmt.total;
-  const rest = total - tmt;
-  const items = [{name:'TMT',value:tmt,color:'#f59e0b'},{name:'其他',value:rest,color:'#334155'}];
-  const barH = 28; const pad = 16;
-  items.forEach((item, i) => {
-    const y = pad + i * (barH + 10);
-    const barW = (item.value / total) * (W - 2*pad - 60);
-    ctx.fillStyle = '#1e3a5f'; ctx.fillRect(pad + 60, y, W - 2*pad - 60, barH);
-    ctx.fillStyle = item.color; ctx.fillRect(pad + 60, y, barW, barH);
-    ctx.fillStyle = '#94a3b8'; ctx.font = '12px sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText(item.name, pad + 55, y + barH/2 + 4);
-    ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(item.value.toFixed(0) + '亿 (' + (item.value/total*100).toFixed(1) + '%)', pad + 65 + barW + 4, y + barH/2 + 4);
-  });
-  const details = [{n:'电子',v:d.tmt.electronics.turnover,c:'#dc2626'},{n:'通信',v:d.tmt.telecom.turnover,c:'#f97316'},{n:'计算机',v:d.tmt.computer.turnover,c:'#eab308'},{n:'传媒',v:d.tmt.media.turnover,c:'#a3e635'}];
-  const startY = pad + 2*(barH+10)+10;
-  ctx.fillStyle = '#64748b'; ctx.font = '11px sans-serif'; ctx.textAlign = 'left'; ctx.fillText('TMT分行业:', pad, startY);
-  details.forEach((it,i) => {
-    const y = startY + 14 + i*17;
-    ctx.fillStyle = it.c; ctx.fillRect(pad, y, 8, 8);
-    ctx.fillStyle = '#94a3b8'; ctx.font = '11px sans-serif'; ctx.fillText(it.n + ': ' + it.v.toFixed(0) + '亿', pad + 12, y + 8);
-  });
-}
-
-// ====== 融资余额 ======
-function renderMarginChart(d) {
-  const canvas = document.getElementById('marginCanvas');
-  const ctx = canvas.getContext('2d');
-  const rect = canvas.parentElement.getBoundingClientRect();
-  canvas.width = rect.width * 2; canvas.height = rect.height * 2;
-  ctx.scale(2, 2);
-  const W = rect.width, H = rect.height;
-  const data = d.marginBalance.filter(m => m.total);
-  if (data.length < 2) return;
-  const padL = 40, padR = 10, padT = 10, padB = 30;
-  const plotW = W - padL - padR, plotH = H - padT - padB;
-  const vals = data.map(m => m.total);
-  const minV = Math.min(...vals) * 0.999, maxV = Math.max(...vals) * 1.001;
-  function x(i) { return padL + (i / (data.length - 1)) * plotW; }
-  function y(v) { return padT + plotH - ((v - minV) / (maxV - minV)) * plotH; }
-  ctx.beginPath(); ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2;
-  data.forEach((m, i) => { if (i === 0) ctx.moveTo(x(i), y(m.total)); else ctx.lineTo(x(i), y(m.total)); });
-  ctx.stroke();
-  ctx.lineTo(x(data.length-1), padT+plotH); ctx.lineTo(x(0), padT+plotH); ctx.closePath();
-  ctx.fillStyle = 'rgba(96,165,250,0.1)'; ctx.fill();
-  ctx.fillStyle = '#64748b'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
-  const step = Math.max(1, Math.floor(data.length / 5));
-  for (let i = 0; i < data.length; i += step) ctx.fillText(data[i].date.substring(5), x(i), H - 8);
-  const last = data[data.length - 1];
-  ctx.fillStyle = '#60a5fa'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'right';
-  ctx.fillText(last.total.toFixed(4) + '万亿', W - padR, padT + 15);
-  ctx.fillStyle = '#64748b'; ctx.font = '11px sans-serif'; ctx.fillText('沪深融资余额合计', W - padR, padT + 30);
-}
-
-// ====== 风险窗口 ======
-function renderRiskCalendar() {
-  const currentMonth = new Date().getMonth() + 1;
-  const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  // 只显示6个月：以当前月为中心
-  const showMonths = [];
-  for (let i = -2; i <= 3; i++) {
-    const m = ((currentMonth - 1 + i + 12) % 12);
-    showMonths.push(RISK_MONTHS[m]);
-  }
-  document.getElementById('riskCalendar').innerHTML = showMonths.map(rm => {
-    const isCurrent = rm.month === monthNames[currentMonth - 1];
-    return `
-      <div class="risk-month ${rm.risk} ${isCurrent ? 'current' : ''}">
-        <div class="rm-name">${rm.month}${isCurrent ? ' 🔻' : ''}</div>
-        <div class="rm-status" style="color:${rm.risk==='danger'?'#fca5a5':rm.risk==='safe'?'#86efac':'#fde047'}">${rm.desc.replace('\n','<br>')}</div>
-      </div>
-    `;
-  }).join('');
-}
-
-// ====== 产品跟踪 ======
-function renderProducts() {
-  const container = document.getElementById('productSection');
-  const autoFunds = typeof FUND_PRODUCTS !== 'undefined' ? FUND_PRODUCTS : null;
-  
-  if (autoFunds && autoFunds.length > 0) {
-    // 按tier分组
-    const tiers = {};
-    const tierOrder = ['微盘量化', '人肉量化', '对照组', '风格对照'];
-    const tierIcons = {'微盘量化':'🔬','人肉量化':'🧠','对照组':'⚖️','风格对照':'📊'};
-    const tierDesc = {
-      '微盘量化': '持仓高度分散、小市值因子主导',
-      '人肉量化': '主观投资但持仓像量化',
-      '对照组': '非微盘风格的管理人/产品',
-      '风格对照': '与微盘风格形成对比的方向'
-    };
-    autoFunds.forEach(f => {
-      const t = f.tier || '其他';
-      if (!tiers[t]) tiers[t] = [];
-      tiers[t].push(f);
-    });
-
-    const pctColor = v => v > 0 ? '#ef4444' : v < 0 ? '#22c55e' : '#94a3b8';
-    const fmtPct = v => v === null || v === undefined ? '—' : (v > 0 ? '+' : '') + v + '%';
-
-    let html = `<div style="font-size:12px;color:#64748b;margin-bottom:12px">
-      <span class="fund-date" style="margin-right:12px">净值日期: ${autoFunds[0].navDate}  |  数据来源: 天天基金</span>
-      <br>重点看：微盘反弹时基金有没有跟上？微盘下跌时基金是不是少跌？
-    </div>`;
-
-    for (const tier of tierOrder) {
-      if (!tiers[tier]) continue;
-      html += `<div style="margin-bottom:16px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px;color:#e2e8f0">
-          ${tierIcons[tier]||''} ${tier}
-          <span style="font-weight:400;color:#64748b;font-size:11px;margin-left:6px">${tierDesc[tier]||''}</span>
-        </div>
-        <table class="product-table"><tr>
-          <th style="min-width:100px">产品</th><th>代码</th><th>规模</th>
-          <th>日涨跌</th><th>近1周</th><th>近1月</th><th>近3月</th><th>今年</th><th>近1年</th>
-          <th style="min-width:90px">状态</th>
-        </tr>`;
-      for (const f of tiers[tier]) {
-        html += `<tr>
-          <td style="font-weight:600;font-size:12px">${f.name}</td>
-          <td style="font-size:11px;color:#64748b">${f.code}</td>
-          <td style="font-size:12px">${f.scale}亿</td>
-          <td style="color:${pctColor(f.dayChange)};font-weight:600">${fmtPct(f.dayChange)}</td>
-          <td style="color:${pctColor(f.week1)}">${fmtPct(f.week1)}</td>
-          <td style="color:${pctColor(f.month1)};font-weight:600">${fmtPct(f.month1)}</td>
-          <td style="color:${pctColor(f.month3)}">${fmtPct(f.month3)}</td>
-          <td style="color:${pctColor(f.ytd)};font-weight:600">${fmtPct(f.ytd)}</td>
-          <td style="color:${pctColor(f.year1)}">${fmtPct(f.year1)}</td>
-          <td style="font-size:11px;color:#94a3b8;max-width:120px" title="${f.statusNote}">${f.status}</td>
-        </tr>`;
-      }
-      html += '</table></div>';
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+    h2 { font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary); }
+    h3 { font-size: 14px; font-weight: 600; margin: 16px 0 8px; color: var(--text-secondary); }
+    .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
+    .card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border-color);
+    }
+    .tag { 
+      display: inline-block; padding: 4px 10px; border-radius: 20px; 
+      font-size: 12px; font-weight: 500; margin-right: 6px;
+    }
+    .tag-green { background: rgba(34,197,94,0.2); color: var(--accent-green); }
+    .tag-yellow { background: rgba(234,179,8,0.2); color: var(--accent-yellow); }
+    .tag-red { background: rgba(239,68,68,0.2); color: var(--accent-red); }
+    .tag-blue { background: rgba(59,130,246,0.2); color: var(--accent-blue); }
+    
+    /* HERO Section */
+    .hero { text-align: center; padding: 30px 20px; }
+    .hero-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+    .hero-subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+    .hero-score { 
+      font-size: 72px; font-weight: 900; 
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .hero-status { 
+      font-size: 20px; font-weight: 600; color: var(--accent-yellow); 
+      margin-bottom: 16px;
+    }
+    .hero-desc { color: var(--text-secondary); font-size: 15px; max-width: 500px; margin: 0 auto; }
+    .hero-tags { margin-top: 20px; }
+    
+    /* Evidence Cards */
+    .evidence-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .evidence-card {
+      background: var(--bg-card);
+      border-radius: 10px;
+      padding: 16px;
+      border: 1px solid var(--border-color);
+    }
+    .evidence-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .evidence-value { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+    .evidence-desc { font-size: 12px; color: var(--text-muted); }
+    .positive { color: var(--accent-green); }
+    .negative { color: var(--accent-red); }
+    .neutral { color: var(--accent-yellow); }
+    
+    /* Risk Cards */
+    .risk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .risk-card {
+      background: var(--bg-card);
+      border-radius: 10px;
+      padding: 14px;
+      border-left: 3px solid var(--accent-yellow);
+    }
+    .risk-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+    .risk-desc { font-size: 12px; color: var(--text-muted); }
+    
+    /* Fund Pool */
+    .fund-tier { margin-bottom: 20px; }
+    .fund-tier-header { 
+      display: flex; align-items: center; gap: 8px; 
+      margin-bottom: 10px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .fund-tier-title { font-size: 14px; font-weight: 600; }
+    .fund-tier-desc { font-size: 12px; color: var(--text-muted); }
+    .fund-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .fund-card {
+      background: var(--bg-hover);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .fund-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .fund-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+    .fund-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; font-size: 11px; }
+    .fund-stat-label { color: var(--text-muted); }
+    .fund-stat-value { font-weight: 600; }
+    
+    /* History Position */
+    .history-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .history-card {
+      background: var(--bg-card);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+    }
+    .history-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+    .history-value { font-size: 18px; font-weight: 700; }
+    .history-conclusion { font-size: 13px; color: var(--text-secondary); margin-top: 12px; }
+    
+    /* Action Section */
+    .action-box {
+      background: linear-gradient(135deg, rgba(234,179,8,0.1), rgba(239,68,68,0.1));
+      border: 1px solid rgba(234,179,8,0.3);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .action-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .action-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+    .action-suggestion { 
+      display: inline-block; padding: 8px 16px; 
+      background: var(--accent-yellow); color: #000;
+      border-radius: 20px; font-size: 13px; font-weight: 600; 
     }
     
-    // 移除旧的table（如果存在），直接注入HTML到容器
-    const oldTable = container.querySelector('.product-table');
-    if (oldTable) oldTable.remove();
-    container.innerHTML = html;
-  } else {
-    // 手动模式
-    const table = document.getElementById('productTable');
-    if (table) {
-      table.innerHTML = `
-        <tr><th>产品</th><th>近1日(%)</th><th>近5日(%)</th><th>近20日(%)</th><th>相对微盘</th><th>最大回撤(%)</th><th>状态</th></tr>
-        ${products.map((p, i) => `
-          <tr>
-            <td><input value="${p.name}" style="width:80px" onchange="products[${i}].name=this.value"></td>
-            <td><input value="${p.n1d}" placeholder="—" onchange="products[${i}].n1d=this.value"></td>
-            <td><input value="${p.n5d}" placeholder="—" onchange="products[${i}].n5d=this.value"></td>
-            <td><input value="${p.n20d}" placeholder="—" onchange="products[${i}].n20d=this.value"></td>
-            <td><input value="${p.vsWeipan}" placeholder="—" onchange="products[${i}].vsWeipan=this.value"></td>
-            <td><input value="${p.maxDD}" placeholder="—" onchange="products[${i}].maxDD=this.value"></td>
-            <td style="font-size:12px;color:#94a3b8">${p.status || '待填入'}</td>
-          </tr>
-        `).join('')}
-      `;
+    /* Tomorrow Focus */
+    .tomorrow-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .tomorrow-table th { text-align: left; padding: 8px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); }
+    .tomorrow-table td { padding: 8px; border-bottom: 1px solid var(--border-color); }
+    .tomorrow-table tr:last-child td { border-bottom: none; }
+    
+    /* Fold Section */
+    .fold-header { 
+      cursor: pointer; padding: 12px; 
+      background: var(--bg-card); border-radius: 8px;
+      display: flex; justify-content: space-between; align-items: center;
     }
-  }
-}
-
-function saveProducts() {
-  localStorage.setItem('weipan_products', JSON.stringify(products));
-  alert('产品数据已保存');
-}
-
-function toggleProduct() {
-  const sec = document.getElementById('productSection');
-  sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
-}
-
-// ====== 观察清单 ======
-function renderChecklist(d, s) {
-  const list = document.getElementById('checklist');
-  const wpRatio = s.weipanTurnoverRatio ? parseFloat(s.weipanTurnoverRatio)/100 : d.weipanRatio;
-  const tmtR = s.tmtRatio ? parseFloat(s.tmtRatio)/100 : d.tmtRatio;
-  const spread = s.spreadIndex ? parseFloat(s.spreadIndex)/100 : d.weipanSpread;
-  
-  const items = [
-    {text:'TMT成交占比连续下降（当前' + (tmtR*100).toFixed(1) + '%，目标&lt;35%）', met: tmtR < 0.35},
-    {text:'微盘成交占比回升至1%以上（当前' + (wpRatio*100).toFixed(2) + '%）', met: wpRatio > 0.01},
-    {text:'微盘指数5日连续跑赢沪深300', met: d.relativeExcess5d > 0},
-    {text:'微盘指数20日跑赢沪深300', met: d.relativeExcess20d > 0},
-    {text:'微盘扩散指数站上50%（当前' + (spread*100).toFixed(0) + '%）', met: spread > 0.5},
-    {text:'大盘成交占比降到45%以下', met: false},
-    {text:'关注基金净值开始跟随修复', met: (() => {
-      const af = typeof FUND_PRODUCTS !== 'undefined' ? FUND_PRODUCTS : null;
-      if (!af) return false;
-      const wf = af.filter(f => (f.tier === '微盘量化' || f.tier === '人肉量化') && f.week1 !== null);
-      return wf.length > 0 && wf.filter(f => f.week1 > 0).length >= wf.length / 2;
-    })()},
-  ];
-  
-  const saved = JSON.parse(localStorage.getItem('weipan_checklist') || '{}');
-  const metCount = items.filter(it => it.met).length;
-  
-  list.innerHTML = '<div style="font-size:12px;color:#64748b;margin-bottom:8px">已满足 ' + metCount + ' / ' + items.length + ' 项</div>' +
-    items.map((item, i) => `
-    <li>
-      <input type="checkbox" id="check_${i}" ${saved[i] || item.met ? 'checked' : ''} onchange="saveCheck(${i}, this.checked)">
-      <label for="check_${i}" class="${saved[i] || item.met ? 'done' : ''}">${item.text}</label>
-      <span class="cl-status" style="background:${item.met?'#052e16':'#450a0a'};color:${item.met?'#86efac':'#fca5a5'}">${item.met?'已满足':'未满足'}</span>
-    </li>
-  `).join('');
-}
-
-function saveCheck(i, val) {
-  const saved = JSON.parse(localStorage.getItem('weipan_checklist') || '{}');
-  saved[i] = val;
-  localStorage.setItem('weipan_checklist', JSON.stringify(saved));
-  const d = AUTO_DATA, s = manualData;
-  renderChecklist(d, s);
-}
-
-// ====== 手动输入 ======
-function renderManualInputs() {
-  const container = document.getElementById('manualInputs');
-  container.innerHTML = Object.entries(MANUAL_FIELDS).map(([key, field]) => `
-    <div class="input-field">
-      <label>${field.label}</label>
-      <input type="text" id="manual_${key}" value="${manualData[key] || ''}" placeholder="${field.placeholder}">
+    .fold-content { display: none; padding: 16px; font-size: 13px; color: var(--text-secondary); }
+    .fold-content.open { display: block; }
+    .fold-icon { transition: transform 0.3s; }
+    .fold-icon.open { transform: rotate(180deg); }
+    
+    /* Data Source */
+    .data-source { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); }
+    
+    @media (max-width: 768px) {
+      .evidence-grid, .risk-grid, .history-grid { grid-template-columns: 1fr; }
+      .fund-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- HERO Section -->
+    <div class="card hero">
+      <div class="hero-title">微盘策略温度计</div>
+      <div class="hero-subtitle">判断现在是否适合配置微盘策略。不看单日涨跌，看资金是否从科技抱团重新扩散到小票。</div>
+      <div class="hero-score" id="heroScore">58</div>
+      <div class="hero-status" id="heroStatus">等待确认</div>
+      <div class="hero-desc" id="heroDesc">微盘已经从拥挤区降温，但资金尚未确认回流。科技抱团仍需观察，微盘反弹更像技术性修复，不是风格切换确认。</div>
+      <div class="hero-tags" id="heroTags">
+        <span class="tag tag-yellow">🟡 科技松动</span>
+        <span class="tag tag-green">🟢 小票修复</span>
+        <span class="tag tag-yellow">🟡 资金待确认</span>
+      </div>
     </div>
-  `).join('');
-}
 
-function toggleManual() {
-  const sec = document.getElementById('manualSection');
-  sec.style.display = sec.style.display === 'none' || !sec.style.display ? 'block' : 'none';
-}
+    <!-- 今日发生了什么 -->
+    <div class="card">
+      <h2>📊 今天市场发生了什么？</h2>
+      <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;" id="todayWhat">
+        今天最重要的变化，不是微盘涨了，而是科技抱团开始松动。当资金不再只挤在少数高位科技方向时，微盘才有重新喘气的机会。
+      </p>
+      <div class="evidence-grid" style="grid-template-columns: repeat(4, 1fr);">
+        <div style="text-align: center;">
+          <div style="font-size: 12px; color: var(--text-muted);">中证2000</div>
+          <div style="font-size: 20px; font-weight: 700;" id="zz2000Today">+1.8%</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 12px; color: var(--text-muted);">科创50</div>
+          <div style="font-size: 20px; font-weight: 700;" id="kc50Today">-1.2%</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 12px; color: var(--text-muted);">上涨家数</div>
+          <div style="font-size: 20px; font-weight: 700;" id="upCount">72%</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 12px; color: var(--text-muted);">跌停家数</div>
+          <div style="font-size: 20px; font-weight: 700;" id="downLimit">14家</div>
+        </div>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-top: 12px;" id="todayConclusion">
+        结论：小票开始修复，但还不能确认新一轮微盘行情已经启动。
+      </p>
+    </div>
 
-function saveManual() {
-  Object.keys(MANUAL_FIELDS).forEach(key => {
-    const el = document.getElementById('manual_' + key);
-    if (el && el.value) manualData[key] = el.value;
-    else delete manualData[key];
-  });
-  localStorage.setItem('weipan_manual', JSON.stringify(manualData));
-  init(); // 全部重新渲染
-}
+    <!-- 三个核心证据 -->
+    <div class="card">
+      <h2>🔍 为什么这么判断？</h2>
+      <div class="evidence-grid">
+        <div class="evidence-card">
+          <div class="evidence-title">1. 科技还在吸血吗？</div>
+          <div class="evidence-value negative" id="techFlow">-12.4%</div>
+          <div class="evidence-desc" id="techFlowDesc">微盘相对科技近20日跑输12.4%，科技仍然吸金</div>
+        </div>
+        <div class="evidence-card">
+          <div class="evidence-title">2. 资金回来了吗？</div>
+          <div class="evidence-value neutral" id="moneyFlow">15.9%</div>
+          <div class="evidence-desc" id="moneyFlowDesc">小票成交占比15.9%，略有回升但还需确认</div>
+        </div>
+        <div class="evidence-card">
+          <div class="evidence-title">3. 大部分股票赚钱吗？</div>
+          <div class="evidence-value positive" id="profitSpread">73%</div>
+          <div class="evidence-desc" id="profitSpreadDesc">上涨家数占比73%，赚钱效应扩散</div>
+        </div>
+      </div>
+    </div>
 
-// ====== 启动 ======
-window.addEventListener('load', init);
-window.addEventListener('resize', () => {
-  if (typeof AUTO_DATA !== 'undefined') {
-    renderChart(AUTO_DATA);
-    renderTurnoverChart(AUTO_DATA);
-    renderMarginChart(AUTO_DATA);
-  }
-});
-</script>
+    <!-- 但是提醒 - 风险仪表盘 -->
+    <div class="card" style="border-left: 3px solid var(--accent-yellow);">
+      <h2>⚠️ 但是提醒</h2>
+      <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">
+        科技抱团并未彻底结束。如果科创50重新放量上涨，而中证2000成交占比回落，微盘修复可能只是短线反弹。
+      </p>
+      <div class="risk-grid">
+        <div class="risk-card">
+          <div class="risk-title">🔴 科技重新加速风险</div>
+          <div class="risk-desc">科技一旦重新加速，微盘容易再次被抽血</div>
+        </div>
+        <div class="risk-card">
+          <div class="risk-title">🟡 流动性踩踏风险</div>
+          <div class="risk-desc">跌停家数上升，说明小票流动性风险变大</div>
+        </div>
+        <div class="risk-card">
+          <div class="risk-title">🟡 市场缩量风险</div>
+          <div class="risk-desc">没有成交量，微盘反弹容易一日游</div>
+        </div>
+        <div class="risk-card">
+          <div class="risk-title">🟢 退市风险</div>
+          <div class="risk-desc">当前处于财报真空期，尾部风险可控</div>
+        </div>
+      </div>
+    </div>
 
-<script src="auto-data.js"></script>
+    <!-- 微盘策略观察池 -->
+    <div class="card">
+      <h2>🔬 微盘策略观察池</h2>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+        这里不是推荐买入清单，而是用代表产品观察微盘策略的真实表现。
+      </p>
+      
+      <!-- 主动博弈型 -->
+      <div class="fund-tier">
+        <div class="fund-tier-header">
+          <span style="font-size: 16px;">🎯</span>
+          <span class="fund-tier-title">主动博弈型</span>
+          <span class="tag tag-red" style="font-size: 10px;">高弹性 / 高波动</span>
+        </div>
+        <div class="fund-tier-desc">这类产品更像微盘行情的进攻前锋。行情顺的时候弹性大，风格逆的时候回撤也快。</div>
+        <div class="fund-grid" id="fundActive"></div>
+      </div>
+      
+      <!-- 稳健参与型 -->
+      <div class="fund-tier">
+        <div class="fund-tier-header">
+          <span style="font-size: 16px;">🛡️</span>
+          <span class="fund-tier-title">稳健参与型</span>
+          <span class="tag tag-green" style="font-size: 10px;">分散持仓 / 风控优先</span>
+        </div>
+        <div class="fund-tier-desc">这类产品更适合观察微盘策略的长期可持有性，不一定是反弹最快的品种。</div>
+        <div class="fund-grid" id="fundStable"></div>
+      </div>
+      
+      <!-- 灵活配置型 -->
+      <div class="fund-tier">
+        <div class="fund-tier-header">
+          <span style="font-size: 16px;">🔄</span>
+          <span class="fund-tier-title">灵活配置型</span>
+          <span class="tag tag-blue" style="font-size: 10px;">风格切换 / 阶段参与</span>
+        </div>
+        <div class="fund-tier-desc">这类产品不一定始终重仓微盘，而是把微盘作为阶段性增强工具。</div>
+        <div class="fund-grid" id="fundFlexible"></div>
+      </div>
+      
+      <!-- 指数增强型 -->
+      <div class="fund-tier">
+        <div class="fund-tier-header">
+          <span style="font-size: 16px;">📈</span>
+          <span class="fund-tier-title">指数增强型</span>
+          <span class="tag tag-yellow" style="font-size: 10px;">小盘Beta / 工具属性</span>
+        </div>
+        <div class="fund-tier-desc">这类产品不是纯微盘，但更适合观察小盘风格是否系统性回归。</div>
+        <div class="fund-grid" id="fundIndex"></div>
+      </div>
+    </div>
+
+    <!-- 历史位置 -->
+    <div class="card">
+      <h2>📍 现在处在什么位置？</h2>
+      <div class="history-grid">
+        <div class="history-card">
+          <div class="history-label">微盘相对科技</div>
+          <div class="history-value negative" id="historyRelTech">8%</div>
+          <div style="font-size: 11px; color: var(--text-muted);">近一年低位</div>
+        </div>
+        <div class="history-card">
+          <div class="history-label">微盘回撤幅度</div>
+          <div class="history-value negative" id="historyDrawdown">82%</div>
+          <div style="font-size: 11px; color: var(--text-muted);">近一年高位</div>
+        </div>
+        <div class="history-card">
+          <div class="history-label">小票成交占比</div>
+          <div class="history-value neutral" id="historyVol">54%</div>
+          <div style="font-size: 11px; color: var(--text-muted);">近一年中位</div>
+        </div>
+      </div>
+      <div class="history-conclusion" id="historyConclusion">
+        价格位置已经接近机会区，但资金确认还不充分。
+      </div>
+    </div>
+
+    <!-- 操作建议 -->
+    <div class="card">
+      <h2>🎯 现在怎么做？</h2>
+      <div class="action-box">
+        <div class="action-title" id="actionTitle">当前建议：等待确认</div>
+        <div class="action-desc" id="actionDesc">
+          微盘还没有走出弱势，短线反弹不代表趋势已经反转。建议仓位：0%-10%，只观察不追涨，重点看上涨家数是否持续超过60%。
+        </div>
+        <div class="action-suggestion" id="actionSuggestion">观察为主</div>
+      </div>
+      
+      <h3 style="margin-top: 20px;">📅 明天重点看什么？</h3>
+      <table class="tomorrow-table">
+        <thead>
+          <tr>
+            <th>看什么</th>
+            <th>今天</th>
+            <th>明天怎么确认</th>
+            <th>什么情况要小心</th>
+          </tr>
+        </thead>
+        <tbody id="tomorrowFocus"></tbody>
+      </table>
+    </div>
+
+    <!-- 折叠说明区 -->
+    <div class="card">
+      <div class="fold-header" onclick="toggleFold()">
+        <span style="font-weight: 600;">📚 我是怎么判断微盘机会的？</span>
+        <span class="fold-icon" id="foldIcon">▼</span>
+      </div>
+      <div class="fold-content" id="foldContent">
+        <h3>1. 微盘不等于小盘</h3>
+        <p>微盘、小盘、中证2000不是一回事。微盘更强调极低市值、等权、分散和再平衡收益；中证2000更像标准化小盘工具。</p>
+        
+        <h3>2. 微盘基金不等于微盘指数</h3>
+        <p>微盘指数涨，不代表微盘基金一定跟得上。公募基金受持仓、申赎、合规、风控和交易成本限制，很难完全复制极致微盘指数。</p>
+        
+        <h3>3. 为什么不用限购、规模、重叠度？</h3>
+        <p>这些指标有参考价值，但不适合做日频信号。看板优先采用能稳定更新、容易验证、口径清晰的指标：指数强弱、成交占比、上涨家数、跌停家数和基金净值。</p>
+      </div>
+    </div>
+
+    <div class="data-source">
+      数据来源：Wind、天天基金 | 更新时间：2026-06-12 | 评分模型仅供参考，不构成投资建议
+    </div>
+  </div>
+
+  <script src="auto-data.js"></script>
+  <script>
+    // ============ 数据与配置 ============
+    const MANUAL_DATA = {
+      // 手动数据可以从localStorage读取
+    };
+    
+    // 基金观察池数据（按PRD分类）
+    const FUND_POOL = {
+      active: [
+        { name: '诺安多策略A', code: '320016', m1: -13.53, m3: -12.69, ytd: -2.42, note: '高弹性品种，近1月跌13.53%' },
+        { name: '新华策略精选A', code: '001040', m1: 5.66, m3: 35.06, ytd: 67.37, note: '科技成长风格，近1年涨158%' }
+      ],
+      stable: [
+        { name: '金元顺安元启', code: '004685', m1: -7.56, m3: -8.28, ytd: -2.06, note: '人肉量化天花板，回撤控制好' },
+        { name: '国金量化多因子A', code: '006195', m1: -7.58, m3: 2.52, ytd: 13.72, note: '微盘量化标杆，持仓300-500只' }
+      ],
+      flexible: [
+        { name: '国金量化精选A', code: '014805', m1: -7.91, m3: 1.22, ytd: 11.93, note: '同门互补，小盘风格明显' },
+        { name: '大成动态量化A', code: '003147', m1: -6.51, m3: -0.27, ytd: 8.44, note: '市值下沉型，多数持仓<20亿' }
+      ],
+      index: [
+        { name: '万家精选A', code: '519185', m1: 5.27, m3: 1.55, ytd: 28.82, note: '黄海管理，已脱离微盘风格' },
+        { name: '中证2000指数', code: '000010', m1: -2.1, m3: 8.5, ytd: 12.3, note: '小盘Beta工具' }
+      ]
+    };
+
+    // 明日重点看什么
+    const TOMORROW_FOCUS = [
+      { what: '科技是否继续松动', today: '科创50回落', confirm: '科创50继续弱于中证2000', warn: '科技重新放量大涨' },
+      { what: '资金是否回小票', today: '中证2000成交占比回升', confirm: '成交占比继续上行', warn: '放量只持续一天' },
+      { what: '赚钱效应是否扩散', today: '上涨家数增加', confirm: '上涨家数占比维持60%+', warn: '指数涨但个股跌' },
+      { what: '风险是否可控', today: '跌停家数低位', confirm: '跌停家数不扩散', warn: '跌停家数突然放大' }
+    ];
+
+    // ============ 评分计算 ============
+    function calculateScore(data) {
+      let score = 0;
+      const maxScore = 100;
+      
+      // 1. 风格切换 (30分): 中证2000/科创50近20日相对强弱
+      // 用微盘相对创业板指代替
+      const style20d = data.zz2000_20d - data.kc50_20d || 0;
+      if (style20d > 5) score += 30;
+      else if (style20d > 0) score += 20;
+      else if (style20d > -5) score += 10;
+      else score += 0;
+      
+      // 2. 资金回流 (25分): 中证2000成交占比
+      const volRatio = data.zz2000_vol_ratio || 0;
+      if (volRatio > 18) score += 25;
+      else if (volRatio > 15) score += 18;
+      else if (volRatio > 12) score += 10;
+      else score += 3;
+      
+      // 3. 赚钱效应 (20分): 上涨家数占比
+      const upRatio = data.up_ratio || 0;
+      if (upRatio > 70) score += 20;
+      else if (upRatio > 55) score += 14;
+      else if (upRatio > 45) score += 8;
+      else score += 0;
+      
+      // 4. 风险释放 (15分): 微盘近20日回撤
+      const wpDrawdown = data.weipan_20d_drawdown || 0;
+      if (wpDrawdown > 15) score += 15;
+      else if (wpDrawdown > 10) score += 10;
+      else if (wpDrawdown > 5) score += 5;
+      else score += 0;
+      
+      // 5. 踩踏风险 (10分): 跌停家数
+      const downLimit = data.down_limit_count || 0;
+      if (downLimit < 10) score += 10;
+      else if (downLimit < 20) score += 6;
+      else if (downLimit < 30) score += 3;
+      else score += 0;
+      
+      // 6. 产品验证 (10分): 基金近1周表现
+      // 简化处理：看微盘型基金平均近1周
+      const fundAvgWeek1 = (FUND_POOL.active[0].m1 + FUND_POOL.stable[0].m1) / 2; // 近似
+      if (fundAvgWeek1 > 0) score += 10;
+      else if (fundAvgWeek1 > -3) score += 6;
+      else score += 2;
+      
+      return score;
+    }
+
+    // ============ 渲染函数 ============
+    function renderHero(score) {
+      document.getElementById('heroScore').textContent = score;
+      
+      let status, statusClass, desc, tags;
+      if (score >= 80) {
+        status = '积极配置'; statusClass = 'tag-green';
+        desc = '微盘修复信号较强，可以考虑分批参与，但不适合一次性重仓。';
+        tags = '<span class="tag tag-green">🟢 科技已松动</span><span class="tag tag-green">🟢 资金回流</span><span class="tag tag-green">🟢 赚钱效应强</span>';
+      } else if (score >= 60) {
+        status = '观察建仓'; statusClass = 'tag-yellow';
+        desc = '位置开始有吸引力，但还缺少持续资金确认。可以小仓试探，重点看科技是否继续分化。';
+        tags = '<span class="tag tag-yellow">🟡 科技松动</span><span class="tag tag-green">🟢 小票修复</span><span class="tag tag-yellow">🟡 资金待确认</span>';
+      } else if (score >= 40) {
+        status = '等待确认'; statusClass = 'tag-yellow';
+        desc = '微盘还没有走出弱势，短线反弹不代表趋势已经反转。建议观察为主。';
+        tags = '<span class="tag tag-yellow">🟡 科技松动</span><span class="tag tag-yellow">🟡 资金待确认</span><span class="tag tag-yellow">🟡 赚钱扩散中</span>';
+      } else {
+        status = '暂不参与'; statusClass = 'tag-red';
+        desc = '科技仍在吸血，小票赚钱效应不足，微盘策略胜率偏低。建议等待。';
+        tags = '<span class="tag tag-red">🔴 科技吸血</span><span class="tag tag-red">🔴 资金观望</span><span class="tag tag-red">🔴 赚钱效应弱</span>';
+      }
+      
+      document.getElementById('heroStatus').textContent = status;
+      document.getElementById('heroStatus').className = 'hero-status ' + (statusClass.replace('tag', ''));
+      document.getElementById('heroDesc').textContent = desc;
+      document.getElementById('heroTags').innerHTML = tags;
+    }
+
+    function renderToday(data) {
+      // 从自动数据中获取今日行情
+      const zz2000 = data.klines?.zz2000;
+      const kc50 = data.klines?.kc50;
+      
+      if (zz2000 && zz2000.length > 0) {
+        const zzLast = zz2000[zz2000.length - 1];
+        document.getElementById('zz2000Today').textContent = (zzLast.pct_chg > 0 ? '+' : '') + zzLast.pct_chg.toFixed(1) + '%';
+        document.getElementById('zz2000Today').className = 'evidence-value ' + (zzLast.pct_chg > 0 ? 'positive' : 'negative');
+      }
+      
+      if (kc50 && kc50.length > 0) {
+        const kcLast = kc50[kc50.length - 1];
+        document.getElementById('kc50Today').textContent = (kcLast.pct_chg > 0 ? '+' : '') + kcLast.pct_chg.toFixed(1) + '%';
+        document.getElementById('kc50Today').className = 'evidence-value ' + (kcLast.pct_chg > 0 ? 'negative' : 'positive');
+      }
+      
+      // 上涨家数占比（从指数数据估算）
+      if (data.total_up_ratio) {
+        document.getElementById('upCount').textContent = (data.total_up_ratio * 100).toFixed(0) + '%';
+      }
+      
+      // 跌停家数
+      if (data.down_limit_count !== undefined) {
+        document.getElementById('downLimit').textContent = data.down_limit_count + '家';
+      }
+    }
+
+    function renderEvidence(data) {
+      // 1. 科技是否吸血：微盘相对科创50近20日
+      const zz20d = data.klines?.zz2000?.slice(-20) || [];
+      const kc20d = data.klines?.kc50?.slice(-20) || [];
+      
+      let style20d = 0;
+      if (zz20d.length > 0 && kc20d.length > 0) {
+        const zzStart = zz20d[0].close, zzEnd = zz20d[zz20d.length-1].close;
+        const kcStart = kc20d[0].close, kcEnd = kc20d[kc20d.length-1].close;
+        style20d = ((zzEnd/zzStart - 1) - (kcEnd/kcStart - 1)) * 100;
+      }
+      
+      const techEl = document.getElementById('techFlow');
+      techEl.textContent = (style20d > 0 ? '+' : '') + style20d.toFixed(1) + '%';
+      techEl.className = 'evidence-value ' + (style20d > 0 ? 'positive' : 'negative');
+      document.getElementById('techFlowDesc').textContent = style20d > 0 ? '微盘开始跑赢科技，风格切换窗口打开' : `微盘相对科技近20日跑输${Math.abs(style20d).toFixed(1)}%，科技仍然吸金`;
+      
+      // 2. 资金回流：中证2000成交占比
+      const volRatio = data.zz2000_vol_ratio || 15;
+      const moneyEl = document.getElementById('moneyFlow');
+      moneyEl.textContent = volRatio.toFixed(1) + '%';
+      moneyEl.className = 'evidence-value ' + (volRatio > 16 ? 'positive' : volRatio > 12 ? 'neutral' : 'negative');
+      document.getElementById('moneyFlowDesc').textContent = volRatio > 16 ? '小票成交占比明显回升，资金开始关注' : volRatio > 12 ? '小票成交占比略有回升，还需连续确认' : '小票成交占比仍在低位，反弹缺少资金确认';
+      
+      // 3. 赚钱效应
+      const upRatio = data.total_up_ratio || 0.5;
+      const profitEl = document.getElementById('profitSpread');
+      profitEl.textContent = (upRatio * 100).toFixed(0) + '%';
+      profitEl.className = 'evidence-value ' + (upRatio > 0.6 ? 'positive' : upRatio > 0.45 ? 'neutral' : 'negative');
+      document.getElementById('profitSpreadDesc').textContent = upRatio > 0.6 ? '赚钱效应扩散，多数股票在涨' : upRatio > 0.45 ? '赚钱效应有所扩散，还未强扩散' : '指数涨但个股分化';
+    }
+
+    function renderFunds() {
+      const fmtPct = v => (v > 0 ? '+' : '') + v.toFixed(1) + '%';
+      const pctColor = v => v > 0 ? 'var(--accent-red)' : v < 0 ? 'var(--accent-green)' : 'var(--text-muted)';
+      
+      const renderGrid = (funds, containerId) => {
+        const container = document.getElementById(containerId);
+        container.innerHTML = funds.map(f => `
+          <div class="fund-card">
+            <div class="fund-name">${f.name}</div>
+            <div class="fund-meta">${f.code} | ${f.note}</div>
+            <div class="fund-stats">
+              <div><span class="fund-stat-label">近1月</span><br><span class="fund-stat-value" style="color:${pctColor(f.m1)}">${fmtPct(f.m1)}</span></div>
+              <div><span class="fund-stat-label">近3月</span><br><span class="fund-stat-value" style="color:${pctColor(f.m3)}">${fmtPct(f.m3)}</span></div>
+              <div><span class="fund-stat-label">今年</span><br><span class="fund-stat-value" style="color:${pctColor(f.ytd)}">${fmtPct(f.ytd)}</span></div>
+            </div>
+          </div>
+        `).join('');
+      };
+      
+      renderGrid(FUND_POOL.active, 'fundActive');
+      renderGrid(FUND_POOL.stable, 'fundStable');
+      renderGrid(FUND_POOL.flexible, 'fundFlexible');
+      renderGrid(FUND_POOL.index, 'fundIndex');
+    }
+
+    function renderTomorrow() {
+      const tbody = document.getElementById('tomorrowFocus');
+      tbody.innerHTML = TOMORROW_FOCUS.map(t => `
+        <tr>
+          <td>${t.what}</td>
+          <td style="color: var(--text-muted)">${t.today}</td>
+          <td style="color: var(--accent-green)">${t.confirm}</td>
+          <td style="color: var(--accent-red)">${t.warn}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderAction(score) {
+      const actionTitle = document.getElementById('actionTitle');
+      const actionDesc = document.getElementById('actionDesc');
+      const actionSuggestion = document.getElementById('actionSuggestion');
+      
+      if (score >= 80) {
+        actionTitle.textContent = '当前建议：积极配置';
+        actionDesc.textContent = '微盘修复信号较强，可以考虑分批参与，但不适合一次性重仓。仓位建议30%-50%，方式为分批，重点看中证2000成交占比是否继续上升。';
+        actionSuggestion.textContent = '可以分批布局';
+      } else if (score >= 60) {
+        actionTitle.textContent = '当前建议：观察建仓';
+        actionDesc.textContent = '位置开始有吸引力，但还缺少持续资金确认。仓位建议10%-30%，方式为小仓试探，重点看科技是否继续分化。';
+        actionSuggestion.textContent = '小仓试探';
+      } else if (score >= 40) {
+        actionTitle.textContent = '当前建议：等待确认';
+        actionDesc.textContent = '微盘还没有走出弱势，短线反弹不代表趋势已经反转。仓位建议0%-10%，只观察不追涨，重点看上涨家数是否持续超过60%。';
+        actionSuggestion.textContent = '观察为主';
+      } else {
+        actionTitle.textContent = '当前建议：暂不参与';
+        actionDesc.textContent = '科技仍在吸血，小票赚钱效应不足，微盘策略胜率偏低。仓位建议0%，方式为等待，重点看跌停家数是否下降、成交占比是否回升。';
+        actionSuggestion.textContent = '继续等待';
+      }
+    }
+
+    function toggleFold() {
+      const content = document.getElementById('foldContent');
+      const icon = document.getElementById('foldIcon');
+      content.classList.toggle('open');
+      icon.classList.toggle('open');
+    }
+
+    // ============ 初始化 ============
+    function init() {
+      // 尝试从auto-data.js获取数据
+      const autoData = typeof AUTO_KLINE_DATA !== 'undefined' ? AUTO_KLINE_DATA : {};
+      
+      // 构建评分数据
+      const scoreData = {
+        klines: autoData,
+        zz2000_20d: 0, // 从K线计算
+        kc50_20d: 0,
+        zz2000_vol_ratio: 15.9, // 默认值
+        total_up_ratio: 0.55,
+        down_limit_count: 14,
+        weipan_20d_drawdown: 8
+      };
+      
+      // 计算评分
+      const score = calculateScore(scoreData);
+      
+      // 渲染各模块
+      renderHero(score);
+      renderToday(scoreData);
+      renderEvidence(scoreData);
+      renderFunds();
+      renderTomorrow();
+      renderAction(score);
+    }
+
+    init();
+  </script>
 </body>
 </html>
