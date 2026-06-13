@@ -8,160 +8,267 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:#0f172a;color:#e2e8f0;line-height:1.6}
 .container{max-width:1200px;margin:0 auto;padding:20px}
-h1{text-align:center;font-size:28px;margin-bottom:4px;background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.subtitle{text-align:center;color:#94a3b8;font-size:13px;margin-bottom:24px}
+h1{text-align:center;font-size:26px;margin-bottom:4px;background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.subtitle{text-align:center;color:#64748b;font-size:12px;margin-bottom:20px}
 
-/* 状态总览 */
-.status-bar{display:flex;align-items:center;justify-content:center;gap:16px;padding:20px;border-radius:16px;margin-bottom:20px;background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid #334155}
-.status-label{font-size:14px;color:#94a3b8}
-.status-value{font-size:32px;font-weight:800;letter-spacing:1px}
-.status-desc{font-size:13px;color:#94a3b8;max-width:400px}
-.score-ring{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;border:4px solid}
+/* ====== 首屏结论区 ====== */
+.verdict-bar{border-radius:16px;padding:24px;margin-bottom:20px;border:1px solid #334155;position:relative;overflow:hidden}
+.verdict-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.verdict-bar.red{background:linear-gradient(135deg,rgba(239,68,68,0.08),#0f172a)}.verdict-bar.red::before{background:#ef4444}
+.verdict-bar.yellow{background:linear-gradient(135deg,rgba(234,179,8,0.08),#0f172a)}.verdict-bar.yellow::before{background:#eab308}
+.verdict-bar.light-green{background:linear-gradient(135deg,rgba(134,239,172,0.08),#0f172a)}.verdict-bar.light-green::before{background:#86efac}
+.verdict-bar.green{background:linear-gradient(135deg,rgba(34,197,94,0.08),#0f172a)}.verdict-bar.green::before{background:#22c55e}
+.verdict-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:16px}
+.verdict-status{font-size:28px;font-weight:800;letter-spacing:1px}
+.verdict-score-box{display:flex;align-items:center;gap:16px}
+.verdict-score{font-size:36px;font-weight:800}
+.verdict-score-label{font-size:12px;color:#64748b}
+.verdict-suggestion{font-size:14px;color:#94a3b8;line-height:1.8;padding:12px 16px;background:rgba(0,0,0,0.2);border-radius:8px;margin-bottom:16px}
+.verdict-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.verdict-card{background:rgba(0,0,0,0.25);border-radius:8px;padding:12px;text-align:center}
+.verdict-card .vc-label{font-size:11px;color:#64748b;margin-bottom:4px}
+.verdict-card .vc-value{font-size:18px;font-weight:700}
+.verdict-card .vc-hint{font-size:11px;margin-top:2px}
 
-/* 卡片 */
+/* 证据条 */
+.evidence-list{display:flex;flex-direction:column;gap:8px}
+.evidence-item{display:flex;align-items:flex-start;gap:8px;font-size:13px;padding:8px 12px;background:rgba(0,0,0,0.15);border-radius:6px;border-left:3px solid}
+.evidence-item.pro{border-color:#22c55e}.evidence-item.con{border-color:#ef4444}.evidence-item.neutral{border-color:#eab308}
+.evidence-item .ei-icon{flex-shrink:0;width:18px;text-align:center}
+.evidence-item .ei-title{font-weight:600;margin-bottom:2px}
+.evidence-item .ei-desc{color:#94a3b8;font-size:12px}
+
+/* ====== 评分模型 ====== */
+.score-model{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.score-item{background:rgba(0,0,0,0.2);border-radius:8px;padding:12px;position:relative}
+.score-item .si-name{font-size:12px;color:#94a3b8;margin-bottom:4px}
+.score-item .si-score{font-size:22px;font-weight:700}
+.score-item .si-max{font-size:12px;color:#475569}
+.score-item .si-bar{height:3px;background:#1e3a5f;border-radius:2px;margin-top:8px;overflow:hidden}
+.score-item .si-bar-fill{height:100%;border-radius:2px;transition:width 0.5s}
+
+/* ====== 卡片 ====== */
 .card{background:#1e293b;border-radius:12px;padding:20px;margin-bottom:16px;border:1px solid #334155}
-.card h2{font-size:16px;color:#94a3b8;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h2{font-size:15px;color:#94a3b8;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .card h2 .icon{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px}
 
-/* 指标网格 */
-.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+/* ====== 指标仪表盘 ====== */
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}
 .metric-item{background:#0f172a;border-radius:10px;padding:16px;border:1px solid #1e3a5f}
-.metric-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.metric-name{font-size:13px;color:#94a3b8}
+.metric-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.metric-name{font-size:13px;color:#94a3b8;display:flex;align-items:center;gap:4px}
 .metric-badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600}
-.metric-value{font-size:28px;font-weight:700;margin-bottom:4px}
-.metric-desc{font-size:12px;color:#64748b}
-.metric-bar{height:4px;border-radius:2px;background:#1e3a5f;margin-top:8px;overflow:hidden}
+.metric-row{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
+.metric-value{font-size:28px;font-weight:700}
+.metric-prev{font-size:12px;color:#64748b}
+.metric-arrow{font-size:14px;font-weight:700}
+.metric-desc{font-size:12px;color:#475569}
+.metric-bar{height:4px;border-radius:2px;background:#1e3a5f;margin-top:8px;overflow:hidden;position:relative}
 .metric-bar-fill{height:100%;border-radius:2px;transition:width 0.5s}
+.metric-threshold{position:absolute;top:-14px;font-size:10px;color:#475569;transform:translateX(-50%)}
 
-/* 走势图 */
-.chart-container{position:relative;height:300px;margin-top:12px}
+/* ====== 图表 ====== */
+.chart-container{position:relative;height:280px;margin-top:8px}
 canvas{width:100%!important;height:100%!important}
+.chart-legend{display:flex;gap:16px;margin-top:8px;font-size:11px;color:#64748b}
+.chart-legend span{display:flex;align-items:center;gap:4px}
+.chart-legend i{display:inline-block;width:16px;height:3px;border-radius:2px;vertical-align:middle}
 
-/* 数据表 */
-.data-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
-.data-table th{text-align:left;color:#64748b;font-weight:500;padding:6px 8px;border-bottom:1px solid #1e3a5f}
-.data-table td{padding:6px 8px;border-bottom:1px solid #0f172a}
-.data-table tr:hover{background:#1e3a5f}
+/* ====== 风险窗口 ====== */
+.risk-calendar{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.risk-month{background:rgba(0,0,0,0.2);border-radius:6px;padding:10px;text-align:center;border:1px solid transparent}
+.risk-month.current{border-color:#60a5fa}
+.risk-month .rm-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.risk-month .rm-status{font-size:11px}
+.risk-month.danger{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3)}
+.risk-month.safe{background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.2)}
+.risk-month.caution{background:rgba(234,179,8,0.08);border-color:rgba(234,179,8,0.2)}
 
-/* 手动输入 */
-.manual-section{display:none;margin-top:16px;padding-top:16px;border-top:1px solid #334155}
+/* ====== 产品跟踪 ====== */
+.product-table{width:100%;border-collapse:collapse;font-size:13px}
+.product-table th{text-align:left;color:#64748b;font-weight:500;padding:8px;border-bottom:1px solid #1e3a5f;white-space:nowrap}
+.product-table td{padding:8px;border-bottom:1px solid #0f172a}
+.product-table input{background:#0f172a;border:1px solid #1e3a5f;border-radius:4px;padding:4px 8px;color:#e2e8f0;width:70px;font-size:13px;text-align:right}
+.product-table input:focus{outline:none;border-color:#60a5fa}
+
+/* ====== 观察清单 ====== */
+.checklist{list-style:none;margin-top:4px}
+.checklist li{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #0f172a;font-size:13px}
+.checklist li:last-child{border:none}
+.checklist input[type=checkbox]{width:16px;height:16px;accent-color:#22c55e}
+.checklist .done{text-decoration:line-through;color:#475569}
+.checklist .cl-status{font-size:11px;margin-left:auto;padding:2px 8px;border-radius:10px;font-weight:600}
+
+/* ====== 手动数据 ====== */
 .manual-toggle{font-size:13px;color:#60a5fa;cursor:pointer;user-select:none}
 .manual-toggle:hover{text-decoration:underline}
-.input-group{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:12px}
+.manual-section{display:none;margin-top:14px;padding-top:14px;border-top:1px solid #334155}
+.input-group{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
 .input-field label{display:block;font-size:12px;color:#64748b;margin-bottom:4px}
 .input-field input{width:100%;background:#0f172a;border:1px solid #1e3a5f;border-radius:6px;padding:8px 10px;color:#e2e8f0;font-size:14px}
 .input-field input:focus{outline:none;border-color:#60a5fa}
 
-/* 按钮 */
+/* ====== 指标解读 ====== */
+.glossary-table{width:100%;border-collapse:collapse;font-size:12px}
+.glossary-table td{padding:8px;border-bottom:1px solid #0f172a;vertical-align:top}
+.glossary-table td:first-child{color:#94a3b8;white-space:nowrap;width:120px;font-weight:600}
+.glossary-table td:last-child{color:#94a3b8}
+
+/* ====== 按钮 ====== */
 .btn{padding:8px 20px;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;transition:all 0.2s}
-.btn-primary{background:#2563eb;color:white}
-.btn-primary:hover{background:#1d4ed8}
+.btn-primary{background:#2563eb;color:white}.btn-primary:hover{background:#1d4ed8}
 
-/* 观察清单 */
-.checklist{list-style:none;margin-top:8px}
-.checklist li{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #0f172a;font-size:13px}
-.checklist li:last-child{border:none}
-.checklist input[type=checkbox]{width:16px;height:16px;accent-color:#22c55e}
-.checklist .done{text-decoration:line-through;color:#64748b}
-
-/* 信号灯 */
-.light{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px}
+/* ====== 信号灯 ====== */
+.light{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px}
 .light-red{background:#ef4444;box-shadow:0 0 6px #ef4444}
 .light-yellow{background:#eab308;box-shadow:0 0 6px #eab308}
 .light-green{background:#22c55e;box-shadow:0 0 6px #22c55e}
 
-/* 颜色工具 */
-.up{color:#ef4444}
-.down{color:#22c55e}
-.neutral{color:#94a3b8}
+.up{color:#ef4444}.down{color:#22c55e}.neutral{color:#94a3b8}
 
-/* 底部 */
 .footer{text-align:center;color:#475569;font-size:12px;margin-top:24px;padding-top:16px;border-top:1px solid #1e3a5f}
+
+/* ====== 加载兜底 ====== */
+.loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#0f172a;display:flex;align-items:center;justify-content:center;z-index:999;font-size:16px;color:#94a3b8;flex-direction:column;gap:8px}
+.loading-overlay .spinner{width:32px;height:32px;border:3px solid #1e3a5f;border-top-color:#60a5fa;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 @media(max-width:768px){
   .metric-grid{grid-template-columns:1fr}
-  .status-bar{flex-direction:column;text-align:center}
+  .verdict-cards{grid-template-columns:repeat(2,1fr)}
+  .score-model{grid-template-columns:repeat(2,1fr)}
+  .risk-calendar{grid-template-columns:repeat(3,1fr)}
+  .verdict-top{flex-direction:column;align-items:flex-start}
   h1{font-size:22px}
 }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>📊 微盘策略风格回流看板</h1>
-  <div class="subtitle" id="updateTime">数据更新中...</div>
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div>正在加载看板数据...</div>
+</div>
 
-  <!-- 状态总览 -->
-  <div class="status-bar" id="statusBar">
-    <div class="score-ring" id="scoreRing">--</div>
-    <div>
-      <div class="status-label">当前微盘策略温度</div>
-      <div class="status-value" id="statusText">加载中</div>
-      <div class="status-desc" id="statusDesc"></div>
+<div class="container" id="mainContent" style="display:none">
+  <h1>📊 微盘策略风格回流看板</h1>
+  <div class="subtitle" id="updateTime">数据加载中...</div>
+
+  <!-- ====== 第一屏：结论区 ====== -->
+  <div class="verdict-bar yellow" id="verdictBar">
+    <div class="verdict-top">
+      <div>
+        <div style="font-size:13px;color:#64748b;margin-bottom:2px">当前微盘策略状态</div>
+        <div class="verdict-status" id="verdictStatus">计算中...</div>
+      </div>
+      <div class="verdict-score-box">
+        <div>
+          <div class="verdict-score" id="verdictScore">--</div>
+          <div class="verdict-score-label">/ 100 分</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="verdict-suggestion" id="verdictSuggestion"></div>
+
+    <div class="verdict-cards" id="verdictCards">
+      <div class="verdict-card"><div class="vc-label">微盘温度</div><div class="vc-value" id="vcTemp">--</div></div>
+      <div class="verdict-card"><div class="vc-label">当前总分</div><div class="vc-value" id="vcScore">--</div></div>
+      <div class="verdict-card"><div class="vc-label">最强证据</div><div class="vc-value" id="vcPro" style="font-size:13px">--</div></div>
+      <div class="verdict-card"><div class="vc-label">最大风险</div><div class="vc-value" id="vcCon" style="font-size:13px">--</div></div>
+    </div>
+
+    <!-- 三条证据 -->
+    <div class="evidence-list" id="evidenceList"></div>
+  </div>
+
+  <!-- ====== 评分模型透明化 ====== -->
+  <div class="card">
+    <h2><span class="icon" style="background:#2563eb">📐</span> 评分模型（为什么是这个状态）</h2>
+    <div class="score-model" id="scoreModel"></div>
+    <div style="display:flex;gap:16px;margin-top:12px;font-size:11px;color:#475569">
+      <span>🔴 0-40 不适合</span><span>🟡 40-60 观察区</span><span>🟢 60-75 试探区</span><span>🟢🟢 75+ 友好区</span>
     </div>
   </div>
 
-  <!-- 核心指标 -->
+  <!-- ====== 核心指标仪表盘 ====== -->
   <div class="card">
-    <h2><span class="icon" style="background:#2563eb">📈</span> 核心指标仪表盘</h2>
+    <h2><span class="icon" style="background:#7c3aed">📈</span> 核心指标仪表盘</h2>
     <div class="metric-grid" id="metricsGrid"></div>
   </div>
 
-  <!-- 走势对比图 -->
+  <!-- ====== 风格走势图 ====== -->
   <div class="card">
-    <h2><span class="icon" style="background:#7c3aed">📉</span> 微盘指数 vs 沪深300 走势对比</h2>
-    <div class="chart-container">
-      <canvas id="chartCanvas"></canvas>
-    </div>
-    <div style="display:flex;gap:20px;margin-top:8px;font-size:12px;color:#64748b">
-      <span><span style="display:inline-block;width:12px;height:3px;background:#f59e0b;vertical-align:middle;margin-right:4px;border-radius:2px"></span>微盘指数(归一化)</span>
-      <span><span style="display:inline-block;width:12px;height:3px;background:#3b82f6;vertical-align:middle;margin-right:4px;border-radius:2px"></span>沪深300(归一化)</span>
-      <span><span style="display:inline-block;width:12px;height:3px;background:rgba(239,68,68,0.3);vertical-align:middle;margin-right:4px;border-radius:2px"></span>超额收益(填充)</span>
+    <h2><span class="icon" style="background:#ea580c">📉</span> 微盘 vs 沪深300 走势对比</h2>
+    <div class="chart-container"><canvas id="chartCanvas"></canvas></div>
+    <div class="chart-legend">
+      <span><i style="background:#f59e0b"></i>微盘指数(归一化)</span>
+      <span><i style="background:#3b82f6"></i>沪深300(归一化)</span>
+      <span><i style="background:rgba(239,68,68,0.3)"></i>超额收益(填充)</span>
     </div>
   </div>
 
-  <!-- 成交额 & 融资 -->
+  <!-- ====== 扩散和资金 ====== -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
     <div class="card">
-      <h2><span class="icon" style="background:#ea580c">💰</span> TMT vs 微盘成交额</h2>
-      <div id="turnoverChart" style="height:200px;position:relative">
-        <canvas id="turnoverCanvas"></canvas>
-      </div>
+      <h2><span class="icon" style="background:#16a34a">📊</span> TMT vs 微盘成交额</h2>
+      <div style="height:220px;position:relative"><canvas id="turnoverCanvas"></canvas></div>
     </div>
     <div class="card">
-      <h2><span class="icon" style="background:#0891b2">📊</span> 融资余额趋势</h2>
-      <div id="marginChart" style="height:200px;position:relative">
-        <canvas id="marginCanvas"></canvas>
+      <h2><span class="icon" style="background:#0891b2">💰</span> 融资余额趋势（辅助）</h2>
+      <div style="height:220px;position:relative"><canvas id="marginCanvas"></canvas></div>
+      <div style="font-size:11px;color:#475569;margin-top:4px">融资余额反映全市场风险偏好，是水温而非方向盘</div>
+    </div>
+  </div>
+
+  <!-- ====== 财报/退市风险窗口 ====== -->
+  <div class="card">
+    <h2><span class="icon" style="background:#dc2626">⚠️</span> 财报/退市风险窗口</h2>
+    <div class="risk-calendar" id="riskCalendar"></div>
+    <div style="font-size:11px;color:#475569;margin-top:10px;line-height:1.6">
+      说明：年度报告应在会计年度结束后4个月内（4月底前）披露，中期报告应在上半年结束后2个月内（8月底前）披露。
+      <b>5月不是年报季</b>，而是年报和一季报披露结束后的真空期，历史上正常有利于微盘修复。
+    </div>
+  </div>
+
+  <!-- ====== 产品跟踪 ====== -->
+  <div class="card">
+    <h2><span class="icon" style="background:#8b5cf6">🏷️</span> 微盘量化产品跟踪 <span class="manual-toggle" onclick="toggleProduct()">展开/收起</span></h2>
+    <div id="productSection" style="display:none">
+      <div style="font-size:12px;color:#64748b;margin-bottom:8px">重点看：微盘反弹时基金有没有跟上？微盘下跌时基金是不是少跌？</div>
+      <table class="product-table" id="productTable"></table>
+      <div style="margin-top:10px">
+        <button class="btn btn-primary" onclick="saveProducts()">保存</button>
       </div>
     </div>
   </div>
 
-  <!-- 观察清单 -->
+  <!-- ====== 观察清单 ====== -->
   <div class="card">
     <h2><span class="icon" style="background:#16a34a">✅</span> 观察清单（风格回流信号）</h2>
     <ul class="checklist" id="checklist"></ul>
   </div>
 
-  <!-- 手动数据更新 -->
+  <!-- ====== 手动数据更新 ====== -->
   <div class="card">
     <h2><span class="icon" style="background:#64748b">⚙️</span> 手动数据更新 <span class="manual-toggle" onclick="toggleManual()">展开/收起</span></h2>
     <div class="manual-section" id="manualSection">
+      <div style="font-size:12px;color:#475569;margin-bottom:10px">手动数据来源：西部证券微盘周报、券商金工报告、基金净值。填写后点"保存并刷新"。</div>
       <div class="input-group" id="manualInputs"></div>
-      <div style="margin-top:12px;display:flex;gap:8px">
-        <button class="btn btn-primary" onclick="saveManual()">保存并刷新</button>
-      </div>
+      <div style="margin-top:12px"><button class="btn btn-primary" onclick="saveManual()">保存并刷新</button></div>
     </div>
   </div>
 
-  <!-- 小白翻译 -->
+  <!-- ====== 指标解读 ====== -->
   <div class="card">
-    <h2><span class="icon" style="background:#8b5cf6">📖</span> 指标解读（小白友好版）</h2>
-    <table class="data-table">
-      <tr><td style="color:#94a3b8">TMT成交占比</td><td>科技方向成交额占全市场的比例。占比越高，科技越拥挤，微盘越容易被抽血。低于35%开始有利于微盘。</td></tr>
-      <tr><td style="color:#94a3b8">微盘成交占比</td><td>微盘股成交额占全市场的比例。占比低说明冷清（拥挤度低），持续回升才说明资金真的回来了。1%以下偏冷，1.5%以上资金回流明显。</td></tr>
-      <tr><td style="color:#94a3b8">扩散指数</td><td>微盘成分股里上涨股票占比。低于35%只有少数反弹，50%以上扩散改善，65%以上赚钱效应明显。</td></tr>
-      <tr><td style="color:#94a3b8">相对收益</td><td>微盘指数涨跌幅减去沪深300涨跌幅。正数说明微盘跑赢大盘，是风格回流的直接信号。</td></tr>
-      <tr><td style="color:#94a3b8">融资余额</td><td>两融余额合计。上升说明市场加杠杆意愿强，下降说明去杠杆。微盘对杠杆资金敏感。</td></tr>
+    <h2><span class="icon" style="background:#475569">📖</span> 指标解读（小白友好版）</h2>
+    <table class="glossary-table">
+      <tr><td>TMT成交占比</td><td>电子+通信+计算机+传媒成交额占全市场的比例。<b>&gt;45%极度拥挤，35%-45%仍强但可观察，&lt;35%降温有利于微盘</b>。</td></tr>
+      <tr><td>大盘成交占比</td><td>大市值股票成交额占全市场的比例。<b>&gt;50%大盘虹吸强，&lt;45%资金扩散有利于微盘</b>。</td></tr>
+      <tr><td>微盘成交占比</td><td>万得微盘股指数成分股成交额占全市场的比例。<b>&lt;1%冷清但弹性大，1%-1.5%有资金试探，&gt;1.5%资金回流明显</b>。</td></tr>
+      <tr><td>相对收益</td><td>微盘指数涨跌幅减去沪深300涨跌幅。<b>5日转正=短线修复，20日转正=月度风格切换，60日转正=趋势确认</b>。</td></tr>
+      <tr><td>扩散指数</td><td>微盘成分股中上涨股票占比。<b>&lt;35%仅少数反弹，50%-65%扩散改善，&gt;65%赚钱效应明显</b>。</td></tr>
+      <tr><td>Barra市值因子</td><td>量化模型里衡量"大盘/小盘风格"的因子收益。<b>连续为负=小盘不利，转正但微盘还跌=微盘内部严重分化，转正且微盘跑赢=风格确认</b>。不等于某个指数涨跌。</td></tr>
+      <tr><td>融资余额</td><td>两融余额合计。上升=市场加杠杆意愿强，下降=去杠杆。反映全市场水温，微盘对杠杆资金敏感。</td></tr>
     </table>
   </div>
 
@@ -175,207 +282,326 @@ canvas{width:100%!important;height:100%!important}
 const MANUAL_FIELDS = {
   weipanTurnoverRatio: {label:"微盘成交占比(%)", placeholder:"如0.73"},
   bigCapTurnoverRatio: {label:"大盘成交占比(%)", placeholder:"如54.50"},
+  tmtRatio: {label:"TMT成交占比(%)", placeholder:"如43.1"},
   barraSizeFactor: {label:"Barra市值因子(%)", placeholder:"如1.66"},
-  spreadIndex: {label:"扩散指数(%)", placeholder:"如35"},
-  fundNetValue1d: {label:"关注基金近1日(%)", placeholder:"如0.5"},
-  fundNetValue5d: {label:"关注基金近5日(%)", placeholder:"如-2.1"},
-  fundNetValue20d: {label:"关注基金近20日(%)", placeholder:"如-8.5"}
+  spreadIndex: {label:"扩散指数(%)", placeholder:"如42"},
 };
+
+// ====== 产品跟踪默认 ======
+const DEFAULT_PRODUCTS = [
+  {name:"产品A", n1d:"", n5d:"", n20d:"", vsWeipan:"", maxDD:"", status:""},
+  {name:"产品B", n1d:"", n5d:"", n20d:"", vsWeipan:"", maxDD:"", status:""},
+  {name:"产品C", n1d:"", n5d:"", n20d:"", vsWeipan:"", maxDD:"", status:""},
+];
+
+// ====== 财报风险窗口数据 ======
+const RISK_MONTHS = [
+  {month:"1月", risk:"caution", desc:"业绩预告/保壳扰动"},
+  {month:"2月", risk:"safe", desc:"真空期"},
+  {month:"3月", risk:"caution", desc:"两会政策敏感"},
+  {month:"4月", risk:"danger", desc:"年报+一季报高峰\nST/退市集中暴露"},
+  {month:"5月", risk:"safe", desc:"财报真空期\n正常利于修复"},
+  {month:"6月", risk:"safe", desc:"真空期"},
+  {month:"7月", risk:"caution", desc:"中报预告期"},
+  {month:"8月", risk:"danger", desc:"中报披露期\n基本面风险抬头"},
+  {month:"9月", risk:"safe", desc:"真空期"},
+  {month:"10月", risk:"caution", desc:"三季报披露期"},
+  {month:"11月", risk:"safe", desc:"真空期"},
+  {month:"12月", risk:"caution", desc:"年末保壳/预亏/退市预期"},
+];
 
 // ====== 状态管理 ======
 let manualData = {};
+let products = [];
 try { manualData = JSON.parse(localStorage.getItem('weipan_manual') || '{}'); } catch(e){}
+try { products = JSON.parse(localStorage.getItem('weipan_products') || 'null') || DEFAULT_PRODUCTS; } catch(e){ products = DEFAULT_PRODUCTS; }
+
+// ====== 加载兜底 ======
+let loadTimeout = setTimeout(() => {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) overlay.innerHTML = '<div style="color:#eab308;font-size:14px">数据加载超时，显示上次更新数据</div><div style="color:#64748b;font-size:12px;margin-top:4px">如持续异常，请在AI对话中刷新数据</div>';
+}, 5000);
+
+// ====== 评分计算 ======
+function calcScore(d, s) {
+  const scores = {};
+  const details = {};
+  
+  // 1. 科技降温 (20分)
+  const tmtRatio = s.tmtRatio ? parseFloat(s.tmtRatio)/100 : d.tmtRatio;
+  if (tmtRatio < 0.35) { scores.tech = 20; details.tech = '科技明显降温'; }
+  else if (tmtRatio < 0.40) { scores.tech = 15; details.tech = '科技开始降温'; }
+  else if (tmtRatio < 0.45) { scores.tech = 8; details.tech = '科技仍强但可观察'; }
+  else { scores.tech = 0; details.tech = '科技极度拥挤'; }
+
+  // 2. 微盘资金回流 (25分)
+  const wpRatio = s.weipanTurnoverRatio ? parseFloat(s.weipanTurnoverRatio)/100 : d.weipanRatio;
+  if (wpRatio > 0.015) { scores.flow = 25; details.flow = '微盘资金明显回流'; }
+  else if (wpRatio > 0.01) { scores.flow = 15; details.flow = '微盘有资金试探'; }
+  else if (wpRatio > 0.005) { scores.flow = 8; details.flow = '微盘冷清但弹性大'; }
+  else { scores.flow = 0; details.flow = '微盘极度冷清'; }
+
+  // 3. 风格确认 (20分)
+  if (d.relativeExcess5d > 0 && d.relativeExcess20d > 0) { scores.style = 20; details.style = '微盘连续跑赢'; }
+  else if (d.relativeExcess5d > 0) { scores.style = 10; details.style = '微盘短线修复'; }
+  else if (d.relativeExcess20d > -5) { scores.style = 5; details.style = '微盘回撤收敛'; }
+  else { scores.style = 0; details.style = '微盘持续跑输'; }
+
+  // 4. 扩散改善 (15分)
+  const spread = s.spreadIndex ? parseFloat(s.spreadIndex)/100 : d.weipanSpread;
+  if (spread > 0.65) { scores.diffusion = 15; details.diffusion = '微盘普涨'; }
+  else if (spread > 0.50) { scores.diffusion = 10; details.diffusion = '扩散改善'; }
+  else if (spread > 0.35) { scores.diffusion = 5; details.diffusion = '扩散初期'; }
+  else { scores.diffusion = 0; details.diffusion = '扩散不足'; }
+
+  // 5. 风险缓和 (10分)
+  const currentMonth = new Date().getMonth() + 1;
+  const riskMonths = {4: true, 8: true, 12: true, 1: true};
+  const riskWindow = riskMonths[currentMonth];
+  if (!riskWindow && d.weipanDrawdown > -5) { scores.risk = 10; details.risk = '非风险窗口且回撤小'; }
+  else if (!riskWindow) { scores.risk = 7; details.risk = '非风险窗口但回撤偏大'; }
+  else { scores.risk = 3; details.risk = '处于财报风险窗口'; }
+
+  // 6. 产品验证 (10分)
+  const fund5d = s.fundNetValue5d ? parseFloat(s.fundNetValue5d) : null;
+  const fund1d = s.fundNetValue1d ? parseFloat(s.fundNetValue1d) : null;
+  if (fund5d !== null && fund5d > 0) { scores.product = 10; details.product = '产品跟随修复'; }
+  else if (fund1d !== null && fund1d > 0) { scores.product = 5; details.product = '产品短线修复'; }
+  else if (fund5d !== null) { scores.product = 2; details.product = '产品未跟随'; }
+  else { scores.product = 0; details.product = '待填入产品数据'; }
+
+  const total = Object.values(scores).reduce((a,b) => a+b, 0);
+  return { scores, details, total };
+}
+
+function getStatus(score) {
+  if (score >= 75) return {name:'友好区', color:'green', cls:'green', emoji:'🟢🟢'};
+  if (score >= 60) return {name:'试探区', color:'#86efac', cls:'light-green', emoji:'🟢'};
+  if (score >= 40) return {name:'观察区', color:'#eab308', cls:'yellow', emoji:'🟡'};
+  return {name:'不适合', color:'#ef4444', cls:'red', emoji:'🔴'};
+}
 
 // ====== 初始化 ======
 function init() {
   if (typeof AUTO_DATA === 'undefined') {
-    document.getElementById('statusText').textContent = '无数据';
-    document.getElementById('statusDesc').textContent = '请先运行数据更新脚本';
+    document.getElementById('loadingOverlay').innerHTML = '<div style="color:#ef4444">数据加载失败</div><div style="color:#64748b;font-size:12px;margin-top:4px">请在AI对话中运行数据更新</div>';
     return;
   }
+  clearTimeout(loadTimeout);
+  document.getElementById('loadingOverlay').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
   
-  document.getElementById('updateTime').textContent = 
-    '数据更新: ' + AUTO_DATA.updateTime + ' | 数据来源: Wind金融数据服务';
+  const d = AUTO_DATA;
+  const s = manualData;
+  document.getElementById('updateTime').textContent = '数据更新: ' + d.updateTime + ' | 数据来源: Wind金融数据服务';
   
-  renderStatus();
-  renderMetrics();
-  renderChart();
-  renderTurnoverChart();
-  renderMarginChart();
-  renderChecklist();
+  const {scores, details, total} = calcScore(d, s);
+  const status = getStatus(total);
+  
+  renderVerdict(d, s, total, status, details);
+  renderScoreModel(scores, details);
+  renderMetrics(d, s);
+  renderChart(d);
+  renderTurnoverChart(d);
+  renderMarginChart(d);
+  renderRiskCalendar();
+  renderProducts();
+  renderChecklist(d, s);
   renderManualInputs();
 }
 
-// ====== 状态总览 ======
-function renderStatus() {
-  const d = AUTO_DATA;
-  const s = manualData;
+// ====== 首屏结论 ======
+function renderVerdict(d, s, total, status, details) {
+  const bar = document.getElementById('verdictBar');
+  bar.className = 'verdict-bar ' + status.cls;
   
-  // 计算评分
-  let score = 0;
-  let signals = [];
+  document.getElementById('verdictStatus').textContent = status.emoji + ' ' + status.name;
+  document.getElementById('verdictStatus').style.color = status.color;
+  document.getElementById('verdictScore').textContent = total;
+  document.getElementById('verdictScore').style.color = status.color;
   
-  // 1. 科技降温 (20分)
-  const tmtRatio = d.tmtRatio;
-  if (tmtRatio < 0.35) { score += 20; signals.push('科技明显降温'); }
-  else if (tmtRatio < 0.40) { score += 15; signals.push('科技开始降温'); }
-  else if (tmtRatio < 0.45) { score += 8; signals.push('科技仍强但可观察'); }
-  else { signals.push('科技极度拥挤'); }
+  // 建议
+  let suggestion = '';
+  if (total < 40) suggestion = '⚠️ <b>不建议介入。</b>科技虹吸强，微盘资金未回流，风格未确认。等待指标改善后再考虑。';
+  else if (total < 60) suggestion = '🔍 <b>可以观察，可以小比例试探，但还不是重仓抄底信号。</b>微盘已经从拥挤区降温，但资金尚未确认回流。建议跟踪微盘成交占比和扩散指数是否连续改善。';
+  else if (total < 75) suggestion = '📌 <b>可小比例分批试探。</b>部分信号已出现，但尚未全面确认。建议控制仓位在5%-10%，分批观察。';
+  else suggestion = '✅ <b>微盘风格回流较明确，可适当提高关注度。</b>多个信号同时出现，但仍建议控制总仓位不超过15%。';
+  document.getElementById('verdictSuggestion').innerHTML = suggestion;
   
-  // 2. 微盘资金回流 (25分) - 优先用手动数据
+  // 4卡片
+  document.getElementById('vcTemp').innerHTML = status.emoji + ' ' + status.name;
+  document.getElementById('vcTemp').style.color = status.color;
+  document.getElementById('vcScore').textContent = total + '/100';
+  document.getElementById('vcScore').style.color = status.color;
+  
+  // 最强证据
+  const maxKey = Object.keys(details).reduce((a,b) => (calcScore(d,s).scores[a] >= calcScore(d,s).scores[b] ? a : b));
+  document.getElementById('vcPro').textContent = details[maxKey];
+  document.getElementById('vcPro').style.color = '#22c55e';
+  
+  // 最大风险
+  const minKey = Object.keys(details).reduce((a,b) => (calcScore(d,s).scores[a] <= calcScore(d,s).scores[b] ? a : b));
+  document.getElementById('vcCon').textContent = details[minKey];
+  document.getElementById('vcCon').style.color = '#ef4444';
+  
+  // 三条证据
   const wpRatio = s.weipanTurnoverRatio ? parseFloat(s.weipanTurnoverRatio)/100 : d.weipanRatio;
-  if (wpRatio > 0.015) { score += 25; signals.push('微盘资金明显回流'); }
-  else if (wpRatio > 0.01) { score += 15; signals.push('微盘有资金试探'); }
-  else if (wpRatio > 0.005) { score += 8; signals.push('微盘冷清但弹性大'); }
-  else { signals.push('微盘极度冷清'); }
-  
-  // 3. 风格确认 (20分)
-  if (d.relativeExcess5d > 0 && d.relativeExcess20d > 0) { score += 20; signals.push('微盘连续跑赢'); }
-  else if (d.relativeExcess5d > 0) { score += 10; signals.push('微盘短线修复'); }
-  else if (d.relativeExcess20d > -5) { score += 5; signals.push('微盘回撤收敛'); }
-  else { signals.push('微盘持续跑输'); }
-  
-  // 4. 扩散改善 (15分) - 优先手动数据
+  const tmtRatio = s.tmtRatio ? parseFloat(s.tmtRatio)/100 : d.tmtRatio;
   const spread = s.spreadIndex ? parseFloat(s.spreadIndex)/100 : d.weipanSpread;
-  if (spread > 0.65) { score += 15; signals.push('微盘普涨'); }
-  else if (spread > 0.50) { score += 10; signals.push('扩散改善'); }
-  else if (spread > 0.35) { score += 5; signals.push('扩散初期'); }
-  else { signals.push('扩散不足'); }
   
-  // 5. 风险缓和 (10分)
-  if (d.weipanDrawdown > -5) { score += 10; }
-  else if (d.weipanDrawdown > -10) { score += 5; }
+  const evidenceItems = [
+    {
+      type: wpRatio < 0.01 ? 'pro' : wpRatio < 0.015 ? 'neutral' : 'con',
+      icon: wpRatio < 0.01 ? '✅' : '⚠️',
+      title: '证据1：微盘成交占比' + (wpRatio*100).toFixed(2) + '%',
+      desc: wpRatio < 0.01 ? '拥挤度明显下降，前期筹码出清，但还不能说明资金已经回来。后续如果持续回升到1%以上，才是资金回流信号。' : '微盘资金有试探迹象，但仍需持续观察。'
+    },
+    {
+      type: tmtRatio > 0.40 ? 'con' : tmtRatio > 0.35 ? 'neutral' : 'pro',
+      icon: tmtRatio > 0.40 ? '🔴' : tmtRatio > 0.35 ? '⚠️' : '✅',
+      title: '证据2：TMT成交占比' + (tmtRatio*100).toFixed(1) + '%',
+      desc: tmtRatio > 0.40 ? '科技/大盘方向成交仍高，资金集中在大市值方向，微盘容易继续被抽血。需要TMT占比持续下降到35%以下，才有利于微盘。' : '科技降温中，资金有外溢可能。'
+    },
+    {
+      type: d.relativeExcess5d > 0 ? 'pro' : d.relativeExcess20d > -5 ? 'neutral' : 'con',
+      icon: d.relativeExcess5d > 0 ? '✅' : d.relativeExcess20d > -5 ? '⚠️' : '🔴',
+      title: '证据3：微盘5日相对收益' + (d.relativeExcess5d >= 0 ? '+' : '') + d.relativeExcess5d.toFixed(2) + '%',
+      desc: d.relativeExcess5d > 0 && d.relativeExcess20d > 0 ? '微盘连续跑赢大盘，风格回流信号增强。' :
+           d.relativeExcess5d > 0 ? '微盘短线修复，但月度尚未确认。需要20日相对收益也转正，才更像趋势。' :
+           '微盘仍在跑输大盘，当前反弹更像是技术性修复，不是风格切换。'
+    }
+  ];
   
-  // 6. 产品验证 (10分) - 手动数据
-  if (s.fundNetValue5d && parseFloat(s.fundNetValue5d) > 0) { score += 10; }
-  else if (s.fundNetValue1d && parseFloat(s.fundNetValue1d) > 0) { score += 5; }
+  document.getElementById('evidenceList').innerHTML = evidenceItems.map(e => `
+    <div class="evidence-item ${e.type}">
+      <div class="ei-icon">${e.icon}</div>
+      <div><div class="ei-title">${e.title}</div><div class="ei-desc">${e.desc}</div></div>
+    </div>
+  `).join('');
+}
+
+// ====== 评分模型 ======
+function renderScoreModel(scores, details) {
+  const items = [
+    {key:'tech', name:'科技抱团降温', max:20},
+    {key:'flow', name:'微盘资金回流', max:25},
+    {key:'style', name:'风格确认', max:20},
+    {key:'diffusion', name:'扩散改善', max:15},
+    {key:'risk', name:'风险缓和', max:10},
+    {key:'product', name:'产品验证', max:10},
+  ];
   
-  // 确定状态
-  let status, color, bgColor;
-  if (score >= 75) { status = '友好区'; color = '#22c55e'; bgColor = 'rgba(34,197,94,0.15)'; }
-  else if (score >= 60) { status = '试探区'; color = '#86efac'; bgColor = 'rgba(134,239,172,0.1)'; }
-  else if (score >= 40) { status = '观察区'; color = '#eab308'; bgColor = 'rgba(234,179,8,0.1)'; }
-  else { status = '不适合'; color = '#ef4444'; bgColor = 'rgba(239,68,68,0.1)'; }
-  
-  document.getElementById('scoreRing').textContent = score;
-  document.getElementById('scoreRing').style.borderColor = color;
-  document.getElementById('scoreRing').style.color = color;
-  document.getElementById('statusText').textContent = status;
-  document.getElementById('statusText').style.color = color;
-  document.getElementById('statusDesc').textContent = signals.join('；') + '。';
-  document.getElementById('statusBar').style.background = `linear-gradient(135deg,${bgColor},#0f172a)`;
+  document.getElementById('scoreModel').innerHTML = items.map(it => {
+    const s = scores[it.key] || 0;
+    const pct = s / it.max * 100;
+    const color = pct >= 70 ? '#22c55e' : pct >= 40 ? '#eab308' : '#ef4444';
+    return `
+      <div class="score-item">
+        <div class="si-name">${it.name}</div>
+        <div><span class="si-score" style="color:${color}">${s}</span><span class="si-max"> / ${it.max}分</span></div>
+        <div style="font-size:11px;color:#64748b;margin-top:2px">${details[it.key]}</div>
+        <div class="si-bar"><div class="si-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      </div>
+    `;
+  }).join('');
 }
 
 // ====== 核心指标 ======
-function renderMetrics() {
-  const d = AUTO_DATA;
-  const s = manualData;
+function renderMetrics(d, s) {
   const grid = document.getElementById('metricsGrid');
+  const wpRatio = s.weipanTurnoverRatio ? parseFloat(s.weipanTurnoverRatio) : (d.weipanRatio * 100).toFixed(2);
+  const bigCapRatio = s.bigCapTurnoverRatio ? parseFloat(s.bigCapTurnoverRatio) : null;
+  const tmtR = s.tmtRatio ? parseFloat(s.tmtRatio)/100 : d.tmtRatio;
+  const spread = s.spreadIndex ? parseFloat(s.spreadIndex)/100 : d.weipanSpread;
   
-  const wpRatioManual = s.weipanTurnoverRatio ? parseFloat(s.weipanTurnoverRatio) : (d.weipanRatio * 100).toFixed(2);
-  const bigCapRatioManual = s.bigCapTurnoverRatio ? parseFloat(s.bigCapTurnoverRatio) : null;
+  // 计算上一期（前一天的数据）
+  const wp = d.weipan;
+  const hs = d.hs300;
+  const prevRel5d = wp.length >= 6 && hs.length >= 6 ? 
+    ((wp[wp.length-1].close / wp[wp.length-6].close - 1) - (hs[hs.length-1].close / hs[hs.length-6].close - 1)) * 100 : null;
   
   const metrics = [
     {
       name: 'TMT成交占比',
-      value: (d.tmtRatio * 100).toFixed(1) + '%',
-      desc: '电子+通信+计算机+传媒成交额/全A',
-      bar: Math.min(d.tmtRatio / 0.5, 1),
-      light: d.tmtRatio > 0.45 ? 'red' : d.tmtRatio > 0.35 ? 'yellow' : 'green',
-      hint: d.tmtRatio > 0.45 ? '科技极度拥挤' : d.tmtRatio > 0.35 ? '科技仍强' : '科技降温中'
+      value: (tmtR * 100).toFixed(1) + '%',
+      threshold: '阈值: &lt;35%友好 35-45%观察 &gt;45%拥挤',
+      bar: Math.min(tmtR / 0.5, 1),
+      light: tmtR > 0.45 ? 'red' : tmtR > 0.35 ? 'yellow' : 'green',
+      hint: tmtR > 0.45 ? '科技极度拥挤' : tmtR > 0.35 ? '科技仍强' : '科技降温中'
     },
     {
       name: '微盘成交占比',
-      value: wpRatioManual + '%',
-      desc: '万得微盘股指数成分股成交额/全A',
-      bar: Math.min(parseFloat(wpRatioManual) / 3, 1),
-      light: parseFloat(wpRatioManual) < 0.8 ? 'red' : parseFloat(wpRatioManual) < 1.5 ? 'yellow' : 'green',
-      hint: parseFloat(wpRatioManual) < 0.8 ? '极度冷清' : parseFloat(wpRatioManual) < 1.5 ? '冷清但有弹性' : '资金回流中'
+      value: parseFloat(wpRatio).toFixed(2) + '%',
+      threshold: '阈值: &lt;1%冷清 1-1.5%试探 &gt;1.5%回流',
+      bar: Math.min(parseFloat(wpRatio) / 3, 1),
+      light: parseFloat(wpRatio) < 0.8 ? 'red' : parseFloat(wpRatio) < 1.5 ? 'yellow' : 'green',
+      hint: parseFloat(wpRatio) < 0.8 ? '极度冷清' : parseFloat(wpRatio) < 1.5 ? '冷清但有弹性' : '资金回流中'
     },
     {
       name: '微盘5日相对收益',
       value: (d.relativeExcess5d >= 0 ? '+' : '') + d.relativeExcess5d.toFixed(2) + '%',
-      desc: '微盘指数5日涨幅 - 沪深300 5日涨幅',
+      threshold: '阈值: &gt;0跑赢 &lt;0跑输',
       light: d.relativeExcess5d > 0 ? 'green' : d.relativeExcess5d > -3 ? 'yellow' : 'red',
-      hint: d.relativeExcess5d > 0 ? '短线跑赢大盘' : '短线跑输大盘'
+      hint: d.relativeExcess5d > 0 ? '短线跑赢大盘 ✅' : '短线跑输大盘'
     },
     {
       name: '微盘20日相对收益',
       value: (d.relativeExcess20d >= 0 ? '+' : '') + d.relativeExcess20d.toFixed(2) + '%',
-      desc: '微盘指数20日涨幅 - 沪深300 20日涨幅',
+      threshold: '阈值: &gt;0月度确认 &lt;-5深度跑输',
       light: d.relativeExcess20d > 0 ? 'green' : d.relativeExcess20d > -5 ? 'yellow' : 'red',
-      hint: d.relativeExcess20d > 0 ? '月度风格确认' : d.relativeExcess20d > -5 ? '回撤收敛中' : '深度跑输'
+      hint: d.relativeExcess20d > 0 ? '月度风格确认 ✅' : d.relativeExcess20d > -5 ? '回撤收敛中' : '深度跑输'
     },
     {
       name: '微盘扩散指数',
-      value: (s.spreadIndex || (d.weipanSpread * 100).toFixed(0)) + '%',
-      desc: '微盘上涨家数/(上涨+下跌家数)',
-      bar: d.weipanSpread,
-      light: d.weipanSpread > 0.65 ? 'green' : d.weipanSpread > 0.45 ? 'yellow' : 'red',
-      hint: d.weipanSpread > 0.65 ? '普涨行情' : d.weipanSpread > 0.45 ? '部分修复' : '仅少数反弹'
+      value: (spread * 100).toFixed(0) + '%',
+      threshold: '阈值: &lt;35%弱 50-65%改善 &gt;65%普涨',
+      bar: spread,
+      light: spread > 0.65 ? 'green' : spread > 0.45 ? 'yellow' : 'red',
+      hint: spread > 0.65 ? '普涨行情 ✅' : spread > 0.45 ? '部分修复' : '仅少数反弹'
     },
     {
       name: '微盘从高点回撤',
       value: d.weipanDrawdown.toFixed(1) + '%',
-      desc: '近28个交易日内最大回撤',
+      threshold: '近28个交易日内最大回撤',
       light: d.weipanDrawdown > -5 ? 'green' : d.weipanDrawdown > -12 ? 'yellow' : 'red',
       hint: d.weipanDrawdown > -5 ? '回撤可控' : d.weipanDrawdown > -12 ? '回撤较大' : '深度回撤'
     },
-    {
-      name: 'TMT成交额',
-      value: d.tmt.total.toFixed(0) + '亿',
-      desc: '电子' + d.tmt.electronics.turnover.toFixed(0) + ' + 通信' + d.tmt.telecom.turnover.toFixed(0) + ' + 计算机' + d.tmt.computer.turnover.toFixed(0) + ' + 传媒' + d.tmt.media.turnover.toFixed(0),
-      light: 'yellow',
-      hint: '当日TMT四行业成交额合计'
-    },
-    {
-      name: '全A成交额',
-      value: (d.totalTurnover / 100000000).toFixed(0) + '亿',
-      desc: '上证+深证成交额合计',
-      light: d.totalTurnover > 2500000000000 ? 'green' : d.totalTurnover > 1500000000000 ? 'yellow' : 'red',
-      hint: d.totalTurnover > 2500000000000 ? '成交活跃' : '成交一般'
-    }
   ];
   
-  // 如果有手动基金数据，加一条
-  if (s.fundNetValue5d) {
-    metrics.push({
-      name: '关注基金近5日',
-      value: (parseFloat(s.fundNetValue5d) >= 0 ? '+' : '') + s.fundNetValue5d + '%',
-      desc: '手动填入的基金近5日涨跌幅',
-      light: parseFloat(s.fundNetValue5d) > 0 ? 'green' : 'red',
-      hint: parseFloat(s.fundNetValue5d) > 0 ? '基金跟随修复' : '基金仍在回撤'
+  if (bigCapRatio) {
+    metrics.splice(1, 0, {
+      name: '大盘成交占比',
+      value: parseFloat(bigCapRatio).toFixed(1) + '%',
+      threshold: '阈值: &gt;50%虹吸强 &lt;45%扩散',
+      bar: parseFloat(bigCapRatio) / 60,
+      light: parseFloat(bigCapRatio) > 50 ? 'red' : parseFloat(bigCapRatio) > 45 ? 'yellow' : 'green',
+      hint: parseFloat(bigCapRatio) > 50 ? '大盘虹吸强' : parseFloat(bigCapRatio) > 45 ? '虹吸缓和' : '资金扩散'
     });
   }
   
   grid.innerHTML = metrics.map(m => `
     <div class="metric-item">
-      <div class="metric-header">
+      <div class="metric-top">
         <span class="metric-name"><span class="light light-${m.light}"></span>${m.name}</span>
         <span class="metric-badge" style="background:${m.light==='red'?'#450a0a':m.light==='yellow'?'#422006':'#052e16'};color:${m.light==='red'?'#fca5a5':m.light==='yellow'?'#fde047':'#86efac'}">${m.hint}</span>
       </div>
       <div class="metric-value" style="color:${m.light==='red'?'#fca5a5':m.light==='yellow'?'#fde047':'#86efac'}">${m.value}</div>
-      <div class="metric-desc">${m.desc}</div>
+      <div class="metric-desc">${m.threshold}</div>
       ${m.bar ? '<div class="metric-bar"><div class="metric-bar-fill" style="width:'+m.bar*100+'%;background:'+(m.light==='red'?'#ef4444':m.light==='yellow'?'#eab308':'#22c55e')+'"></div></div>' : ''}
     </div>
   `).join('');
 }
 
 // ====== 走势图 ======
-function renderChart() {
-  const d = AUTO_DATA;
+function renderChart(d) {
   const wp = d.weipan;
   const hs = d.hs300;
-  
-  // 归一化
   const wpBase = wp[0].close;
   const hsBase = hs[0].close;
-  
-  const labels = wp.map(w => w.date.substring(5)); // MM-DD
+  const labels = wp.map(w => w.date.substring(5));
   const wpNorm = wp.map(w => ((w.close/wpBase - 1)*100));
   const hsNorm = hs.map(h => ((h.close/hsBase - 1)*100));
   
-  // 用Canvas画
   const canvas = document.getElementById('chartCanvas');
   const ctx = canvas.getContext('2d');
   const rect = canvas.parentElement.getBoundingClientRect();
@@ -386,7 +612,6 @@ function renderChart() {
   const padL = 50, padR = 20, padT = 20, padB = 30;
   const plotW = W - padL - padR, plotH = H - padT - padB;
   
-  // 计算范围
   const allVals = [...wpNorm, ...hsNorm];
   let minV = Math.min(...allVals), maxV = Math.max(...allVals);
   const range = maxV - minV || 1;
@@ -395,226 +620,182 @@ function renderChart() {
   function x(i) { return padL + (i / (labels.length - 1)) * plotW; }
   function y(v) { return padT + plotH - ((v - minV) / (maxV - minV)) * plotH; }
   
-  // 网格
-  ctx.strokeStyle = '#1e3a5f';
-  ctx.lineWidth = 0.5;
+  ctx.strokeStyle = '#1e3a5f'; ctx.lineWidth = 0.5;
   for (let i = 0; i <= 4; i++) {
     const val = minV + (maxV - minV) * i / 4;
-    ctx.beginPath();
-    ctx.moveTo(padL, y(val));
-    ctx.lineTo(W - padR, y(val));
-    ctx.stroke();
-    ctx.fillStyle = '#64748b';
-    ctx.font = '10px sans-serif';
-    ctx.textAlign = 'right';
+    ctx.beginPath(); ctx.moveTo(padL, y(val)); ctx.lineTo(W - padR, y(val)); ctx.stroke();
+    ctx.fillStyle = '#64748b'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
     ctx.fillText(val.toFixed(1) + '%', padL - 4, y(val) + 3);
   }
-  
-  // X轴标签
-  ctx.fillStyle = '#64748b';
-  ctx.textAlign = 'center';
-  ctx.font = '10px sans-serif';
+  ctx.fillStyle = '#64748b'; ctx.textAlign = 'center'; ctx.font = '10px sans-serif';
   const step = Math.max(1, Math.floor(labels.length / 8));
-  for (let i = 0; i < labels.length; i += step) {
-    ctx.fillText(labels[i], x(i), H - 8);
-  }
+  for (let i = 0; i < labels.length; i += step) ctx.fillText(labels[i], x(i), H - 8);
   
-  // 超额收益填充
+  // 超额填充
   ctx.beginPath();
   for (let i = 0; i < labels.length; i++) {
-    const ex = wpNorm[i] - hsNorm[i];
-    if (i === 0) ctx.moveTo(x(i), y(ex > 0 ? hsNorm[i] + ex : wpNorm[i]));
-    else ctx.lineTo(x(i), y(wpNorm[i]));
+    if (i === 0) ctx.moveTo(x(i), y(wpNorm[i])); else ctx.lineTo(x(i), y(wpNorm[i]));
   }
   for (let i = labels.length - 1; i >= 0; i--) ctx.lineTo(x(i), y(hsNorm[i]));
   ctx.closePath();
-  ctx.fillStyle = 'rgba(239,68,68,0.1)';
+  ctx.fillStyle = wpNorm[wpNorm.length-1] > hsNorm[hsNorm.length-1] ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)';
   ctx.fill();
   
   // 沪深300线
-  ctx.beginPath();
-  ctx.strokeStyle = '#3b82f6';
-  ctx.lineWidth = 2;
-  for (let i = 0; i < labels.length; i++) {
-    if (i === 0) ctx.moveTo(x(i), y(hsNorm[i]));
-    else ctx.lineTo(x(i), y(hsNorm[i]));
-  }
+  ctx.beginPath(); ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2;
+  for (let i = 0; i < labels.length; i++) { if (i === 0) ctx.moveTo(x(i), y(hsNorm[i])); else ctx.lineTo(x(i), y(hsNorm[i])); }
   ctx.stroke();
   
   // 微盘线
-  ctx.beginPath();
-  ctx.strokeStyle = '#f59e0b';
-  ctx.lineWidth = 2;
-  for (let i = 0; i < labels.length; i++) {
-    if (i === 0) ctx.moveTo(x(i), y(wpNorm[i]));
-    else ctx.lineTo(x(i), y(wpNorm[i]));
-  }
+  ctx.beginPath(); ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
+  for (let i = 0; i < labels.length; i++) { if (i === 0) ctx.moveTo(x(i), y(wpNorm[i])); else ctx.lineTo(x(i), y(wpNorm[i])); }
   ctx.stroke();
   
-  // 零线
   if (minV < 0 && maxV > 0) {
-    ctx.beginPath();
-    ctx.strokeStyle = '#475569';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-    ctx.moveTo(padL, y(0));
-    ctx.lineTo(W - padR, y(0));
-    ctx.stroke();
-    ctx.setLineDash([]);
+    ctx.beginPath(); ctx.strokeStyle = '#475569'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+    ctx.moveTo(padL, y(0)); ctx.lineTo(W - padR, y(0)); ctx.stroke(); ctx.setLineDash([]);
   }
 }
 
-// ====== TMT成交额饼图 ======
-function renderTurnoverChart() {
-  const d = AUTO_DATA;
+// ====== TMT成交额 ======
+function renderTurnoverChart(d) {
   const canvas = document.getElementById('turnoverCanvas');
   const ctx = canvas.getContext('2d');
   const rect = canvas.parentElement.getBoundingClientRect();
-  canvas.width = rect.width * 2;
-  canvas.height = rect.height * 2;
+  canvas.width = rect.width * 2; canvas.height = rect.height * 2;
   ctx.scale(2, 2);
   const W = rect.width, H = rect.height;
-  
-  const total = d.totalTurnover / 1e8; // 亿
+  const total = d.totalTurnover / 1e8;
   const tmt = d.tmt.total;
   const rest = total - tmt;
-  
-  // 简单柱状图
-  const items = [
-    {name:'TMT', value:tmt, color:'#f59e0b'},
-    {name:'其他', value:rest, color:'#334155'},
-  ];
-  
-  const barH = 30;
-  const pad = 20;
+  const items = [{name:'TMT',value:tmt,color:'#f59e0b'},{name:'其他',value:rest,color:'#334155'}];
+  const barH = 28; const pad = 16;
   items.forEach((item, i) => {
     const y = pad + i * (barH + 10);
     const barW = (item.value / total) * (W - 2*pad - 60);
-    
-    ctx.fillStyle = '#1e3a5f';
-    ctx.fillRect(pad + 60, y, W - 2*pad - 60, barH);
-    ctx.fillStyle = item.color;
-    ctx.fillRect(pad + 60, y, barW, barH);
-    
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '12px sans-serif';
-    ctx.textAlign = 'right';
+    ctx.fillStyle = '#1e3a5f'; ctx.fillRect(pad + 60, y, W - 2*pad - 60, barH);
+    ctx.fillStyle = item.color; ctx.fillRect(pad + 60, y, barW, barH);
+    ctx.fillStyle = '#94a3b8'; ctx.font = '12px sans-serif'; ctx.textAlign = 'right';
     ctx.fillText(item.name, pad + 55, y + barH/2 + 4);
-    
-    ctx.fillStyle = '#e2e8f0';
-    ctx.font = 'bold 13px sans-serif';
-    ctx.textAlign = 'left';
+    ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'left';
     ctx.fillText(item.value.toFixed(0) + '亿 (' + (item.value/total*100).toFixed(1) + '%)', pad + 65 + barW + 4, y + barH/2 + 4);
   });
-  
-  // 分行业明细
-  const details = [
-    {name:'电子', value:d.tmt.electronics.turnover, color:'#dc2626'},
-    {name:'通信', value:d.tmt.telecom.turnover, color:'#f97316'},
-    {name:'计算机', value:d.tmt.computer.turnover, color:'#eab308'},
-    {name:'传媒', value:d.tmt.media.turnover, color:'#a3e635'}
-  ];
-  
-  const startY = pad + 2 * (barH + 10) + 15;
-  ctx.fillStyle = '#64748b';
-  ctx.font = '11px sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('TMT分行业:', pad, startY);
-  
-  details.forEach((item, i) => {
-    const y = startY + 15 + i * 18;
-    ctx.fillStyle = item.color;
-    ctx.fillRect(pad, y, 10, 10);
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '11px sans-serif';
-    ctx.fillText(item.name + ': ' + item.value.toFixed(0) + '亿', pad + 14, y + 9);
+  const details = [{n:'电子',v:d.tmt.electronics.turnover,c:'#dc2626'},{n:'通信',v:d.tmt.telecom.turnover,c:'#f97316'},{n:'计算机',v:d.tmt.computer.turnover,c:'#eab308'},{n:'传媒',v:d.tmt.media.turnover,c:'#a3e635'}];
+  const startY = pad + 2*(barH+10)+10;
+  ctx.fillStyle = '#64748b'; ctx.font = '11px sans-serif'; ctx.textAlign = 'left'; ctx.fillText('TMT分行业:', pad, startY);
+  details.forEach((it,i) => {
+    const y = startY + 14 + i*17;
+    ctx.fillStyle = it.c; ctx.fillRect(pad, y, 8, 8);
+    ctx.fillStyle = '#94a3b8'; ctx.font = '11px sans-serif'; ctx.fillText(it.n + ': ' + it.v.toFixed(0) + '亿', pad + 12, y + 8);
   });
 }
 
-// ====== 融资余额趋势 ======
-function renderMarginChart() {
-  const d = AUTO_DATA;
+// ====== 融资余额 ======
+function renderMarginChart(d) {
   const canvas = document.getElementById('marginCanvas');
   const ctx = canvas.getContext('2d');
   const rect = canvas.parentElement.getBoundingClientRect();
-  canvas.width = rect.width * 2;
-  canvas.height = rect.height * 2;
+  canvas.width = rect.width * 2; canvas.height = rect.height * 2;
   ctx.scale(2, 2);
   const W = rect.width, H = rect.height;
-  
   const data = d.marginBalance.filter(m => m.total);
   if (data.length < 2) return;
-  
   const padL = 40, padR = 10, padT = 10, padB = 30;
   const plotW = W - padL - padR, plotH = H - padT - padB;
-  
   const vals = data.map(m => m.total);
-  const minV = Math.min(...vals) * 0.999;
-  const maxV = Math.max(...vals) * 1.001;
-  
+  const minV = Math.min(...vals) * 0.999, maxV = Math.max(...vals) * 1.001;
   function x(i) { return padL + (i / (data.length - 1)) * plotW; }
   function y(v) { return padT + plotH - ((v - minV) / (maxV - minV)) * plotH; }
-  
-  // 画线
-  ctx.beginPath();
-  ctx.strokeStyle = '#60a5fa';
-  ctx.lineWidth = 2;
-  data.forEach((m, i) => {
-    if (i === 0) ctx.moveTo(x(i), y(m.total));
-    else ctx.lineTo(x(i), y(m.total));
-  });
+  ctx.beginPath(); ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2;
+  data.forEach((m, i) => { if (i === 0) ctx.moveTo(x(i), y(m.total)); else ctx.lineTo(x(i), y(m.total)); });
   ctx.stroke();
-  
-  // 填充
-  ctx.lineTo(x(data.length-1), padT + plotH);
-  ctx.lineTo(x(0), padT + plotH);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(96,165,250,0.1)';
-  ctx.fill();
-  
-  // 标签
-  ctx.fillStyle = '#64748b';
-  ctx.font = '10px sans-serif';
-  ctx.textAlign = 'center';
+  ctx.lineTo(x(data.length-1), padT+plotH); ctx.lineTo(x(0), padT+plotH); ctx.closePath();
+  ctx.fillStyle = 'rgba(96,165,250,0.1)'; ctx.fill();
+  ctx.fillStyle = '#64748b'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
   const step = Math.max(1, Math.floor(data.length / 5));
-  for (let i = 0; i < data.length; i += step) {
-    ctx.fillText(data[i].date.substring(5), x(i), H - 8);
-  }
-  
-  // 最新值
+  for (let i = 0; i < data.length; i += step) ctx.fillText(data[i].date.substring(5), x(i), H - 8);
   const last = data[data.length - 1];
-  ctx.fillStyle = '#60a5fa';
-  ctx.font = 'bold 14px sans-serif';
-  ctx.textAlign = 'right';
+  ctx.fillStyle = '#60a5fa'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'right';
   ctx.fillText(last.total.toFixed(4) + '万亿', W - padR, padT + 15);
-  
-  ctx.fillStyle = '#64748b';
-  ctx.font = '11px sans-serif';
-  ctx.fillText('沪深融资余额合计', W - padR, padT + 30);
+  ctx.fillStyle = '#64748b'; ctx.font = '11px sans-serif'; ctx.fillText('沪深融资余额合计', W - padR, padT + 30);
+}
+
+// ====== 风险窗口 ======
+function renderRiskCalendar() {
+  const currentMonth = new Date().getMonth() + 1;
+  const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  // 只显示6个月：以当前月为中心
+  const showMonths = [];
+  for (let i = -2; i <= 3; i++) {
+    const m = ((currentMonth - 1 + i + 12) % 12);
+    showMonths.push(RISK_MONTHS[m]);
+  }
+  document.getElementById('riskCalendar').innerHTML = showMonths.map(rm => {
+    const isCurrent = rm.month === monthNames[currentMonth - 1];
+    return `
+      <div class="risk-month ${rm.risk} ${isCurrent ? 'current' : ''}">
+        <div class="rm-name">${rm.month}${isCurrent ? ' 🔻' : ''}</div>
+        <div class="rm-status" style="color:${rm.risk==='danger'?'#fca5a5':rm.risk==='safe'?'#86efac':'#fde047'}">${rm.desc.replace('\n','<br>')}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ====== 产品跟踪 ======
+function renderProducts() {
+  const table = document.getElementById('productTable');
+  table.innerHTML = `
+    <tr><th>产品</th><th>近1日(%)</th><th>近5日(%)</th><th>近20日(%)</th><th>相对微盘</th><th>最大回撤(%)</th><th>状态</th></tr>
+    ${products.map((p, i) => `
+      <tr>
+        <td><input value="${p.name}" style="width:80px" onchange="products[${i}].name=this.value"></td>
+        <td><input value="${p.n1d}" placeholder="—" onchange="products[${i}].n1d=this.value"></td>
+        <td><input value="${p.n5d}" placeholder="—" onchange="products[${i}].n5d=this.value"></td>
+        <td><input value="${p.n20d}" placeholder="—" onchange="products[${i}].n20d=this.value"></td>
+        <td><input value="${p.vsWeipan}" placeholder="—" onchange="products[${i}].vsWeipan=this.value"></td>
+        <td><input value="${p.maxDD}" placeholder="—" onchange="products[${i}].maxDD=this.value"></td>
+        <td style="font-size:12px;color:#94a3b8">${p.status || '待填入'}</td>
+      </tr>
+    `).join('')}
+  `;
+}
+
+function saveProducts() {
+  localStorage.setItem('weipan_products', JSON.stringify(products));
+  alert('产品数据已保存');
+}
+
+function toggleProduct() {
+  const sec = document.getElementById('productSection');
+  sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
 }
 
 // ====== 观察清单 ======
-function renderChecklist() {
-  const d = AUTO_DATA;
-  const s = manualData;
+function renderChecklist(d, s) {
   const list = document.getElementById('checklist');
+  const wpRatio = s.weipanTurnoverRatio ? parseFloat(s.weipanTurnoverRatio)/100 : d.weipanRatio;
+  const tmtR = s.tmtRatio ? parseFloat(s.tmtRatio)/100 : d.tmtRatio;
+  const spread = s.spreadIndex ? parseFloat(s.spreadIndex)/100 : d.weipanSpread;
   
   const items = [
-    {text:'TMT成交占比连续下降（当前' + (d.tmtRatio*100).toFixed(1) + '%，目标<35%）', checked: d.tmtRatio < 0.35},
-    {text:'微盘成交占比回升至1%以上（当前' + (d.weipanRatio*100).toFixed(2) + '%）', checked: d.weipanRatio > 0.01},
-    {text:'微盘指数5日连续跑赢沪深300', checked: d.relativeExcess5d > 0},
-    {text:'微盘指数20日跑赢沪深300', checked: d.relativeExcess20d > 0},
-    {text:'微盘扩散指数站上50%（当前' + (d.weipanSpread*100).toFixed(0) + '%）', checked: d.weipanSpread > 0.5},
-    {text:'融资余额止跌回升', checked: false},
-    {text:'关注基金净值开始跟随修复', checked: s.fundNetValue5d && parseFloat(s.fundNetValue5d) > 0}
+    {text:'TMT成交占比连续下降（当前' + (tmtR*100).toFixed(1) + '%，目标&lt;35%）', met: tmtR < 0.35},
+    {text:'微盘成交占比回升至1%以上（当前' + (wpRatio*100).toFixed(2) + '%）', met: wpRatio > 0.01},
+    {text:'微盘指数5日连续跑赢沪深300', met: d.relativeExcess5d > 0},
+    {text:'微盘指数20日跑赢沪深300', met: d.relativeExcess20d > 0},
+    {text:'微盘扩散指数站上50%（当前' + (spread*100).toFixed(0) + '%）', met: spread > 0.5},
+    {text:'大盘成交占比降到45%以下', met: false},
+    {text:'关注基金净值开始跟随修复', met: s.fundNetValue5d && parseFloat(s.fundNetValue5d) > 0},
   ];
   
   const saved = JSON.parse(localStorage.getItem('weipan_checklist') || '{}');
+  const metCount = items.filter(it => it.met).length;
   
-  list.innerHTML = items.map((item, i) => `
+  list.innerHTML = '<div style="font-size:12px;color:#64748b;margin-bottom:8px">已满足 ' + metCount + ' / ' + items.length + ' 项</div>' +
+    items.map((item, i) => `
     <li>
-      <input type="checkbox" id="check_${i}" ${saved[i] || item.checked ? 'checked' : ''} onchange="saveCheck(${i}, this.checked)">
-      <label for="check_${i}" class="${saved[i] || item.checked ? 'done' : ''}">${item.text}</label>
+      <input type="checkbox" id="check_${i}" ${saved[i] || item.met ? 'checked' : ''} onchange="saveCheck(${i}, this.checked)">
+      <label for="check_${i}" class="${saved[i] || item.met ? 'done' : ''}">${item.text}</label>
+      <span class="cl-status" style="background:${item.met?'#052e16':'#450a0a'};color:${item.met?'#86efac':'#fca5a5'}">${item.met?'已满足':'未满足'}</span>
     </li>
   `).join('');
 }
@@ -623,7 +804,8 @@ function saveCheck(i, val) {
   const saved = JSON.parse(localStorage.getItem('weipan_checklist') || '{}');
   saved[i] = val;
   localStorage.setItem('weipan_checklist', JSON.stringify(saved));
-  renderChecklist();
+  const d = AUTO_DATA, s = manualData;
+  renderChecklist(d, s);
 }
 
 // ====== 手动输入 ======
@@ -649,21 +831,20 @@ function saveManual() {
     else delete manualData[key];
   });
   localStorage.setItem('weipan_manual', JSON.stringify(manualData));
-  renderStatus();
-  renderMetrics();
-  renderChecklist();
+  init(); // 全部重新渲染
 }
 
 // ====== 启动 ======
 window.addEventListener('load', init);
 window.addEventListener('resize', () => {
-  renderChart();
-  renderTurnoverChart();
-  renderMarginChart();
+  if (typeof AUTO_DATA !== 'undefined') {
+    renderChart(AUTO_DATA);
+    renderTurnoverChart(AUTO_DATA);
+    renderMarginChart(AUTO_DATA);
+  }
 });
 </script>
 
 <script src="auto-data.js"></script>
 </body>
 </html>
-
