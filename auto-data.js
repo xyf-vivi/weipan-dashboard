@@ -73,6 +73,70 @@ const AUTO_DATA = {
     {date:"2026-06-12", open:4784.64, close:4777.32, high:4809.86, low:4757.56, turnover:871477325200}
   ],
 
+  // === 中证2000 (000905.SH) 日K线（Wind MCP数据） ===
+  zz2000: [
+    {date:"2026-05-06", open:8441.34, close:8588.44, high:8621.35, low:8441.34, turnover:635607537700, volume:27464745200, changeRate:2.441},
+    {date:"2026-05-07", open:8637.84, close:8696.8, high:8700.34, low:8598.71, turnover:620440650700, volume:27099417900, changeRate:2.4086},
+    {date:"2026-05-08", open:8638.84, close:8694.17, high:8706.33, low:8616.22, turnover:609002654300, volume:27114353500, changeRate:2.4098},
+    {date:"2026-05-11", open:8771.18, close:8839.74, high:8863.77, low:8716.45, turnover:709124529100, volume:28833019600, changeRate:2.5577},
+    {date:"2026-05-12", open:8856.18, close:8785.98, high:8856.18, low:8736.42, turnover:633557984200, volume:26987096800, changeRate:2.3939},
+    {date:"2026-05-13", open:8730.91, close:8918.24, high:8925.88, low:8730.91, turnover:637052785900, volume:25409688800, changeRate:2.254},
+    {date:"2026-05-14", open:8952.95, close:8670.16, high:8956.66, low:8670.16, turnover:658225134800, volume:28950256600, changeRate:2.5681},
+    {date:"2026-05-15", open:8676.62, close:8536.34, high:8717.09, low:8473.04, turnover:643023956600, volume:27096176200, changeRate:2.4037},
+    {date:"2026-05-18", open:8493.02, close:8554.24, high:8606.41, low:8472.42, turnover:559260917300, volume:23109341700, changeRate:2.05},
+    {date:"2026-05-19", open:8524.15, close:8627.95, high:8633.06, low:8416.52, turnover:571306974400, volume:24386882000, changeRate:2.163},
+    {date:"2026-05-20", open:8581.39, close:8656.31, high:8681.72, low:8552.43, turnover:574479528700, volume:23041869700, changeRate:2.0433},
+    {date:"2026-05-21", open:8703.17, close:8419.84, high:8790.38, low:8406.29, turnover:687607693400, volume:27948915800, changeRate:2.4785},
+    {date:"2026-05-22", open:8473.61, close:8576.94, high:8591.15, low:8414.94, turnover:556432683500, volume:22161039100, changeRate:1.9652},
+    {date:"2026-05-25", open:8631.21, close:8703.89, high:8705.2, low:8543.89, turnover:629332990000, volume:23505289000, changeRate:2.0844},
+    {date:"2026-05-26", open:8665.44, close:8658.62, high:8673.21, low:8529.67, turnover:647239450000, volume:24710784400, changeRate:2.1904},
+    {date:"2026-05-27", open:8659.22, close:8530.98, high:8722.58, low:8491.32, turnover:676927953500, volume:25911673400, changeRate:2.2968},
+    {date:"2026-05-28", open:8503.67, close:8563.22, high:8596.45, low:8424.45, turnover:596276737100, volume:24224000600, changeRate:2.1472},
+    {date:"2026-05-29", open:8589.82, close:8359.56, high:8597.98, low:8296.24, turnover:661406695200, volume:28119061600, changeRate:2.492},
+    {date:"2026-06-01", open:8358.49, close:8274.21, high:8442.53, low:8259.6, turnover:584223622400, volume:25817502700, changeRate:2.2872},
+    {date:"2026-06-02", open:8290.83, close:8321.43, high:8378.43, low:8142.51, turnover:548050911600, volume:23958969600, changeRate:2.1224},
+    {date:"2026-06-03", open:8317, close:8362.16, high:8462.67, low:8294.29, turnover:608167868400, volume:25357653100, changeRate:2.2462},
+    {date:"2026-06-04", open:8279.86, close:8356.74, high:8391.05, low:8279.86, turnover:570131396500, volume:23082197600, changeRate:2.0442},
+    {date:"2026-06-05", open:8317.64, close:8251.14, high:8399.41, low:8218.14, turnover:612246476400, volume:24708934700, changeRate:2.1872},
+    {date:"2026-06-08", open:7978.66, close:7963.45, high:8142.34, low:7889.4, turnover:562548949600, volume:24479319800, changeRate:2.1668},
+    {date:"2026-06-09", open:8059.34, close:8176.18, high:8181.13, low:7965.49, turnover:506484788500, volume:20929297800, changeRate:1.8519},
+    {date:"2026-06-10", open:8094.14, close:8063.86, high:8148.26, low:7973.55, turnover:509158413500, volume:21091009800, changeRate:1.8658},
+    {date:"2026-06-11", open:8025.61, close:8035.78, high:8091.68, low:7965.02, turnover:512698921000, volume:19685777600, changeRate:1.7415},
+    {date:"2026-06-12", open:8189.21, close:8106.2, high:8258.91, low:8098.78, turnover:668679920700, volume:26624408000, changeRate:2.6124}
+  ],
+
+  // === 科创50 (000688.SH) 日K线（Wind MCP数据） ===
+  kc50: [
+    {date:"2026-05-06", open:1634.31, close:1656.95, high:1715.08, low:1631.65, turnover:202263525000, volume:1830104800, changeRate:2.7798},
+    {date:"2026-05-07", open:1663.16, close:1678.89, high:1682.22, low:1646.94, turnover:147148539100, volume:1393006300, changeRate:2.1158},
+    {date:"2026-05-08", open:1653.31, close:1640.46, high:1655.57, low:1625.61, turnover:134384676000, volume:1500507400, changeRate:2.272},
+    {date:"2026-05-11", open:1687.64, close:1716.69, high:1727.3, low:1669.73, turnover:183091745800, volume:1829405800, changeRate:2.7108},
+    {date:"2026-05-12", open:1708.21, close:1723.78, high:1747.17, low:1687.96, turnover:163162220200, volume:1692708900, changeRate:2.5082},
+    {date:"2026-05-13", open:1684.37, close:1770.15, high:1771.49, low:1677.54, turnover:158688703200, volume:1777324700, changeRate:2.6336},
+    {date:"2026-05-14", open:1792.34, close:1725.09, high:1800.61, low:1723.7, turnover:170925244400, volume:2107102300, changeRate:3.1222},
+    {date:"2026-05-15", open:1724.36, close:1696.26, high:1769.8, low:1669.99, turnover:191146069900, volume:2160121400, changeRate:3.2008},
+    {date:"2026-05-18", open:1690.38, close:1709.96, high:1748.1, low:1684.9, turnover:152427297000, volume:1591395600, changeRate:2.358},
+    {date:"2026-05-19", open:1697.4, close:1775.13, high:1776.26, low:1670.36, turnover:169324578800, volume:1710436800, changeRate:2.5317},
+    {date:"2026-05-20", open:1764.21, close:1832.02, high:1835.22, low:1764.21, turnover:190386612600, volume:1845254200, changeRate:2.7312},
+    {date:"2026-05-21", open:1866.29, close:1764.17, high:1892.6, low:1759.94, turnover:216374427900, volume:2127403800, changeRate:3.1488},
+    {date:"2026-05-22", open:1790.74, close:1790.77, high:1797.65, low:1747.14, turnover:162025307200, volume:1760391900, changeRate:2.6056},
+    {date:"2026-05-25", open:1791.67, close:1896.04, high:1899.97, low:1774.19, turnover:221953931400, volume:2149793700, changeRate:3.182},
+    {date:"2026-05-26", open:1877.39, close:1867.71, high:1880.65, low:1824.32, turnover:193152885200, volume:1940888500, changeRate:2.8727},
+    {date:"2026-05-27", open:1875.42, close:1815.45, high:1901.97, low:1809.7, turnover:192835609700, volume:2160969900, changeRate:3.1985},
+    {date:"2026-05-28", open:1805.11, close:1844.25, high:1854.52, low:1796.04, turnover:177051079000, volume:2154008000, changeRate:3.1882},
+    {date:"2026-05-29", open:1850.27, close:1751.32, high:1855.26, low:1727.62, turnover:182139564400, volume:2343137400, changeRate:3.4524},
+    {date:"2026-06-01", open:1751.23, close:1663.69, high:1753.02, low:1662.82, turnover:149900665000, volume:1694183400, changeRate:2.4962},
+    {date:"2026-06-02", open:1676.31, close:1690.56, high:1710.98, low:1641.17, turnover:133709243800, volume:1557622000, changeRate:2.295},
+    {date:"2026-06-03", open:1697.66, close:1726.18, high:1776.2, low:1697.36, turnover:166311010800, volume:1682555400, changeRate:2.479},
+    {date:"2026-06-04", open:1700.31, close:1738.06, high:1759.98, low:1697.22, turnover:132618434500, volume:1496770100, changeRate:2.2053},
+    {date:"2026-06-05", open:1706.53, close:1668.33, high:1735.08, low:1659.48, turnover:136854203800, volume:1683570900, changeRate:2.4804},
+    {date:"2026-06-08", open:1587.97, close:1596.57, high:1634.03, low:1578.18, turnover:119405019900, volume:1570749900, changeRate:2.3142},
+    {date:"2026-06-09", open:1630.23, close:1663.11, high:1666.48, low:1607.58, turnover:112366426700, volume:1409895800, changeRate:2.0093},
+    {date:"2026-06-10", open:1662.85, close:1652.22, high:1722.33, low:1632.33, turnover:139088834500, volume:1591172500, changeRate:2.2631},
+    {date:"2026-06-11", open:1644.6, close:1662.44, high:1676.53, low:1631.94, turnover:117155580100, volume:1422069400, changeRate:2.0225},
+    {date:"2026-06-12", open:1726.01, close:1663.22, high:1730.89, low:1656.85, turnover:175820241100, volume:2101856700, changeRate:2.9894}
+  ],
+
   // === 指数实时快照 (2026-06-12收盘) ===
   quotes: {
     "868008.WI": {name:"万得微盘股指数", close:544778.23, change:0.93, turnover:26089752300, upCount:314, downCount:77},
@@ -163,6 +227,20 @@ const AUTO_DATA = {
     d.hs300_20d = (last20[last20.length-1].close / last20[0].close - 1) * 100;
   }
   
+  // 中证2000近20日涨跌幅（Wind MCP真实数据）
+  const zz = d.zz2000;
+  if (zz && zz.length >= 20) {
+    const last20 = zz.slice(-20);
+    d.zz2000_20d = (last20[last20.length-1].close / last20[0].close - 1) * 100;
+  }
+  
+  // 科创50近20日涨跌幅（Wind MCP真实数据）
+  const kc = d.kc50;
+  if (kc && kc.length >= 20) {
+    const last20 = kc.slice(-20);
+    d.kc50_20d = (last20[last20.length-1].close / last20[0].close - 1) * 100;
+  }
+  
   // 微盘相对沪深300超额收益
   d.relativeExcess5d = d.weipan5d - d.hs300_5d;
   d.relativeExcess20d = d.weipan20d - d.hs300_20d;
@@ -183,27 +261,174 @@ const AUTO_DATA = {
   
 })();
 
-// === 微盘量化产品跟踪 (天天基金数据, 2026-06-12) ===
-// 分层：第一梯队微盘量化 | 人肉量化 | 对照组 | 风格对照
+// === 微盘量化产品跟踪 (Wind MCP真实数据, 2026-06-12) ===
+// 分层：微盘暴露型 | 稳健分散型 | 风格对照型 | 微盘量化
 const FUND_PRODUCTS = [
-  // === 第一梯队：微盘量化核心观察池 ===
+  // === 微盘暴露型 ===
+  {
+    tier: "微盘暴露型",
+    name: "诺安多策略A",
+    code: "320016",
+    type: "混合型-偏股",
+    navDate: "2026-06-12",
+    nav: 2.3930,
+    dayChange: -2.84,
+    week1: -6.04,
+    month1: -16.37,
+    month3: null,
+    month6: null,
+    year1: null,
+    ytd: null,
+    scale: null,
+    status: "高暴露微盘",
+    statusNote: "Wind MCP真实数据，近1月跌16.37%"
+  },
+  {
+    tier: "微盘暴露型",
+    name: "中信保诚景气优选A",
+    code: "009853",
+    type: "混合型-偏股",
+    navDate: "2026-06-12",
+    nav: null,
+    dayChange: null,
+    week1: null,
+    month1: null,
+    month3: null,
+    month6: null,
+    year1: null,
+    ytd: null,
+    scale: null,
+    status: "待接入",
+    statusNote: "数据待接入"
+  },
+  {
+    tier: "微盘暴露型",
+    name: "中信保诚多策略A",
+    code: "011282",
+    type: "混合型-偏股",
+    navDate: "2026-06-12",
+    nav: null,
+    dayChange: null,
+    week1: null,
+    month1: null,
+    month3: null,
+    month6: null,
+    year1: null,
+    ytd: null,
+    scale: null,
+    status: "待接入",
+    statusNote: "数据待接入"
+  },
+  // === 稳健分散型 ===
+  {
+    tier: "稳健分散型",
+    name: "金元顺安元启",
+    code: "004685",
+    type: "混合型-灵活",
+    navDate: "2026-06-12",
+    nav: 4.9918,
+    dayChange: -3.65,
+    week1: -5.59,
+    month1: -13.35,
+    month3: null,
+    month6: null,
+    year1: null,
+    ytd: null,
+    scale: null,
+    status: "人肉量化天花板",
+    statusNote: "Wind MCP真实数据，近1月跌13.35%"
+  },
+  {
+    tier: "稳健分散型",
+    name: "建信灵活配置A",
+    code: "000270",
+    type: "混合型-灵活",
+    navDate: "2026-06-12",
+    nav: null,
+    dayChange: null,
+    week1: null,
+    month1: null,
+    month3: null,
+    month6: null,
+    year1: null,
+    ytd: null,
+    scale: null,
+    status: "待接入",
+    statusNote: "数据待接入"
+  },
+  {
+    tier: "稳健分散型",
+    name: "华夏新锦绣A",
+    code: "002871",
+    type: "混合型-灵活",
+    navDate: "2026-06-12",
+    nav: null,
+    dayChange: null,
+    week1: null,
+    month1: null,
+    month3: null,
+    month6: null,
+    year1: null,
+    ytd: null,
+    scale: null,
+    status: "待接入",
+    statusNote: "数据待接入"
+  },
+  // === 风格对照型 ===
+  {
+    tier: "风格对照型",
+    name: "万家精选A",
+    code: "519185",
+    type: "混合型-偏股",
+    navDate: "2026-06-12",
+    nav: 2.6141,
+    dayChange: -3.16,
+    week1: -4.99,
+    month1: 0.68,
+    month3: null,
+    month6: null,
+    year1: null,
+    ytd: null,
+    scale: null,
+    status: "黄海管理",
+    statusNote: "Wind MCP真实数据，近1月涨0.68%"
+  },
+  {
+    tier: "风格对照型",
+    name: "新华策略精选A",
+    code: "001040",
+    type: "股票型",
+    navDate: "2026-06-12",
+    nav: 3.0290,
+    dayChange: -2.66,
+    week1: -4.17,
+    month1: 6.37,
+    month3: null,
+    month6: null,
+    year1: null,
+    ytd: null,
+    scale: null,
+    status: "科技成长风格",
+    statusNote: "Wind MCP真实数据，近1月涨6.37%"
+  },
+  // === 微盘量化（原第一梯队）===
   {
     tier: "微盘量化",
     name: "国金量化多因子A",
     code: "006195",
     type: "股票型",
     navDate: "2026-06-12",
-    nav: null,
-    dayChange: 0.68,
-    week1: -1.35,
-    month1: -7.58,
-    month3: 2.52,
+    nav: 1.7653,
+    dayChange: -2.49,
+    week1: -5.58,
+    month1: -12.59,
+    month3: null,
     month6: null,
-    year1: 45.69,
-    ytd: 13.72,
-    scale: 40.17,
+    year1: null,
+    ytd: null,
+    scale: null,
     status: "微盘量化标杆",
-    statusNote: "持仓300-500只，与微盘指数相关性高，近1月跌7.58%"
+    statusNote: "Wind MCP真实数据，近1月跌12.59%"
   },
   {
     tier: "微盘量化",
@@ -212,16 +437,16 @@ const FUND_PRODUCTS = [
     type: "混合型-偏股",
     navDate: "2026-06-12",
     nav: null,
-    dayChange: 0.61,
-    week1: -1.45,
-    month1: -7.91,
-    month3: 1.22,
+    dayChange: null,
+    week1: null,
+    month1: null,
+    month3: null,
     month6: null,
-    year1: 43.01,
-    ytd: 11.93,
-    scale: 29.24,
-    status: "同门互补",
-    statusNote: "与国金多因子同门，小盘风格明显，近1月跌7.91%"
+    year1: null,
+    ytd: null,
+    scale: null,
+    status: "待接入",
+    statusNote: "数据待接入"
   },
   {
     tier: "微盘量化",
@@ -229,17 +454,17 @@ const FUND_PRODUCTS = [
     code: "003147",
     type: "混合型-灵活",
     navDate: "2026-06-12",
-    nav: null,
-    dayChange: 0.91,
-    week1: -1.62,
-    month1: -6.51,
-    month3: -0.27,
+    nav: 2.0630,
+    dayChange: -2.59,
+    week1: -4.66,
+    month1: -10.80,
+    month3: null,
     month6: null,
-    year1: 41.28,
-    ytd: 8.44,
-    scale: 0.53,
+    year1: null,
+    ytd: null,
+    scale: null,
     status: "市值下沉型",
-    statusNote: "多数持仓市值低于20亿，典型微盘量化，规模仅0.53亿"
+    statusNote: "Wind MCP真实数据，近1月跌10.80%"
   },
   {
     tier: "微盘量化",
@@ -248,90 +473,15 @@ const FUND_PRODUCTS = [
     type: "混合型-灵活",
     navDate: "2026-06-12",
     nav: null,
-    dayChange: 0.05,
-    week1: -2.58,
+    dayChange: null,
+    week1: null,
     month1: null,
     month3: null,
     month6: null,
-    year1: -1.86,
+    year1: null,
     ytd: null,
-    scale: 0.10,
-    status: "微型产品",
-    statusNote: "规模仅0.1亿，部分数据缺失，参考意义有限"
-  },
-  // === 人肉量化 ===
-  {
-    tier: "人肉量化",
-    name: "金元顺安元启",
-    code: "004685",
-    type: "混合型-灵活",
-    navDate: "2026-06-12",
-    nav: 6.5298,
-    dayChange: 1.10,
-    week1: -1.58,
-    month1: -7.56,
-    month3: -8.28,
-    month6: -0.39,
-    year1: 19.00,
-    ytd: -2.06,
-    scale: 15.76,
-    status: "人肉量化天花板",
-    statusNote: "主观投资但持仓极度分散，偏好小微盘，近1月跌7.56%"
-  },
-  // === 对照组 ===
-  {
-    tier: "对照组",
-    name: "万家精选A",
-    code: "519185",
-    type: "混合型-偏股",
-    navDate: "2026-06-12",
-    nav: 2.1792,
-    dayChange: 1.25,
-    week1: -2.75,
-    month1: 5.27,
-    month3: 1.55,
-    month6: 26.65,
-    year1: 47.30,
-    ytd: 28.82,
-    scale: 8.66,
-    status: "黄海管理",
-    statusNote: "近1月涨5.27%，逆势上涨，已脱离微盘风格"
-  },
-  // === 风格对照 ===
-  {
-    tier: "风格对照",
-    name: "诺安多策略A",
-    code: "320016",
-    type: "混合型-偏股",
-    navDate: "2026-06-12",
-    nav: 3.22,
-    dayChange: 1.19,
-    week1: -3.27,
-    month1: -13.53,
-    month3: -12.69,
-    month6: 1.16,
-    year1: 22.62,
-    ytd: -2.42,
-    scale: 25.41,
-    status: "高暴露微盘",
-    statusNote: "近1月跌13.53%，跌幅大于微盘指数，微盘暴露最高"
-  },
-  {
-    tier: "风格对照",
-    name: "新华策略精选A",
-    code: "001040",
-    type: "股票型",
-    navDate: "2026-06-12",
-    nav: 3.7465,
-    dayChange: -1.28,
-    week1: -0.46,
-    month1: 5.66,
-    month3: 35.06,
-    month6: 66.08,
-    year1: 158.97,
-    ytd: 67.37,
-    scale: 7.85,
-    status: "科技成长风格",
-    statusNote: "近1年涨158.97%，今年涨67.37%，含大量科技暴露"
+    scale: null,
+    status: "待接入",
+    statusNote: "数据待接入"
   }
 ];

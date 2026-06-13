@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>微盘策略温度计 - 判断现在能否配置微盘策略</title>
+  <title>微盘量化基金配置检查页 - 买前风险检查</title>
   <style>
     :root {
       --bg-dark: #0f172a;
@@ -17,6 +17,9 @@
       --accent-yellow: #eab308;
       --accent-blue: #3b82f6;
       --border-color: #334155;
+      --risk-red: rgba(239, 68, 68, 0.15);
+      --risk-yellow: rgba(234, 179, 8, 0.15);
+      --risk-green: rgba(34, 197, 94, 0.15);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -27,10 +30,10 @@
       min-height: 100vh;
     }
     .container { max-width: 900px; margin: 0 auto; padding: 20px; }
-    h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
-    h2 { font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary); }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    h2 { font-size: 17px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary); }
     h3 { font-size: 14px; font-weight: 600; margin: 16px 0 8px; color: var(--text-secondary); }
-    .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
+    .subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 20px; }
     .card {
       background: var(--bg-card);
       border-radius: 12px;
@@ -46,53 +49,137 @@
     .tag-yellow { background: rgba(234,179,8,0.2); color: var(--accent-yellow); }
     .tag-red { background: rgba(239,68,68,0.2); color: var(--accent-red); }
     .tag-blue { background: rgba(59,130,246,0.2); color: var(--accent-blue); }
+    .tag-gray { background: rgba(100,116,139,0.2); color: var(--text-muted); }
     
-    /* HERO Section */
+    /* 首屏结论 */
     .hero { text-align: center; padding: 30px 20px; }
-    .hero-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
-    .hero-subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+    .hero-title { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+    .hero-subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 20px; }
+    .hero-status-badge {
+      display: inline-block; padding: 8px 20px; border-radius: 30px;
+      font-size: 18px; font-weight: 700; margin-bottom: 16px;
+    }
+    .badge-observe { background: var(--risk-yellow); color: var(--accent-yellow); }
+    .badge-avoid { background: var(--risk-red); color: var(--accent-red); }
+    .badge-signal { background: var(--risk-green); color: var(--accent-green); }
+    .badge-tentative { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
     .hero-score { 
-      font-size: 72px; font-weight: 900; 
+      font-size: 56px; font-weight: 900; 
       background: linear-gradient(135deg, #f59e0b, #ef4444);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       margin-bottom: 8px;
     }
-    .hero-status { 
-      font-size: 20px; font-weight: 600; color: var(--accent-yellow); 
-      margin-bottom: 16px;
+    .hero-desc { color: var(--text-secondary); font-size: 14px; max-width: 600px; margin: 0 auto 16px; line-height: 1.8; }
+    .hero-meta { font-size: 11px; color: var(--text-muted); }
+    .hero-reminder { 
+      font-size: 12px; color: var(--accent-yellow); 
+      background: var(--risk-yellow); padding: 8px 16px; 
+      border-radius: 20px; display: inline-block; margin-top: 12px;
     }
-    .hero-desc { color: var(--text-secondary); font-size: 15px; max-width: 500px; margin: 0 auto; }
-    .hero-tags { margin-top: 20px; }
     
-    /* Evidence Cards */
-    .evidence-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .evidence-card {
-      background: var(--bg-card);
+    /* 三类人群 */
+    .user-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .user-card {
+      background: var(--bg-hover);
       border-radius: 10px;
       padding: 16px;
-      border: 1px solid var(--border-color);
     }
-    .evidence-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
-    .evidence-value { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
-    .evidence-desc { font-size: 12px; color: var(--text-muted); }
-    .positive { color: var(--accent-green); }
-    .negative { color: var(--accent-red); }
-    .neutral { color: var(--accent-yellow); }
+    .user-type { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+    .user-action { font-size: 13px; color: var(--accent-yellow); margin-bottom: 8px; }
+    .user-detail { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+    .user-quote { font-size: 12px; font-style: italic; color: var(--text-secondary); border-left: 2px solid var(--border-color); padding-left: 8px; }
     
-    /* Risk Cards */
-    .risk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .risk-card {
-      background: var(--bg-card);
+    /* 为什么不能重仓 */
+    .reason-list { list-style: none; padding: 0; }
+    .reason-list li {
+      padding: 10px 14px; margin-bottom: 8px;
+      background: var(--bg-hover); border-radius: 8px;
+      font-size: 14px; color: var(--text-secondary);
+    }
+    .reason-list li::before { content: "→ "; color: var(--accent-yellow); font-weight: 700; }
+    .key-quote {
+      font-size: 15px; font-weight: 600; color: var(--accent-yellow);
+      text-align: center; padding: 12px; margin-top: 12px;
+      background: var(--risk-yellow); border-radius: 8px;
+    }
+    
+    /* 硬风控状态栏 */
+    .risk-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; margin-bottom: 12px;
+      background: var(--bg-hover); border-radius: 8px;
+      border-left: 4px solid var(--accent-yellow);
+    }
+    .risk-bar.green { border-left-color: var(--accent-green); }
+    .risk-bar.red { border-left-color: var(--accent-red); }
+    .risk-status { font-size: 14px; font-weight: 600; }
+    .risk-items { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--text-muted); }
+    .risk-item { display: flex; align-items: center; gap: 4px; }
+    .risk-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-wait { background: var(--text-muted); }
+    .dot-ok { background: var(--accent-green); }
+    .dot-watch { background: var(--accent-yellow); }
+    .dot-trigger { background: var(--accent-red); }
+    
+    /* 四个信号灯 */
+    .signal-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    .signal-card {
+      background: var(--bg-hover);
       border-radius: 10px;
-      padding: 14px;
-      border-left: 3px solid var(--accent-yellow);
+      padding: 16px;
+      border-left: 4px solid var(--accent-yellow);
     }
-    .risk-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-    .risk-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
-    .risk-trigger { font-size: 11px; color: var(--accent-yellow); background: rgba(251, 191, 36, 0.1); padding: 6px; border-radius: 4px; }
-    .evidence-sub { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+    .signal-card.green { border-left-color: var(--accent-green); }
+    .signal-card.red { border-left-color: var(--accent-red); }
+    .signal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .signal-title { font-size: 15px; font-weight: 600; }
+    .signal-judge { font-size: 13px; font-weight: 600; }
+    .signal-obs { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+    .signal-why { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+    .signal-condition {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;
+    }
+    .cond-good { color: var(--accent-green); }
+    .cond-bad { color: var(--accent-red); }
+    .signal-translate {
+      font-size: 11px; color: var(--text-muted); font-style: italic;
+      padding: 6px 8px; background: rgba(0,0,0,0.2); border-radius: 4px; margin-top: 8px;
+    }
     
-    /* Fund Pool */
+    /* 加仓信号 */
+    .add-signal-list { list-style: none; padding: 0; }
+    .add-signal-list li {
+      padding: 8px 12px; margin-bottom: 6px;
+      background: var(--bg-hover); border-radius: 6px;
+      font-size: 13px; color: var(--text-secondary);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .add-signal-list li.checked { 
+      background: var(--risk-green); color: var(--accent-green); 
+    }
+    .add-status { font-size: 12px; padding: 6px 12px; border-radius: 20px; font-weight: 600; }
+    .add-status.low { background: var(--risk-red); color: var(--accent-red); }
+    .add-status.mid { background: var(--risk-yellow); color: var(--accent-yellow); }
+    .add-status.high { background: var(--risk-green); color: var(--accent-green); }
+    
+    /* 评分拆解 */
+    .score-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .score-table th { 
+      text-align: left; padding: 10px 12px; 
+      color: var(--text-muted); border-bottom: 1px solid var(--border-color);
+      font-size: 12px;
+    }
+    .score-table td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); }
+    .score-bar-bg {
+      width: 100%; height: 8px; background: var(--bg-dark); border-radius: 4px; overflow: hidden;
+    }
+    .score-bar-fill { height: 100%; border-radius: 4px; }
+    .data-type-tag {
+      font-size: 10px; padding: 2px 6px; border-radius: 10px;
+      background: rgba(100,116,139,0.2); color: var(--text-muted);
+    }
+    
+    /* 基金观察池 */
     .fund-tier { margin-bottom: 20px; }
     .fund-tier-header { 
       display: flex; align-items: center; gap: 8px; 
@@ -108,303 +195,508 @@
       padding: 12px;
     }
     .fund-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-    .fund-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
-    .fund-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; font-size: 11px; }
-    .fund-stat-label { color: var(--text-muted); }
+    .fund-code { font-size: 11px; color: var(--text-muted); }
+    .fund-purpose { font-size: 11px; color: var(--accent-blue); margin: 6px 0; }
+    .fund-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; font-size: 11px; margin: 8px 0; }
+    .fund-stat-label { color: var(--text-muted); font-size: 10px; }
     .fund-stat-value { font-weight: 600; }
+    .fund-risk { font-size: 11px; color: var(--accent-yellow); margin-top: 6px; }
+    .fund-suit { font-size: 11px; color: var(--text-muted); font-style: italic; }
     
-    /* History Position */
-    .history-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .history-card {
-      background: var(--bg-card);
-      border-radius: 10px;
-      padding: 14px;
-      text-align: center;
-    }
-    .history-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-    .history-value { font-size: 18px; font-weight: 700; }
-    .history-conclusion { font-size: 13px; color: var(--text-secondary); margin-top: 12px; }
-    
-    /* Action Section */
-    .action-box {
-      background: linear-gradient(135deg, rgba(234,179,8,0.1), rgba(239,68,68,0.1));
-      border: 1px solid rgba(234,179,8,0.3);
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-    }
-    .action-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-    .action-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
-    .action-suggestion { 
-      display: inline-block; padding: 8px 16px; 
-      background: var(--accent-yellow); color: #000;
-      border-radius: 20px; font-size: 13px; font-weight: 600; 
-    }
-    
-    /* Tomorrow Focus */
+    /* 明天看什么 */
     .tomorrow-table { width: 100%; border-collapse: collapse; font-size: 12px; }
     .tomorrow-table th { text-align: left; padding: 8px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); }
     .tomorrow-table td { padding: 8px; border-bottom: 1px solid var(--border-color); }
     .tomorrow-table tr:last-child td { border-bottom: none; }
     
-    /* Fold Section */
+    /* 折叠区 */
     .fold-header { 
       cursor: pointer; padding: 12px; 
       background: var(--bg-card); border-radius: 8px;
       display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 8px;
     }
-    .fold-content { display: none; padding: 16px; font-size: 13px; color: var(--text-secondary); }
+    .fold-content { display: none; padding: 16px; font-size: 13px; color: var(--text-secondary); background: var(--bg-card); border-radius: 0 0 8px 8px; }
     .fold-content.open { display: block; }
     .fold-icon { transition: transform 0.3s; }
     .fold-icon.open { transform: rotate(180deg); }
     
-    /* Data Source */
+    /* 底部一句话 */
+    .final-quote {
+      text-align: center; padding: 20px;
+      font-size: 14px; color: var(--text-secondary);
+      border-top: 1px solid var(--border-color);
+      margin-top: 20px; font-style: italic;
+    }
+    
     .data-source { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); }
     
     @media (max-width: 768px) {
-      .evidence-grid, .risk-grid, .history-grid { grid-template-columns: 1fr; }
+      .user-cards { grid-template-columns: 1fr; }
       .fund-grid { grid-template-columns: 1fr; }
+      .signal-condition { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- HERO Section -->
+    <!-- 第一屏：首屏结论 -->
     <div class="card hero">
-      <div class="hero-title">微盘策略温度计</div>
-      <div class="hero-subtitle">判断现在是否适合配置微盘策略。不看单日涨跌，看资金是否从科技抱团重新扩散到小票。</div>
-      <div class="hero-score" id="heroScore">58</div>
-      <div class="hero-status" id="heroStatus">等待确认</div>
-      <div class="hero-desc" id="heroDesc">微盘已经跌到有吸引力的位置，但资金还没有真正回来。现在是观察区，不是重仓区。</div>
-      <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
-        📅 数据截至：2026-06-12 收盘 | 更新频率：交易日盘后 | 非实时盘中信号
-      </div>
-      <div class="hero-tags" id="heroTags">
-        <span class="tag tag-yellow">🟡 科技尚未退潮</span>
-        <span class="tag tag-green">🟢 赚钱效应改善</span>
-        <span class="tag tag-yellow">🟡 资金回流不足</span>
-      </div>
-    </div>
-
-    <!-- 今日发生了什么 -->
-    <div class="card">
-      <h2>📊 今天市场发生了什么？</h2>
-      <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;" id="todayWhat">
-        今天不是"微盘反转"，而是小票从极弱状态里喘了一口气。能不能变成行情，要看资金是否连续回流。
-      </p>
-      <div class="evidence-grid" style="grid-template-columns: repeat(4, 1fr);">
-        <div style="text-align: center;">
-          <div style="font-size: 12px; color: var(--text-muted);">中证2000 <span title="中证2000是小盘风格代理，不等同于万得微盘指数" style="cursor:help">📌</span></div>
-          <div style="font-size: 20px; font-weight: 700;" id="zz2000Today">+1.8%</div>
-        </div>
-        <div style="text-align: center;">
-          <div style="font-size: 12px; color: var(--text-muted);">科创50</div>
-          <div style="font-size: 20px; font-weight: 700;" id="kc50Today">-1.2%</div>
-        </div>
-        <div style="text-align: center;">
-          <div style="font-size: 12px; color: var(--text-muted);">上涨家数</div>
-          <div style="font-size: 20px; font-weight: 700;" id="upCount">72%</div>
-        </div>
-        <div style="text-align: center;">
-          <div style="font-size: 12px; color: var(--text-muted);">跌停家数</div>
-          <div style="font-size: 20px; font-weight: 700;" id="downLimit">14家</div>
-        </div>
-      </div>
-      <p style="font-size: 13px; color: var(--text-muted); margin-top: 12px;" id="todayConclusion">
-        结论：这是今天最积极的信号。微盘策略最需要的不是指数涨，而是多数股票一起涨。
-      </p>
-    </div>
-
-    <!-- 三个核心证据 -->
-    <div class="card">
-      <h2>🔍 为什么这么判断？</h2>
-      <div class="evidence-grid">
-        <div class="evidence-card">
-          <div class="evidence-title">1. 科技还在吸血吗？</div>
-          <div class="evidence-value negative" id="techFlow">-12.4%</div>
-          <div class="evidence-sub">近20日相对强弱</div>
-          <div class="evidence-desc" id="techFlowDesc">小票还在明显跑输科技。只要科技继续跑赢小票，微盘就很难走出持续行情。微盘反弹的前提，是科技抱团开始降温。</div>
-        </div>
-        <div class="evidence-card">
-          <div class="evidence-title">2. 资金回来了吗？</div>
-          <div class="evidence-value neutral" id="moneyFlow">15.9%</div>
-          <div class="evidence-sub">近5日均值 15.2% | 近20日均值 14.7%</div>
-          <div class="evidence-desc" id="moneyFlowDesc">微盘不是跌多了就会涨，必须看到成交占比回升。没有资金，反弹容易一日游。当前略高于均值，但还不是强回流。</div>
-        </div>
-        <div class="evidence-card">
-          <div class="evidence-title">3. 大部分股票赚钱吗？</div>
-          <div class="evidence-value positive" id="profitSpread">73%</div>
-          <div class="evidence-sub">上涨家数占比</div>
-          <div class="evidence-desc" id="profitSpreadDesc">这是今天最积极的信号。微盘策略最需要的不是指数涨，而是多数股票一起涨。赚钱效应扩散，比指数单日上涨更重要。</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 但是提醒 - 风险仪表盘 -->
-    <div class="card" style="border-left: 3px solid var(--accent-yellow);">
-      <h2>⚠️ 但是提醒</h2>
-      <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">
-        科技抱团并未彻底结束。只要资金还没有持续离开科技主线，微盘反弹就只能先看作修复。
-      </p>
-      <div class="risk-grid">
-        <div class="risk-card">
-          <div class="risk-title">🟡 科技重新加速风险</div>
-          <div class="risk-desc">科创50重新放量跑赢中证2000</div>
-          <div class="risk-trigger">触发条件：科技一旦重新加速，微盘容易再次被抽血</div>
-        </div>
-        <div class="risk-card">
-          <div class="risk-title">🟡 流动性踩踏风险</div>
-          <div class="risk-desc">跌停家数 > 30家转黄，> 60家转红</div>
-          <div class="risk-trigger">触发条件：跌停家数快速增加，说明小票流动性风险变大</div>
-        </div>
-        <div class="risk-card">
-          <div class="risk-title">🟡 市场缩量风险</div>
-          <div class="risk-desc">全A成交额连续3日下降</div>
-          <div class="risk-trigger">触发条件：没有成交量，微盘反弹容易一日游</div>
-        </div>
-        <div class="risk-card">
-          <div class="risk-title">🟢 退市风险</div>
-          <div class="risk-desc">ST板块大跌或跌停扩散</div>
-          <div class="risk-trigger">触发条件：当前处于财报真空期，尾部风险可控</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 微盘策略观察池 -->
-    <div class="card">
-      <h2>🔬 微盘策略观察池</h2>
-      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
-        这里不是推荐买入清单，而是用代表产品观察微盘策略的真实表现。
-      </p>
+      <div class="hero-title">微盘量化基金，现在适合买吗？</div>
+      <div class="hero-subtitle">帮你在买微盘量化基金前完成一次风险和信号检查，避免把短期反弹误判成趋势反转。</div>
       
-      <!-- 主动博弈型 -->
+      <div class="hero-status-badge badge-observe" id="heroStatusBadge">观察区</div>
+      <div class="hero-score" id="heroScore">58</div>
+      <div class="hero-desc" id="heroDesc">
+        当前状态：观察区<br>
+        当前动作：不重仓，不追涨。有经验者也只能用观察仓试探。<br>
+        核心判断：跌多了，不等于能抄底。现在看到的是小票修复，还不是趋势反转确认。
+      </div>
+      
+      <div style="font-size: 12px; color: var(--text-secondary); margin: 12px 0; padding: 10px; background: var(--bg-hover); border-radius: 8px;">
+        <div style="margin-bottom: 6px;"><strong>适合人群：</strong>能接受短期继续回撤、并且能严格按信号观察的人。</div>
+        <div><strong>不适合人群：</strong>刚入门、想抄底、不能承受回撤、看到基金跌5%就睡不着的人。</div>
+      </div>
+      
+      <div class="hero-meta">
+        📅 数据截至：2026年6月12日收盘 | 交易日盘后更新，非实时盘中信号
+      </div>
+      <div class="hero-reminder">
+        ⚠️ 本页面不是基金推荐，而是风险和信号检查。
+      </div>
+    </div>
+
+    <!-- 第二屏：三类人群动作 -->
+    <div class="card">
+      <h2>不同投资者现在应该怎么做？</h2>
+      <div class="user-cards">
+        <div class="user-card">
+          <div class="user-type">保守型</div>
+          <div class="user-action">当前动作：先不碰，只观察</div>
+          <div class="user-detail">观察仓：不建议设置</div>
+          <div class="user-quote">如果你看到基金跌5%就睡不好，现在不适合碰微盘量化。</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">重点看：等真正加仓信号出现，再考虑是否提高关注。</div>
+        </div>
+        <div class="user-card">
+          <div class="user-type">稳健型</div>
+          <div class="user-action">当前动作：只观察，不追涨</div>
+          <div class="user-detail">观察仓上限：只用亏了也不影响账户和心态的钱</div>
+          <div class="user-quote">现在不是右侧确认，只适合观察，不适合把它当成主仓位。</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">如有经验，可设置极小观察仓。</div>
+        </div>
+        <div class="user-card">
+          <div class="user-type">激进型</div>
+          <div class="user-action">当前动作：可以观察仓试探</div>
+          <div class="user-detail">前提：能接受短期再跌10%到20%；能严格执行停止试探条件；不能因为单日上涨就追高</div>
+          <div class="user-quote">激进也不是重仓，而是在信号未确认前用小仓观察市场反馈。</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">必须接受继续回撤。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第三屏：为什么现在不能重仓 -->
+    <div class="card">
+      <h2>为什么现在还不是重仓区？</h2>
+      <ul class="reason-list">
+        <li>微盘跌出了吸引力，但资金回流还不够连续。</li>
+        <li>科技抱团还没有完全结束，资金可能重新回到科技主线。</li>
+        <li>微盘量化基金仍处在回撤修复阶段，单日反弹不能证明趋势反转。</li>
+      </ul>
+      <div class="key-quote">现在不是完全不能看，而是不能把"左侧观察"误读成"右侧确认"。</div>
+      <div style="font-size: 13px; color: var(--text-muted); margin-top: 12px; padding: 10px; background: var(--bg-hover); border-radius: 8px;">
+        微盘量化最危险的地方，不是它跌，而是它跌完以后反弹很快，容易让人误以为行情已经重新开始。
+      </div>
+    </div>
+
+    <!-- 第四屏：硬风控状态栏 -->
+    <div class="card">
+      <h2>硬风控状态</h2>
+      <div class="risk-bar" id="hardRiskBar">
+        <div class="risk-status" id="hardRiskStatus">硬风控：未见明显触发项，但仍需观察</div>
+      </div>
+      <div class="risk-items">
+        <div class="risk-item">
+          <span class="risk-dot dot-wait"></span>
+          <span>波动拥挤：待接入</span>
+        </div>
+        <div class="risk-item">
+          <span class="risk-dot dot-watch"></span>
+          <span>利率约束：观察</span>
+        </div>
+        <div class="risk-item">
+          <span class="risk-dot dot-ok"></span>
+          <span>流动性踩踏：未见明显触发</span>
+        </div>
+        <div class="risk-item">
+          <span class="risk-dot dot-wait"></span>
+          <span>产品同质化：低频观察</span>
+        </div>
+      </div>
+      <div style="font-size: 12px; color: var(--text-muted); margin-top: 12px; padding: 8px; background: var(--bg-hover); border-radius: 6px;">
+        硬风控不是用来判断能不能多赚，而是判断有没有不该碰的风险。只要硬风控触发，页面结论会自动降级。
+      </div>
+      <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
+        展示逻辑：硬风控触发→直接进入回避区；硬风控观察→最高只能观察区；硬风控未见明显触发项→再结合信号评分判断。
+      </div>
+    </div>
+
+    <!-- 第五屏：四个核心信号灯 -->
+    <div class="card">
+      <h2>四个核心信号灯</h2>
+      <div class="signal-grid">
+        <!-- 信号灯一：风格是否站回微盘 -->
+        <div class="signal-card" id="signalStyle">
+          <div class="signal-header">
+            <span class="signal-title">风格是否站回微盘？</span>
+            <span class="signal-judge" id="signalStyleJudge">未完全确认</span>
+          </div>
+          <div class="signal-obs" id="signalStyleObs">小票短期仍未持续跑赢科技或核心资产。</div>
+          <div class="signal-why">为什么重要：微盘不能只看今天涨没涨，要看资金是不是真的从科技和核心资产里分流出来。</div>
+          <div class="signal-condition">
+            <span class="cond-good">变好条件：连续几个交易日，小票跑赢科技。</span>
+            <span class="cond-bad">变坏条件：科技重新放量领涨，小票再次跑输。</span>
+          </div>
+          <div class="signal-translate">如果钱还挤在科技里，微盘就很难持续涨。</div>
+        </div>
+
+        <!-- 信号灯二：资金和拥挤是否健康 -->
+        <div class="signal-card" id="signalFund">
+          <div class="signal-header">
+            <span class="signal-title">资金和拥挤是否健康？</span>
+            <span class="signal-judge" id="signalFundJudge">偏黄</span>
+          </div>
+          <div class="signal-obs" id="signalFundObs">小票资金有修复迹象，但还没形成强回流。</div>
+          <div class="signal-why">为什么重要：微盘不是跌多了就会涨，必须看到资金回来。但微盘也不是越热越好，过热会带来踩踏风险。</div>
+          <div class="signal-condition">
+            <span class="cond-good">变好条件：成交占比从低位连续回升，但没有进入极端拥挤区。</span>
+            <span class="cond-bad">变坏条件：成交占比快速冲高，换手率进入极端高分位。</span>
+          </div>
+          <div class="signal-translate">低位回升是好事，说明有人买；冲到极高位反而要小心，说明交易太挤。</div>
+        </div>
+
+        <!-- 信号灯三：市场是否适合量化赚钱 -->
+        <div class="signal-card" id="signalQuant">
+          <div class="signal-header">
+            <span class="signal-title">市场是否适合量化赚钱？</span>
+            <span class="signal-judge" id="signalQuantJudge">部分改善</span>
+          </div>
+          <div class="signal-obs" id="signalQuantObs">赚钱效应有所扩散，但还需要继续确认。</div>
+          <div class="signal-why">为什么重要：微盘量化最喜欢的不是指数大涨，而是很多股票都有机会。</div>
+          <div class="signal-condition">
+            <span class="cond-good">变好条件：上涨家数持续较多，成交不只集中在少数科技股。</span>
+            <span class="cond-bad">变坏条件：指数上涨，但多数股票不涨；或者成交继续集中在少数热门方向。</span>
+          </div>
+          <div class="signal-translate">如果只有少数热门股在涨，微盘量化不友好。如果很多股票都有机会，微盘量化才有发挥空间。</div>
+        </div>
+
+        <!-- 信号灯四：产品端是否开始确认 -->
+        <div class="signal-card" id="signalProduct">
+          <div class="signal-header">
+            <span class="signal-title">产品端是否开始确认？</span>
+            <span class="signal-judge" id="signalProductJudge">仍在修复</span>
+          </div>
+          <div class="signal-obs" id="signalProductObs">观察池基金尚未形成连续净值修复。</div>
+          <div class="signal-why">为什么重要：指数涨，不代表微盘量化基金一定跟得上。最终还要看产品端是否真的修复。</div>
+          <div class="signal-condition">
+            <span class="cond-good">变好条件：观察池里的微盘量化基金净值连续修复，并跑赢中证2000。</span>
+            <span class="cond-bad">变坏条件：指数反弹，但微盘量化基金不跟，甚至继续回撤。</span>
+          </div>
+          <div class="signal-translate">微盘指数涨，只说明环境变好；基金净值修复，才说明产品端开始确认。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第六屏：真正加仓信号 -->
+    <div class="card">
+      <h2>真正加仓信号</h2>
+      <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+        今天不买没关系，关键是知道什么信号出现后再回来确认。
+      </div>
+      <ul class="add-signal-list" id="addSignalList">
+        <li>□ 微盘相对核心资产的长期趋势没有破坏</li>
+        <li>□ 微盘20日斜率转正，并强于核心资产或大盘风格</li>
+        <li>□ 连续3个交易日，小票跑赢科技</li>
+        <li>□ 小票成交占比连续回升，但未进入极端拥挤区</li>
+        <li>□ 上涨家数占比连续高于60%</li>
+        <li>□ 跌停家数没有明显扩散</li>
+        <li>□ 观察池里的微盘量化基金净值连续修复</li>
+      </ul>
+      <div style="margin-top: 16px; padding: 12px; background: var(--bg-hover); border-radius: 8px; font-size: 13px;">
+        <div style="margin-bottom: 8px; font-weight: 600;">状态判断：</div>
+        <div style="font-size: 12px; color: var(--text-muted); line-height: 1.8;">
+          <div>满足0-2项：继续观察。信号太少，不适合提高关注。</div>
+          <div>满足3-4项：进入试探区。可以提高关注，但仍然不能追涨。</div>
+          <div>满足5项以上：信号更可信。可以进入重点观察，但仍需分批、克制、控制风险。</div>
+        </div>
+      </div>
+      <div style="font-size: 11px; color: var(--accent-yellow); margin-top: 12px; padding: 8px; background: var(--risk-yellow); border-radius: 6px;">
+        禁用表达：不要写"可以买入/可以加仓/买点出现"。建议写："继续观察/进入试探区/信号更可信/提高关注"。
+      </div>
+    </div>
+
+    <!-- 第七屏：信号评分拆解 -->
+    <div class="card">
+      <h2>微盘量化信号评分</h2>
+      <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+        信号评分用于辅助判断市场环境，不直接等于买入或加仓建议。页面结论由硬风控状态和信号评分共同决定。
+      </div>
+      <table class="score-table">
+        <thead>
+          <tr>
+            <th>模块</th>
+            <th>权重</th>
+            <th>前台含义</th>
+            <th>当前解释</th>
+            <th>数据类型</th>
+            <th>评分</th>
+          </tr>
+        </thead>
+        <tbody id="scoreTableBody">
+          <tr>
+            <td>硬风控</td>
+            <td>20</td>
+            <td>有没有不能碰的风险</td>
+            <td id="scoreHardRisk">未见明显触发项，但部分指标待接入</td>
+            <td><span class="data-type-tag">待接入/低频观察</span></td>
+            <td>
+              <div class="score-bar-bg"><div class="score-bar-fill" id="barHardRisk" style="width: 60%; background: var(--accent-yellow);"></div></div>
+              <span id="scoreHardRiskVal">12/20</span>
+            </td>
+          </tr>
+          <tr>
+            <td>风格方向</td>
+            <td>25</td>
+            <td>微盘有没有重新占优</td>
+            <td id="scoreStyle">尚未完全确认</td>
+            <td><span class="data-type-tag">自动更新</span></td>
+            <td>
+              <div class="score-bar-bg"><div class="score-bar-fill" id="barStyle" style="width: 40%; background: var(--accent-yellow);"></div></div>
+              <span id="scoreStyleVal">10/25</span>
+            </td>
+          </tr>
+          <tr>
+            <td>拥挤与流动性</td>
+            <td>20</td>
+            <td>资金是否健康回流</td>
+            <td id="scoreCrowd">有修复，但不强</td>
+            <td><span class="data-type-tag">估算代理</span></td>
+            <td>
+              <div class="score-bar-bg"><div class="score-bar-fill" id="barCrowd" style="width: 50%; background: var(--accent-yellow);"></div></div>
+              <span id="scoreCrowdVal">10/20</span>
+            </td>
+          </tr>
+          <tr>
+            <td>量化友好度</td>
+            <td>20</td>
+            <td>市场是否适合分散量化赚钱</td>
+            <td id="scoreFriendly">部分改善</td>
+            <td><span class="data-type-tag">自动更新</span></td>
+            <td>
+              <div class="score-bar-bg"><div class="score-bar-fill" id="barFriendly" style="width: 60%; background: var(--accent-green);"></div></div>
+              <span id="scoreFriendlyVal">12/20</span>
+            </td>
+          </tr>
+          <tr>
+            <td>产品验证</td>
+            <td>15</td>
+            <td>基金净值是否确认</td>
+            <td id="scoreProduct">仍在修复</td>
+            <td><span class="data-type-tag">自动更新</span></td>
+            <td>
+              <div class="score-bar-bg"><div class="score-bar-fill" id="barProduct" style="width: 30%; background: var(--accent-red);"></div></div>
+              <span id="scoreProductVal">4/15</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top: 16px; padding: 12px; background: var(--bg-hover); border-radius: 8px; font-size: 13px;">
+        <div style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">
+          微盘量化信号评分：<span id="totalScore">58</span> / 100
+        </div>
+        <div style="font-size: 14px; font-weight: 600; color: var(--accent-yellow); margin-bottom: 8px;" id="totalStatus">当前状态：观察区</div>
+        <div style="font-size: 12px; color: var(--text-secondary);" id="totalExplain">
+          信号不足，趋势尚未确认。当前只能观察，不能把短期修复当成右侧反转。
+        </div>
+      </div>
+      <div style="margin-top: 12px; font-size: 12px; color: var(--text-muted);">
+        <div style="margin-bottom: 6px; font-weight: 600;">状态区间：</div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; font-size: 11px;">
+          <div style="padding: 6px; background: var(--risk-red); border-radius: 4px; text-align: center;">45以下：回避区<br>信号不足，不碰或只观察</div>
+          <div style="padding: 6px; background: var(--risk-yellow); border-radius: 4px; text-align: center;">45-65：观察区<br>有机会，但不重仓</div>
+          <div style="padding: 6px; background: rgba(59,130,246,0.15); border-radius: 4px; text-align: center;">65-80：试探区<br>仅适合观察仓，不追涨</div>
+          <div style="padding: 6px; background: var(--risk-green); border-radius: 4px; text-align: center;">80以上：信号较强<br>可以提高关注，但仍需分批确认</div>
+        </div>
+      </div>
+      <div style="margin-top: 12px; font-size: 11px; color: var(--accent-yellow); padding: 8px; background: var(--risk-yellow); border-radius: 6px;">
+        硬风控闸门：硬风控触发→无论分数多少，直接回避区。硬风控观察→最高只能显示观察区。硬风控未见明显触发项→根据分数进入对应状态。
+      </div>
+      <div style="margin-top: 8px; font-size: 11px; color: var(--text-muted);">
+        部分专业指标使用代理口径或低频数据，不作为盘中实时交易信号。
+      </div>
+    </div>
+
+    <!-- 第八屏：微盘量化基金观察池 -->
+    <div class="card">
+      <h2>微盘量化基金观察池</h2>
+      <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+        这里不是基金推荐，而是用代表产品观察微盘量化策略是否修复。所有基金卡片先看观察用途，再看收益数据。
+      </div>
+      
+      <!-- 分类一：微盘暴露型 -->
       <div class="fund-tier">
         <div class="fund-tier-header">
-          <span style="font-size: 16px;">🎯</span>
-          <span class="fund-tier-title">主动博弈型</span>
+          <span class="fund-tier-title">微盘暴露型</span>
           <span class="tag tag-red" style="font-size: 10px;">高弹性 / 高波动</span>
         </div>
-        <div class="fund-tier-desc">代表：诺安多策略、中信保诚景气优选。这类产品更像微盘行情的进攻前锋。行情顺的时候弹性大，风格逆的时候回撤也快。</div>
-        <div class="fund-grid" id="fundActive"></div>
+        <div class="fund-tier-desc" style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+          用来观察微盘量化是否真正修复。代表：诺安多策略、中信保诚景气优选。弹性高，回撤也快，不适合小白单独重仓。
+        </div>
+        <div class="fund-grid" id="fundExposure"></div>
       </div>
       
-      <!-- 稳健参与型 -->
+      <!-- 分类二：稳健分散型 -->
       <div class="fund-tier">
         <div class="fund-tier-header">
-          <span style="font-size: 16px;">🛡️</span>
-          <span class="fund-tier-title">稳健参与型</span>
+          <span class="fund-tier-title">稳健分散型</span>
           <span class="tag tag-green" style="font-size: 10px;">分散持仓 / 风控优先</span>
         </div>
-        <div class="fund-tier-desc">代表：金元顺安元启、建信灵活配置、华夏新锦绣。这类产品更适合观察微盘策略的长期可持有性，不一定是反弹最快的品种。</div>
+        <div class="fund-tier-desc" style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+          用来观察分散微盘策略的回撤控制能力。代表：金元顺安元启、建信灵活配置、华夏新锦绣。只能作为观察对象，不等于推荐买入。
+        </div>
         <div class="fund-grid" id="fundStable"></div>
       </div>
       
-      <!-- 灵活配置型 -->
+      <!-- 分类三：风格对照型 -->
       <div class="fund-tier">
         <div class="fund-tier-header">
-          <span style="font-size: 16px;">🔄</span>
-          <span class="fund-tier-title">灵活配置型</span>
-          <span class="tag tag-blue" style="font-size: 10px;">风格切换 / 阶段参与</span>
+          <span class="fund-tier-title">风格对照型</span>
+          <span class="tag tag-blue" style="font-size: 10px;">风格判断 / 非买入对象</span>
         </div>
-        <div class="fund-tier-desc">代表：中信保诚多策略、汇安多策略。这类产品不一定始终重仓微盘，而是把微盘作为阶段性增强工具。</div>
-        <div class="fund-grid" id="fundFlexible"></div>
-      </div>
-      
-      <!-- 指数增强型 -->
-      <div class="fund-tier">
-        <div class="fund-tier-header">
-          <span style="font-size: 16px;">📈</span>
-          <span class="fund-tier-title">指数增强型</span>
-          <span class="tag tag-yellow" style="font-size: 10px;">小盘Beta / 工具属性</span>
+        <div class="fund-tier-desc" style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+          用来判断市场是不是偏离微盘，重新回到红利、周期、核心资产或其他风格。风格对照，不是微盘量化买入对象。
         </div>
-        <div class="fund-tier-desc">代表：华泰柏瑞中证2000增强、招商中证2000增强、国证2000增强。这类不是纯微盘，但更适合观察小盘风格是否系统性回归。</div>
-        <div class="fund-grid" id="fundIndex"></div>
+        <div class="fund-grid" id="fundControl"></div>
       </div>
     </div>
 
-    <!-- 历史位置 -->
+    <!-- 第九屏：明天看什么 -->
     <div class="card">
-      <h2>📍 现在处在什么位置？</h2>
-      <div class="history-grid">
-        <div class="history-card">
-          <div class="history-label">价格位置</div>
-          <div class="history-value negative" id="historyRelTech">8%</div>
-          <div style="font-size: 11px; color: var(--text-muted);">近一年低位 → 接近机会区</div>
-        </div>
-        <div class="history-card">
-          <div class="history-label">资金位置</div>
-          <div class="history-value neutral" id="historyDrawdown">54%</div>
-          <div style="font-size: 11px; color: var(--text-muted);">近一年中位 → 还没完全回来</div>
-        </div>
-        <div class="history-card">
-          <div class="history-label">风险位置</div>
-          <div class="history-value positive" id="historyVol">🟢</div>
-          <div style="font-size: 11px; color: var(--text-muted);">财报真空期 → 风险可控</div>
-        </div>
+      <h2>明天重点看什么？</h2>
+      <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+        今天不需要急着下结论，明天继续看这些信号是否延续。
       </div>
-      <div class="history-conclusion" id="historyConclusion">
-        <strong>左侧有吸引力，右侧还没确认。</strong> 微盘想真正走强，需要看到科技继续分化、小票成交占比继续上升、上涨家数持续扩散。
-      </div>
-    </div>
-
-    <!-- 操作建议 -->
-    <div class="card">
-      <h2>🎯 现在怎么做？</h2>
-      
-      <!-- 三类用户建议 -->
-      <div class="action-box">
-        <div class="action-title" id="actionTitle">当前建议：等待确认</div>
-        
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0;">
-          <div style="background: rgba(148, 163, 184, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
-            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">保守型</div>
-            <div style="font-size: 12px; color: var(--text-muted);">继续观察，不急着动</div>
-          </div>
-          <div style="background: rgba(251, 191, 36, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
-            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">稳健型</div>
-            <div style="font-size: 12px; color: var(--text-muted);">最多小仓试探 0%-10%</div>
-          </div>
-          <div style="background: rgba(239, 68, 68, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
-            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">激进型</div>
-            <div style="font-size: 12px; color: var(--text-muted);">只做左侧观察仓，不追涨</div>
-          </div>
-        </div>
-        
-        <div class="action-desc" id="actionDesc">
-          <strong>真正加仓信号：</strong>中证2000连续跑赢科创50；小票成交占比连续回升；上涨家数连续维持在60%以上。
-        </div>
-      </div>
-      
-      <h3 style="margin-top: 20px;">📅 明天重点看什么？</h3>
       <table class="tomorrow-table">
         <thead>
           <tr>
-            <th>看什么</th>
-            <th>今天</th>
-            <th>明天怎么确认</th>
-            <th>什么情况要小心</th>
+            <th>明天看什么</th>
+            <th>看哪个指标</th>
+            <th>变好说明什么</th>
+            <th>变坏怎么做</th>
           </tr>
         </thead>
-        <tbody id="tomorrowFocus"></tbody>
+        <tbody id="tomorrowFocus">
+          <tr>
+            <td>科技是否重新吸金</td>
+            <td>科创50 vs 中证2000</td>
+            <td style="color: var(--accent-green);">科技不再压制小票</td>
+            <td style="color: var(--accent-red);">科技放量大涨时，微盘不提高关注</td>
+          </tr>
+          <tr>
+            <td>小票资金是否延续</td>
+            <td>小票成交占比</td>
+            <td style="color: var(--accent-green);">资金继续回流</td>
+            <td style="color: var(--accent-red);">占比回落则继续观察</td>
+          </tr>
+          <tr>
+            <td>赚钱效应是否扩散</td>
+            <td>上涨家数占比</td>
+            <td style="color: var(--accent-green);">多数股票一起涨</td>
+            <td style="color: var(--accent-red);">低于50%时不追涨</td>
+          </tr>
+          <tr>
+            <td>踩踏风险是否抬头</td>
+            <td>跌停家数</td>
+            <td style="color: var(--accent-green);">风险可控</td>
+            <td style="color: var(--accent-red);">跌停放大则停止试探</td>
+          </tr>
+          <tr>
+            <td>产品端是否确认</td>
+            <td>观察池基金净值</td>
+            <td style="color: var(--accent-green);">微盘量化开始修复</td>
+            <td style="color: var(--accent-red);">指数涨但基金不涨，继续观察</td>
+          </tr>
+        </tbody>
       </table>
+      <div style="margin-top: 12px; font-size: 13px; color: var(--accent-yellow); padding: 8px; background: var(--risk-yellow); border-radius: 6px;">
+        明天最关键的不是微盘能不能继续涨，而是上涨能不能扩散、资金能不能延续、产品端能不能确认。
+      </div>
     </div>
 
-    <!-- 折叠说明区 -->
+    <!-- 第十屏：小白解释和数据说明 -->
     <div class="card">
-      <div class="fold-header" onclick="toggleFold()">
-        <span style="font-weight: 600;">📚 我是怎么判断微盘机会的？</span>
-        <span class="fold-icon" id="foldIcon">▼</span>
+      <div class="fold-header" onclick="toggleFold('fold1')">
+        <span style="font-weight: 600;">微盘不等于小盘</span>
+        <span class="fold-icon" id="foldIcon1">▼</span>
       </div>
-      <div class="fold-content" id="foldContent">
-        <h3>1. 微盘不等于小盘</h3>
-        <p>微盘、小盘、中证2000不是一回事。微盘更强调极低市值、等权、分散和再平衡收益；中证2000更像标准化小盘工具。</p>
-        
-        <h3>2. 微盘基金不等于微盘指数</h3>
-        <p>微盘指数涨，不代表微盘基金一定跟得上。公募基金受持仓、申赎、合规、风控和交易成本限制，很难完全复制极致微盘指数。</p>
-        
-        <h3>3. 为什么不用限购、规模、重叠度？</h3>
-        <p>这些指标有参考价值，但不适合做日频信号。看板优先采用能稳定更新、容易验证、口径清晰的指标：指数强弱、成交占比、上涨家数、跌停家数和基金净值。</p>
+      <div class="fold-content" id="foldContent1">
+        微盘、小盘、中证2000不是一回事。中证2000可以作为小票环境的代理指标，但不等于纯微盘指数。
       </div>
+
+      <div class="fold-header" onclick="toggleFold('fold2')">
+        <span style="font-weight: 600;">微盘基金不等于微盘指数</span>
+        <span class="fold-icon" id="foldIcon2">▼</span>
+      </div>
+      <div class="fold-content" id="foldContent2">
+        微盘指数涨，不代表微盘量化基金一定涨。公募基金受持仓、申赎、交易成本、风控约束影响，无法完全复制极致微盘指数。
+      </div>
+
+      <div class="fold-header" onclick="toggleFold('fold3')">
+        <span style="font-weight: 600;">为什么微盘量化会大起大落</span>
+        <span class="fold-icon" id="foldIcon3">▼</span>
+      </div>
+      <div class="fold-content" id="foldContent3">
+        微盘量化依赖市场分化、成交活跃、资金分散和再平衡空间。当市场只抱团少数科技龙头时，微盘量化容易失效；当市场重新扩散到多数股票时，微盘量化才更容易赚钱。
+      </div>
+
+      <div class="fold-header" onclick="toggleFold('fold4')">
+        <span style="font-weight: 600;">为什么不能只看近一年收益</span>
+        <span class="fold-icon" id="foldIcon4">▼</span>
+      </div>
+      <div class="fold-content" id="foldContent4">
+        近一年收益高，可能只是吃到了某一段微盘风格红利。真正重要的是：当前风格是否还在；资金是否还健康；拥挤度是否过高；产品端是否仍有修复能力。
+      </div>
+
+      <div class="fold-header" onclick="toggleFold('fold5')">
+        <span style="font-weight: 600;">评分模型怎么算</span>
+        <span class="fold-icon" id="foldIcon5">▼</span>
+      </div>
+      <div class="fold-content" id="foldContent5">
+        信号评分由五部分组成：硬风控、风格方向、拥挤与流动性、量化友好度、产品验证。分数不是买入建议。页面状态由硬风控和信号评分共同决定。
+      </div>
+
+      <div class="fold-header" onclick="toggleFold('fold6')">
+        <span style="font-weight: 600;">为什么有些指标不显示</span>
+        <span class="fold-icon" id="foldIcon6">▼</span>
+      </div>
+      <div class="fold-content" id="foldContent6">
+        部分专业指标，如持仓重叠度、基金规模合计、γ收益衰减、量价因子IC、M1六个月均线等，更新频率低或获取不稳定。这些指标适合专题研究，不适合作为每日前台信号。
+      </div>
+
+      <div class="fold-header" onclick="toggleFold('fold7')">
+        <span style="font-weight: 600;">数据来源和更新时间</span>
+        <span class="fold-icon" id="foldIcon7">▼</span>
+      </div>
+      <div class="fold-content" id="foldContent7">
+        <div style="margin-bottom: 8px;"><strong>数据来源：</strong>Wind、天天基金、公开市场行情数据、人工维护的产品分类说明。</div>
+        <div style="margin-bottom: 8px;"><strong>更新时间：</strong>交易日盘后更新。</div>
+        <div style="font-size: 12px; color: var(--accent-yellow); margin-top: 12px; padding: 8px; background: var(--risk-yellow); border-radius: 6px;">
+          本页面基于收盘数据生成，不代表盘中实时信号。评分模型仅供观察，不构成投资建议。
+        </div>
+      </div>
+    </div>
+
+    <div class="final-quote">
+      微盘量化不是跌多了就能买。真正值得关注的，是风格有没有回来、资金有没有延续、市场有没有扩散、风险有没有失控。
     </div>
 
     <div class="data-source">
@@ -413,274 +705,321 @@
   </div>
 
   <script src="auto-data.js"></script>
+  <script src="data.js"></script>
+  <script src="scoring.js"></script>
   <script>
-    // ============ 数据与配置 ============
-    const MANUAL_DATA = {
-      // 手动数据可以从localStorage读取
-    };
-    
-    // 基金观察池数据（按PRD分类，含代表产品）
-    const FUND_POOL = {
-      active: [
-        { name: '诺安多策略A', code: '320016', m1: -13.53, m3: -12.69, ytd: -2.42, note: '代表：诺安多策略 | 高弹性，近1月跌13.53%，微盘暴露最高' },
-        { name: '新华策略精选A', code: '001040', m1: 5.66, m3: 35.06, ytd: 67.37, note: '代表：新华策略精选 | 科技成长风格，已脱离微盘' }
-      ],
-      stable: [
-        { name: '金元顺安元启', code: '004685', m1: -7.56, m3: -8.28, ytd: -2.06, note: '代表：金元顺安元启 | 人肉量化天花板，回撤控制好' },
-        { name: '国金量化多因子A', code: '006195', m1: -7.58, m3: 2.52, ytd: 13.72, note: '代表：国金量化多因子 | 微盘量化标杆，持仓300-500只' }
-      ],
-      flexible: [
-        { name: '国金量化精选A', code: '014805', m1: -7.91, m3: 1.22, ytd: 11.93, note: '代表：国金量化精选 | 同门互补，不完全押注微盘' },
-        { name: '大成动态量化A', code: '003147', m1: -6.51, m3: -0.27, ytd: 8.44, note: '代表：大成动态量化 | 市值下沉型，多数持仓<20亿' }
-      ],
-      index: [
-        { name: '万家精选A', code: '519185', m1: 5.27, m3: 1.55, ytd: 28.82, note: '代表：万家精选（黄海）| 已脱离微盘风格，偏向资源/周期' },
-        { name: '中证2000指数', code: '000010', m1: -2.1, m3: 8.5, ytd: 12.3, note: '代表：中证2000指数 | 小盘Beta工具，不等同于微盘' }
-      ]
-    };
-
-    // 明日重点看什么
-    const TOMORROW_FOCUS = [
-      { what: '科技是否继续松动', today: '科创50回落', confirm: '科创50继续弱于中证2000', warn: '科技重新放量大涨' },
-      { what: '资金是否回小票', today: '中证2000成交占比回升', confirm: '成交占比继续上行', warn: '放量只持续一天' },
-      { what: '赚钱效应是否扩散', today: '上涨家数增加', confirm: '上涨家数占比维持60%+', warn: '指数涨但个股跌' },
-      { what: '风险是否可控', today: '跌停家数低位', confirm: '跌停家数不扩散', warn: '跌停家数突然放大' }
-    ];
-
-    // ============ 评分计算 ============
-    function calculateScore(data) {
-      let score = 0;
-      const maxScore = 100;
+    // ============ 基金观察池数据（从auto-data.js的FUND_PRODUCTS读取） ============
+    function getFundTiers() {
+      if (typeof FUND_PRODUCTS === 'undefined') return { exposure: [], stable: [], control: [] };
       
-      // 1. 风格切换 (30分): 中证2000/科创50近20日相对强弱
-      // 用微盘相对创业板指代替
-      const style20d = data.zz2000_20d - data.kc50_20d || 0;
-      if (style20d > 5) score += 30;
-      else if (style20d > 0) score += 20;
-      else if (style20d > -5) score += 10;
-      else score += 0;
+      const exposure = FUND_PRODUCTS.filter(f => f.tier === '微盘暴露型' || f.tier === '微盘量化').map(f => ({
+        name: f.name, code: f.code,
+        purpose: '观察微盘量化是否真正修复',
+        risk: f.statusNote || '观察',
+        suit: '不适合重仓，只适合作为观察对象',
+        day: f.dayChange || 0, week: f.week1 || 0, month: f.month1 || 0, ytd: f.ytd || 0,
+        vsZZ2000: (f.month1 === null || f.month1 === undefined) ? '暂无' : 
+                  (AUTO_DATA.weipan1m && f.month1 < AUTO_DATA.weipan1m ? '跑输' : '跑赢')
+      }));
       
-      // 2. 资金回流 (25分): 中证2000成交占比
-      const volRatio = data.zz2000_vol_ratio || 0;
-      if (volRatio > 18) score += 25;
-      else if (volRatio > 15) score += 18;
-      else if (volRatio > 12) score += 10;
-      else score += 3;
+      const stable = FUND_PRODUCTS.filter(f => f.tier === '稳健分散型').map(f => ({
+        name: f.name, code: f.code,
+        purpose: '观察分散持仓、偏稳健的小微盘策略是否修复',
+        risk: f.statusNote || '观察',
+        suit: '只能作为观察对象，不等于推荐买入',
+        day: f.dayChange || 0, week: f.week1 || 0, month: f.month1 || 0, ytd: f.ytd || 0,
+        vsZZ2000: (f.month1 === null || f.month1 === undefined) ? '暂无' : 
+                  (AUTO_DATA.weipan1m && f.month1 < AUTO_DATA.weipan1m ? '跑输' : '跑赢')
+      }));
       
-      // 3. 赚钱效应 (20分): 上涨家数占比
-      const upRatio = data.up_ratio || 0;
-      if (upRatio > 70) score += 20;
-      else if (upRatio > 55) score += 14;
-      else if (upRatio > 45) score += 8;
-      else score += 0;
+      const control = FUND_PRODUCTS.filter(f => f.tier === '风格对照型').map(f => ({
+        name: f.name, code: f.code,
+        purpose: '判断市场是不是偏离微盘，重新回到其他风格',
+        risk: '风格对照产品，不是微盘量化买入对象',
+        suit: '风格对照，不是买入对象',
+        day: f.dayChange || 0, week: f.week1 || 0, month: f.month1 || 0, ytd: f.ytd || 0,
+        vsZZ2000: (f.month1 === null || f.month1 === undefined) ? '暂无' : 
+                  (AUTO_DATA.weipan1m && f.month1 > AUTO_DATA.weipan1m ? '跑赢' : '跑输')
+      }));
       
-      // 4. 风险释放 (15分): 微盘近20日回撤
-      const wpDrawdown = data.weipan_20d_drawdown || 0;
-      if (wpDrawdown > 15) score += 15;
-      else if (wpDrawdown > 10) score += 10;
-      else if (wpDrawdown > 5) score += 5;
-      else score += 0;
-      
-      // 5. 踩踏风险 (10分): 跌停家数
-      const downLimit = data.down_limit_count || 0;
-      if (downLimit < 10) score += 10;
-      else if (downLimit < 20) score += 6;
-      else if (downLimit < 30) score += 3;
-      else score += 0;
-      
-      // 6. 产品验证 (10分): 基金近1周表现
-      // 简化处理：看微盘型基金平均近1周
-      const fundAvgWeek1 = (FUND_POOL.active[0].m1 + FUND_POOL.stable[0].m1) / 2; // 近似
-      if (fundAvgWeek1 > 0) score += 10;
-      else if (fundAvgWeek1 > -3) score += 6;
-      else score += 2;
-      
-      return score;
+      return { exposure, stable, control };
     }
 
     // ============ 渲染函数 ============
-    function renderHero(score) {
-      document.getElementById('heroScore').textContent = score;
-      
-      let status, statusClass, desc, tags;
-      if (score >= 80) {
-        status = '积极配置'; statusClass = 'tag-green';
-        desc = '微盘修复信号较强，可以考虑分批参与，但不适合一次性重仓。';
-        tags = '<span class="tag tag-green">🟢 科技已松动</span><span class="tag tag-green">🟢 资金回流</span><span class="tag tag-green">🟢 赚钱效应强</span>';
-      } else if (score >= 60) {
-        status = '观察建仓'; statusClass = 'tag-yellow';
-        desc = '位置开始有吸引力，但还缺少持续资金确认。可以小仓试探，重点看科技是否继续分化。';
-        tags = '<span class="tag tag-yellow">🟡 科技松动</span><span class="tag tag-green">🟢 小票修复</span><span class="tag tag-yellow">🟡 资金待确认</span>';
-      } else if (score >= 40) {
-        status = '等待确认'; statusClass = 'tag-yellow';
-        desc = '微盘还没有走出弱势，短线反弹不代表趋势已经反转。建议观察为主。';
-        tags = '<span class="tag tag-yellow">🟡 科技松动</span><span class="tag tag-yellow">🟡 资金待确认</span><span class="tag tag-yellow">🟡 赚钱扩散中</span>';
-      } else {
-        status = '暂不参与'; statusClass = 'tag-red';
-        desc = '科技仍在吸血，小票赚钱效应不足，微盘策略胜率偏低。建议等待。';
-        tags = '<span class="tag tag-red">🔴 科技吸血</span><span class="tag tag-red">🔴 资金观望</span><span class="tag tag-red">🔴 赚钱效应弱</span>';
-      }
-      
-      document.getElementById('heroStatus').textContent = status;
-      document.getElementById('heroStatus').className = 'hero-status ' + (statusClass.replace('tag', ''));
-      document.getElementById('heroDesc').textContent = desc;
-      document.getElementById('heroTags').innerHTML = tags;
-    }
-
-    function renderToday(data) {
-      // 从自动数据中获取今日行情
-      const zz2000 = data.klines?.zz2000;
-      const kc50 = data.klines?.kc50;
-      
-      if (zz2000 && zz2000.length > 0) {
-        const zzLast = zz2000[zz2000.length - 1];
-        document.getElementById('zz2000Today').textContent = (zzLast.pct_chg > 0 ? '+' : '') + zzLast.pct_chg.toFixed(1) + '%';
-        document.getElementById('zz2000Today').className = 'evidence-value ' + (zzLast.pct_chg > 0 ? 'positive' : 'negative');
-      }
-      
-      if (kc50 && kc50.length > 0) {
-        const kcLast = kc50[kc50.length - 1];
-        document.getElementById('kc50Today').textContent = (kcLast.pct_chg > 0 ? '+' : '') + kcLast.pct_chg.toFixed(1) + '%';
-        document.getElementById('kc50Today').className = 'evidence-value ' + (kcLast.pct_chg > 0 ? 'negative' : 'positive');
-      }
-      
-      // 上涨家数占比（从指数数据估算）
-      if (data.total_up_ratio) {
-        document.getElementById('upCount').textContent = (data.total_up_ratio * 100).toFixed(0) + '%';
-      }
-      
-      // 跌停家数
-      if (data.down_limit_count !== undefined) {
-        document.getElementById('downLimit').textContent = data.down_limit_count + '家';
-      }
-    }
-
-    function renderEvidence(data) {
-      // 1. 科技是否吸血：微盘相对科创50近20日
-      const zz20d = data.klines?.zz2000?.slice(-20) || [];
-      const kc20d = data.klines?.kc50?.slice(-20) || [];
-      
-      let style20d = 0;
-      if (zz20d.length > 0 && kc20d.length > 0) {
-        const zzStart = zz20d[0].close, zzEnd = zz20d[zz20d.length-1].close;
-        const kcStart = kc20d[0].close, kcEnd = kc20d[kc20d.length-1].close;
-        style20d = ((zzEnd/zzStart - 1) - (kcEnd/kcStart - 1)) * 100;
-      }
-      
-      const techEl = document.getElementById('techFlow');
-      techEl.textContent = (style20d > 0 ? '+' : '') + style20d.toFixed(1) + '%';
-      techEl.className = 'evidence-value ' + (style20d > 0 ? 'positive' : 'negative');
-      document.getElementById('techFlowDesc').textContent = style20d > 0 ? '微盘开始跑赢科技，风格切换窗口打开' : `微盘相对科技近20日跑输${Math.abs(style20d).toFixed(1)}%，科技仍然吸金`;
-      
-      // 2. 资金回流：中证2000成交占比
-      const volRatio = data.zz2000_vol_ratio || 15;
-      const moneyEl = document.getElementById('moneyFlow');
-      moneyEl.textContent = volRatio.toFixed(1) + '%';
-      moneyEl.className = 'evidence-value ' + (volRatio > 16 ? 'positive' : volRatio > 12 ? 'neutral' : 'negative');
-      document.getElementById('moneyFlowDesc').textContent = volRatio > 16 ? '小票成交占比明显回升，资金开始关注' : volRatio > 12 ? '小票成交占比略有回升，还需连续确认' : '小票成交占比仍在低位，反弹缺少资金确认';
-      
-      // 3. 赚钱效应
-      const upRatio = data.total_up_ratio || 0.5;
-      const profitEl = document.getElementById('profitSpread');
-      profitEl.textContent = (upRatio * 100).toFixed(0) + '%';
-      profitEl.className = 'evidence-value ' + (upRatio > 0.6 ? 'positive' : upRatio > 0.45 ? 'neutral' : 'negative');
-      document.getElementById('profitSpreadDesc').textContent = upRatio > 0.6 ? '赚钱效应扩散，多数股票在涨' : upRatio > 0.45 ? '赚钱效应有所扩散，还未强扩散' : '指数涨但个股分化';
-    }
-
     function renderFunds() {
-      const fmtPct = v => (v > 0 ? '+' : '') + v.toFixed(1) + '%';
+      const fmtPct = v => (v > 0 ? '+' : '') + v.toFixed(2) + '%';
       const pctColor = v => v > 0 ? 'var(--accent-red)' : v < 0 ? 'var(--accent-green)' : 'var(--text-muted)';
       
       const renderGrid = (funds, containerId) => {
         const container = document.getElementById(containerId);
+        if (!container) return;
         container.innerHTML = funds.map(f => `
           <div class="fund-card">
             <div class="fund-name">${f.name}</div>
-            <div class="fund-meta">${f.code} | ${f.note}</div>
+            <div class="fund-code">${f.code} | ${f.vsZZ2000}中证2000</div>
+            <div class="fund-purpose">观察用途：${f.purpose}</div>
             <div class="fund-stats">
-              <div><span class="fund-stat-label">近1月</span><br><span class="fund-stat-value" style="color:${pctColor(f.m1)}">${fmtPct(f.m1)}</span></div>
-              <div><span class="fund-stat-label">近3月</span><br><span class="fund-stat-value" style="color:${pctColor(f.m3)}">${fmtPct(f.m3)}</span></div>
+              <div><span class="fund-stat-label">近1日</span><br><span class="fund-stat-value" style="color:${pctColor(f.day)}">${fmtPct(f.day)}</span></div>
+              <div><span class="fund-stat-label">近1周</span><br><span class="fund-stat-value" style="color:${pctColor(f.week)}">${fmtPct(f.week)}</span></div>
+              <div><span class="fund-stat-label">近1月</span><br><span class="fund-stat-value" style="color:${pctColor(f.month)}">${fmtPct(f.month)}</span></div>
               <div><span class="fund-stat-label">今年</span><br><span class="fund-stat-value" style="color:${pctColor(f.ytd)}">${fmtPct(f.ytd)}</span></div>
             </div>
+            <div class="fund-risk">主要风险：${f.risk}</div>
+            <div class="fund-suit">${f.suit}</div>
           </div>
         `).join('');
       };
       
-      renderGrid(FUND_POOL.active, 'fundActive');
-      renderGrid(FUND_POOL.stable, 'fundStable');
-      renderGrid(FUND_POOL.flexible, 'fundFlexible');
-      renderGrid(FUND_POOL.index, 'fundIndex');
+      const tiers = getFundTiers();
+      renderGrid(tiers.exposure, 'fundExposure');
+      renderGrid(tiers.stable, 'fundStable');
+      renderGrid(tiers.control, 'fundControl');
     }
 
-    function renderTomorrow() {
-      const tbody = document.getElementById('tomorrowFocus');
-      tbody.innerHTML = TOMORROW_FOCUS.map(t => `
-        <tr>
-          <td>${t.what}</td>
-          <td style="color: var(--text-muted)">${t.today}</td>
-          <td style="color: var(--accent-green)">${t.confirm}</td>
-          <td style="color: var(--accent-red)">${t.warn}</td>
-        </tr>
-      `).join('');
-    }
-
-    function renderAction(score) {
-      const actionTitle = document.getElementById('actionTitle');
-      const actionDesc = document.getElementById('actionDesc');
-      const actionSuggestion = document.getElementById('actionSuggestion');
+    function renderHero(scoreResult) {
+      const { total, level, hardRiskStatus } = scoreResult;
       
-      if (score >= 80) {
-        actionTitle.textContent = '当前建议：积极配置';
-        actionDesc.textContent = '微盘修复信号较强，可以考虑分批参与，但不适合一次性重仓。仓位建议30%-50%，方式为分批，重点看中证2000成交占比是否继续上升。';
-        actionSuggestion.textContent = '可以分批布局';
-      } else if (score >= 60) {
-        actionTitle.textContent = '当前建议：观察建仓';
-        actionDesc.textContent = '位置开始有吸引力，但还缺少持续资金确认。仓位建议10%-30%，方式为小仓试探，重点看科技是否继续分化。';
-        actionSuggestion.textContent = '小仓试探';
-      } else if (score >= 40) {
-        actionTitle.textContent = '当前建议：等待确认';
-        actionDesc.textContent = '微盘还没有走出弱势，短线反弹不代表趋势已经反转。仓位建议0%-10%，只观察不追涨，重点看上涨家数是否持续超过60%。';
-        actionSuggestion.textContent = '观察为主';
-      } else {
-        actionTitle.textContent = '当前建议：暂不参与';
-        actionDesc.textContent = '科技仍在吸血，小票赚钱效应不足，微盘策略胜率偏低。仓位建议0%，方式为等待，重点看跌停家数是否下降、成交占比是否回升。';
-        actionSuggestion.textContent = '继续等待';
+      // 更新评分
+      document.getElementById('heroScore').textContent = total;
+      
+      // 更新状态徽章
+      const badge = document.getElementById('heroStatusBadge');
+      badge.textContent = level.label;
+      badge.className = 'hero-status-badge ' + 
+        (level.label === '回避区' ? 'badge-avoid' : 
+         level.label === '观察区' ? 'badge-observe' :
+         level.label === '试探区' ? 'badge-tentative' : 'badge-signal');
+      
+      // 更新描述
+      document.getElementById('heroDesc').innerHTML = `
+        当前状态：${level.label}<br>
+        ${level.desc}<br>
+        ${hardRiskStatus === 'trigger' ? '<strong style="color:var(--accent-red);">硬风控触发，直接回避区。</strong>' : 
+          hardRiskStatus === 'watch' ? '硬风控观察中，最高只能观察区。<br>' : ''}
+        核心判断：跌多了，不等于能抄底。现在看到的是小票修复，还不是趋势反转确认。
+      `;
+    }
+
+    function renderScoreTable(scoreResult) {
+      const { total, results, level } = scoreResult;
+      
+      // 更新总分
+      document.getElementById('totalScore').textContent = total;
+      document.getElementById('totalStatus').textContent = '当前状态：' + level.label;
+      document.getElementById('totalExplain').textContent = level.desc;
+      
+      // 更新各模块评分
+      const moduleMap = {
+        'hardRisk': { valId: 'scoreHardRiskVal', barId: 'barHardRisk', explainId: 'scoreHardRisk' },
+        'styleDirection': { valId: 'scoreStyleVal', barId: 'barStyle', explainId: 'scoreStyle' },
+        'crowdingLiquidity': { valId: 'scoreCrowdVal', barId: 'barCrowd', explainId: 'scoreCrowd' },
+        'quantFriendliness': { valId: 'scoreFriendlyVal', barId: 'barFriendly', explainId: 'scoreFriendly' },
+        'productVerification': { valId: 'scoreProductVal', barId: 'barProduct', explainId: 'scoreProduct' }
+      };
+      
+      // 硬编码解释（后续从评分引擎获取）
+      const explains = {
+        'hardRisk': '未见明显触发项，但部分指标待接入',
+        'styleDirection': '尚未完全确认',
+        'crowdingLiquidity': '有修复，但不强',
+        'quantFriendliness': '部分改善',
+        'productVerification': '仍在修复'
+      };
+      
+      for (const [key, ids] of Object.entries(moduleMap)) {
+        const result = results[key];
+        if (!result) continue;
+        
+        // 更新分数
+        document.getElementById(ids.valId).textContent = result.score + '/' + result.max;
+        
+        // 更新进度条
+        const pct = (result.score / result.max * 100).toFixed(0);
+        const bar = document.getElementById(ids.barId);
+        bar.style.width = pct + '%';
+        bar.style.background = pct >= 60 ? 'var(--accent-green)' : pct >= 40 ? 'var(--accent-yellow)' : 'var(--accent-red)';
+        
+        // 更新解释
+        if (document.getElementById(ids.explainId)) {
+          document.getElementById(ids.explainId).textContent = explains[key] || '';
+        }
       }
     }
 
-    function toggleFold() {
-      const content = document.getElementById('foldContent');
-      const icon = document.getElementById('foldIcon');
-      content.classList.toggle('open');
-      icon.classList.toggle('open');
+    function renderSignals(data) {
+      // 信号灯一：风格是否站回微盘
+      const rel20d = (data.zz2000_20d_change || 0) - (data.kc50_20d_change || 0);
+      const styleJudge = document.getElementById('signalStyleJudge');
+      const styleObs = document.getElementById('signalStyleObs');
+      if (styleJudge && styleObs) {
+        if (rel20d > 3) {
+          styleJudge.textContent = '小票占优';
+          styleJudge.style.color = 'var(--accent-green)';
+          styleObs.textContent = '中证2000近20日跑赢科创50 ' + rel20d.toFixed(1) + '个百分点，风格开始偏向小票。';
+        } else if (rel20d > 0) {
+          styleJudge.textContent = '略偏小票';
+          styleJudge.style.color = 'var(--accent-yellow)';
+          styleObs.textContent = '中证2000近20日略跑赢科创50 ' + rel20d.toFixed(1) + '个百分点，但不明显。';
+        } else {
+          styleJudge.textContent = '未确认';
+          styleJudge.style.color = 'var(--accent-red)';
+          styleObs.textContent = '中证2000近20日跌' + (data.zz2000_20d_change||0).toFixed(1) + '%，科创50跌' + (data.kc50_20d_change||0).toFixed(1) + '%，小票仍跑输科技。';
+        }
+      }
+
+      // 信号灯二：资金和拥挤
+      const fundJudge = document.getElementById('signalFundJudge');
+      const fundObs = document.getElementById('signalFundObs');
+      if (fundJudge && fundObs) {
+        const ratio = data.weipanRatio || 0;
+        if (ratio > 0.8) {
+          fundJudge.textContent = '偏热';
+          fundJudge.style.color = 'var(--accent-yellow)';
+          fundObs.textContent = '微盘成交占比' + ratio.toFixed(1) + '%，有回升但仍需观察是否过热。';
+        } else {
+          fundJudge.textContent = '偏弱';
+          fundJudge.style.color = 'var(--accent-yellow)';
+          fundObs.textContent = '微盘成交占比' + ratio.toFixed(1) + '%，资金回流迹象不强。';
+        }
+      }
+
+      // 信号灯三：量化友好度
+      const quantJudge = document.getElementById('signalQuantJudge');
+      const quantObs = document.getElementById('signalQuantObs');
+      if (quantJudge && quantObs) {
+        const upR = data.up_ratio || 0.5;
+        if (upR > 0.6) {
+          quantJudge.textContent = '改善';
+          quantJudge.style.color = 'var(--accent-green)';
+          quantObs.textContent = '上涨家数占比约' + (upR*100).toFixed(0) + '%，赚钱效应有所扩散。';
+        } else if (upR > 0.5) {
+          quantJudge.textContent = '中性';
+          quantJudge.style.color = 'var(--accent-yellow)';
+          quantObs.textContent = '上涨家数占比约' + (upR*100).toFixed(0) + '%，仍需更多扩散。';
+        } else {
+          quantJudge.textContent = '偏低';
+          quantJudge.style.color = 'var(--accent-red)';
+          quantObs.textContent = '上涨家数占比约' + (upR*100).toFixed(0) + '%，多数股票仍在调整。';
+        }
+      }
+
+      // 信号灯四：产品端
+      const prodJudge = document.getElementById('signalProductJudge');
+      const prodObs = document.getElementById('signalProductObs');
+      if (prodJudge && prodObs) {
+        const avg1d = data.fund_avg_1d || 0;
+        const avg1m = data.fund_avg_1m || 0;
+        if (avg1d > 0) {
+          prodJudge.textContent = '有修复';
+          prodJudge.style.color = 'var(--accent-green)';
+        } else {
+          prodJudge.textContent = '仍在调整';
+          prodJudge.style.color = 'var(--accent-red)';
+        }
+        prodObs.textContent = '观察池基金近1日均值' + avg1d.toFixed(2) + '%，近1月均值' + avg1m.toFixed(2) + '%，尚未连续修复。';
+      }
+    }
+
+    function toggleFold(id) {
+      const num = id.slice(-1);
+      const content = document.getElementById('foldContent' + num);
+      const icon = document.getElementById('foldIcon' + num);
+      if (content && icon) {
+        content.classList.toggle('open');
+        icon.classList.toggle('open');
+      }
     }
 
     // ============ 初始化 ============
     function init() {
-      // 尝试从auto-data.js获取数据
-      const autoData = typeof AUTO_KLINE_DATA !== 'undefined' ? AUTO_KLINE_DATA : {};
+      // 1. 渲染基金观察池
+      renderFunds();
       
-      // 构建评分数据
-      const scoreData = {
-        klines: autoData,
-        zz2000_20d: 0, // 从K线计算
-        kc50_20d: 0,
-        zz2000_vol_ratio: 15.9, // 默认值
-        total_up_ratio: 0.55,
-        down_limit_count: 14,
-        weipan_20d_drawdown: 8
+      // 2. 动态计算评分所需指标
+      const data = {};
+      
+      if (typeof AUTO_DATA !== 'undefined') {
+        // 从auto-data.js读取计算好的指标
+        data.weipanRatio = (AUTO_DATA.weipanRatio || 0) * 100; // 转为百分比
+        data.weipan20d = AUTO_DATA.weipan20d || 0;
+        data.weipan1m = AUTO_DATA.weipan1m || 0;
+        data.relativeExcess20d = AUTO_DATA.relativeExcess20d || 0;
+        data.weipanSpread = (AUTO_DATA.weipanSpread || 0) * 100; // 转为百分比
+        data.weipanDrawdown = AUTO_DATA.weipanDrawdown || 0;
+        
+        // 估算代理指标（后续接入真实数据）
+        data.zz2000_20d_change = AUTO_DATA.zz2000_20d || data.weipan20d; // Wind MCP真实数据
+        data.kc50_20d_change = AUTO_DATA.kc50_20d || 0; // Wind MCP真实数据
+        data.small_volume_ratio = data.weipanRatio; // 使用微盘占比作为代理
+        
+        // 上涨家数占比（从微盘指数获取）
+        const wpQuote = AUTO_DATA.quotes && AUTO_DATA.quotes["868008.WI"];
+        if (wpQuote) {
+          const total = (wpQuote.upCount || 0) + (wpQuote.downCount || 0);
+          data.up_ratio = total > 0 ? (wpQuote.upCount || 0) / total : 0.55;
+        } else {
+          data.up_ratio = 0.55; // 默认值
+        }
+      }
+      
+      // 从FUND_PRODUCTS计算基金平均收益（只统计有数据的基金）
+      if (typeof FUND_PRODUCTS !== 'undefined') {
+        const funds = FUND_PRODUCTS.filter(f => f.dayChange !== null && f.dayChange !== undefined);
+        let sum1d = 0, sum1w = 0, sum1m = 0;
+        
+        funds.forEach(f => {
+          sum1d += f.dayChange || 0;
+          if (f.week1 !== null && f.week1 !== undefined) sum1w += f.week1;
+          if (f.month1 !== null && f.month1 !== undefined) sum1m += f.month1;
+        });
+        
+        const validWeek = funds.filter(f => f.week1 !== null && f.week1 !== undefined).length;
+        const validMonth = funds.filter(f => f.month1 !== null && f.month1 !== undefined).length;
+        
+        data.fund_avg_1d = funds.length > 0 ? sum1d / funds.length : 0;
+        data.fund_avg_1w = validWeek > 0 ? sum1w / validWeek : 0;
+        data.fund_avg_1m = validMonth > 0 ? sum1m / validMonth : 0;
+        
+        // 相对中证2000超额（使用微盘指数作为代理）
+        data.fund_rel_zz2000 = data.fund_avg_1m - (data.weipan1m || 0);
+        
+        // 连续修复天数（简化：如果近1日收益>0，算1天）
+        data.fund_cont_days = data.fund_avg_1d > 0 ? 1 : 0;
+      }
+      
+      // 硬风控状态（简化：默认ok）
+      data.hard_risk_volatility = 'wait'; // 待接入
+      data.hard_risk_rate = 'watch'; // 观察
+      data.hard_risk_liquidity = 'ok'; // 未见触发
+      data.hard_risk_homogenization = 'wait'; // 低频观察
+      
+      // 3. 计算评分
+      let scoreResult = { 
+        total: 58, 
+        results: {}, 
+        level: {
+          label: '观察区', 
+          color: '#ca8a04', 
+          emoji: '🟡', 
+          desc: '价格已有吸引力，但资金和趋势尚未确认。可以观察，不适合追涨或重仓。'
+        }, 
+        hardRiskStatus: 'ok' 
       };
       
-      // 计算评分
-      const score = calculateScore(scoreData);
+      if (typeof ScoringEngine !== 'undefined') {
+        try {
+          scoreResult = ScoringEngine.calculate(data);
+        } catch (e) {
+          console.error('评分计算失败：', e);
+        }
+      }
       
-      // 渲染各模块
-      renderHero(score);
-      renderToday(scoreData);
-      renderEvidence(scoreData);
-      renderFunds();
-      renderTomorrow();
-      renderAction(score);
+      // 4. 渲染评分结果
+      renderHero(scoreResult);
+      renderScoreTable(scoreResult);
+      
+      // 5. 动态更新信号灯（基于真实数据）
+      renderSignals(data);
     }
 
     init();
