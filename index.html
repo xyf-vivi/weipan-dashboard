@@ -236,11 +236,6 @@ canvas{width:100%!important;height:100%!important}
     <div id="productSection">
       <div style="font-size:12px;color:#64748b;margin-bottom:8px">
         <span class="fund-date" style="margin-right:12px"></span>
-        重点看：微盘反弹时基金有没有跟上？微盘下跌时基金是不是少跌？
-      </div>
-      <table class="product-table" id="productTable"></table>
-      <div style="margin-top:10px">
-        <button class="btn btn-primary" onclick="saveProducts()">保存</button>
       </div>
     </div>
   </div>
@@ -365,39 +360,40 @@ function calcScore(d, s) {
   else if (!riskWindow) { scores.risk = 7; details.risk = '非风险窗口但回撤偏大'; }
   else { scores.risk = 3; details.risk = '处于财报风险窗口'; }
 
-  // 6. 产品验证 (10分) - 从天天基金自动数据读取
+  // 6. 产品验证 (10分) - 从天天基金自动数据读取，只看"微盘量化"和"人肉量化"tier
   const autoFunds = typeof FUND_PRODUCTS !== 'undefined' ? FUND_PRODUCTS : null;
   if (autoFunds && autoFunds.length > 0) {
-    // 统计微盘型产品（非高弹性非纯微盘类）的近1周和近1月表现
-    const weipanFunds = autoFunds.filter(f => f.status !== '高弹性非纯微盘');
-    const avgWeek1 = weipanFunds.reduce((a,f) => a + f.week1, 0) / weipanFunds.length;
-    const avgMonth1 = weipanFunds.reduce((a,f) => a + f.month1, 0) / weipanFunds.length;
-    const avgDay = weipanFunds.reduce((a,f) => a + f.dayChange, 0) / weipanFunds.length;
-    const positiveWeek1 = weipanFunds.filter(f => f.week1 > 0).length;
-    
-    if (avgWeek1 > 0 && avgMonth1 > 0) {
-      scores.product = 10;
-      details.product = `微盘基金近1周均涨${avgWeek1.toFixed(2)}%，近1月均涨${avgMonth1.toFixed(2)}%，跟随修复`;
-    } else if (avgWeek1 > 0) {
-      scores.product = 7;
-      details.product = `微盘基金近1周均涨${avgWeek1.toFixed(2)}%，短线修复中`;
-    } else if (avgDay > 0 && positiveWeek1 >= weipanFunds.length / 2) {
-      scores.product = 5;
-      details.product = `产品日涨幅为正(${avgDay.toFixed(2)}%)，但周度未确认`;
-    } else if (avgDay > 0) {
-      scores.product = 3;
-      details.product = `部分产品短线反弹，但整体偏弱`;
+    // 只统计微盘量化+人肉量化tier（排除对照组和风格对照）
+    const weipanFunds = autoFunds.filter(f => f.tier === '微盘量化' || f.tier === '人肉量化');
+    const validFunds = weipanFunds.filter(f => f.week1 !== null && f.week1 !== undefined);
+    if (validFunds.length === 0) {
+      scores.product = 0; details.product = '无有效产品数据';
     } else {
-      scores.product = 2;
-      details.product = `产品净值未跟随，近1周均跌${avgWeek1.toFixed(2)}%`;
+      const avgWeek1 = validFunds.reduce((a,f) => a + f.week1, 0) / validFunds.length;
+      const validMonth1 = validFunds.filter(f => f.month1 !== null && f.month1 !== undefined);
+      const avgMonth1 = validMonth1.length > 0 ? validMonth1.reduce((a,f) => a + f.month1, 0) / validMonth1.length : null;
+      const avgDay = validFunds.reduce((a,f) => a + f.dayChange, 0) / validFunds.length;
+      const positiveWeek1 = validFunds.filter(f => f.week1 > 0).length;
+      
+      if (avgWeek1 > 0 && avgMonth1 !== null && avgMonth1 > 0) {
+        scores.product = 10;
+        details.product = `微盘基金近1周均涨${avgWeek1.toFixed(2)}%，近1月均涨${avgMonth1.toFixed(2)}%，跟随修复`;
+      } else if (avgWeek1 > 0) {
+        scores.product = 7;
+        details.product = `微盘基金近1周均涨${avgWeek1.toFixed(2)}%，短线修复中`;
+      } else if (avgDay > 0 && positiveWeek1 >= validFunds.length / 2) {
+        scores.product = 5;
+        details.product = `产品日涨幅为正(${avgDay.toFixed(2)}%)，但周度未确认`;
+      } else if (avgDay > 0) {
+        scores.product = 3;
+        details.product = `部分产品短线反弹，但整体偏弱`;
+      } else {
+        scores.product = 2;
+        details.product = `产品净值未跟随，近1周均跌${Math.abs(avgWeek1).toFixed(2)}%`;
+      }
     }
   } else {
-    // 兜底：手动字段
-    const fund5d = s.fundNetValue5d ? parseFloat(s.fundNetValue5d) : null;
-    const fund1d = s.fundNetValue1d ? parseFloat(s.fundNetValue1d) : null;
-    if (fund5d !== null && fund5d > 0) { scores.product = 10; details.product = '产品跟随修复'; }
-    else if (fund1d !== null && fund1d > 0) { scores.product = 5; details.product = '产品短线修复'; }
-    else { scores.product = 0; details.product = '待填入产品数据'; }
+    scores.product = 0; details.product = '待填入产品数据';
   }
 
   const total = Object.values(scores).reduce((a,b) => a+b, 0);
@@ -773,53 +769,86 @@ function renderRiskCalendar() {
 
 // ====== 产品跟踪 ======
 function renderProducts() {
-  const table = document.getElementById('productTable');
-  // 优先使用天天基金自动数据
+  const container = document.getElementById('productSection');
   const autoFunds = typeof FUND_PRODUCTS !== 'undefined' ? FUND_PRODUCTS : null;
   
   if (autoFunds && autoFunds.length > 0) {
-    table.innerHTML = `
-      <tr><th>产品</th><th>代码</th><th>规模</th><th>日涨跌</th><th>近1周</th><th>近1月</th><th>近3月</th><th>今年</th><th>近1年</th><th>状态</th></tr>
-      ${autoFunds.map(f => {
-        const dayColor = f.dayChange > 0 ? '#ef4444' : f.dayChange < 0 ? '#22c55e' : '#94a3b8';
-        const w1Color = f.week1 > 0 ? '#ef4444' : f.week1 < 0 ? '#22c55e' : '#94a3b8';
-        const m1Color = f.month1 > 0 ? '#ef4444' : f.month1 < 0 ? '#22c55e' : '#94a3b8';
-        const m3Color = f.month3 > 0 ? '#ef4444' : f.month3 < 0 ? '#22c55e' : '#94a3b8';
-        const ytdColor = f.ytd > 0 ? '#ef4444' : f.ytd < 0 ? '#22c55e' : '#94a3b8';
-        const y1Color = f.year1 > 0 ? '#ef4444' : f.year1 < 0 ? '#22c55e' : '#94a3b8';
-        return `<tr>
+    // 按tier分组
+    const tiers = {};
+    const tierOrder = ['微盘量化', '人肉量化', '对照组', '风格对照'];
+    const tierIcons = {'微盘量化':'🔬','人肉量化':'🧠','对照组':'⚖️','风格对照':'📊'};
+    const tierDesc = {
+      '微盘量化': '持仓高度分散、小市值因子主导',
+      '人肉量化': '主观投资但持仓像量化',
+      '对照组': '非微盘风格的管理人/产品',
+      '风格对照': '与微盘风格形成对比的方向'
+    };
+    autoFunds.forEach(f => {
+      const t = f.tier || '其他';
+      if (!tiers[t]) tiers[t] = [];
+      tiers[t].push(f);
+    });
+
+    const pctColor = v => v > 0 ? '#ef4444' : v < 0 ? '#22c55e' : '#94a3b8';
+    const fmtPct = v => v === null || v === undefined ? '—' : (v > 0 ? '+' : '') + v + '%';
+
+    let html = `<div style="font-size:12px;color:#64748b;margin-bottom:12px">
+      <span class="fund-date" style="margin-right:12px">净值日期: ${autoFunds[0].navDate}  |  数据来源: 天天基金</span>
+      <br>重点看：微盘反弹时基金有没有跟上？微盘下跌时基金是不是少跌？
+    </div>`;
+
+    for (const tier of tierOrder) {
+      if (!tiers[tier]) continue;
+      html += `<div style="margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px;color:#e2e8f0">
+          ${tierIcons[tier]||''} ${tier}
+          <span style="font-weight:400;color:#64748b;font-size:11px;margin-left:6px">${tierDesc[tier]||''}</span>
+        </div>
+        <table class="product-table"><tr>
+          <th style="min-width:100px">产品</th><th>代码</th><th>规模</th>
+          <th>日涨跌</th><th>近1周</th><th>近1月</th><th>近3月</th><th>今年</th><th>近1年</th>
+          <th style="min-width:90px">状态</th>
+        </tr>`;
+      for (const f of tiers[tier]) {
+        html += `<tr>
           <td style="font-weight:600;font-size:12px">${f.name}</td>
           <td style="font-size:11px;color:#64748b">${f.code}</td>
           <td style="font-size:12px">${f.scale}亿</td>
-          <td style="color:${dayColor};font-weight:600">${f.dayChange > 0 ? '+' : ''}${f.dayChange}%</td>
-          <td style="color:${w1Color}">${f.week1 > 0 ? '+' : ''}${f.week1}%</td>
-          <td style="color:${m1Color};font-weight:600">${f.month1 > 0 ? '+' : ''}${f.month1}%</td>
-          <td style="color:${m3Color}">${f.month3 > 0 ? '+' : ''}${f.month3}%</td>
-          <td style="color:${ytdColor};font-weight:600">${f.ytd > 0 ? '+' : ''}${f.ytd}%</td>
-          <td style="color:${y1Color}">${f.year1 > 0 ? '+' : ''}${f.year1}%</td>
+          <td style="color:${pctColor(f.dayChange)};font-weight:600">${fmtPct(f.dayChange)}</td>
+          <td style="color:${pctColor(f.week1)}">${fmtPct(f.week1)}</td>
+          <td style="color:${pctColor(f.month1)};font-weight:600">${fmtPct(f.month1)}</td>
+          <td style="color:${pctColor(f.month3)}">${fmtPct(f.month3)}</td>
+          <td style="color:${pctColor(f.ytd)};font-weight:600">${fmtPct(f.ytd)}</td>
+          <td style="color:${pctColor(f.year1)}">${fmtPct(f.year1)}</td>
           <td style="font-size:11px;color:#94a3b8;max-width:120px" title="${f.statusNote}">${f.status}</td>
         </tr>`;
-      }).join('')}
-    `;
-    // 更新产品跟踪区标题
-    const title = table.parentElement.querySelector('.fund-date');
-    if (title) title.textContent = '净值日期: ' + autoFunds[0].navDate + '  |  数据来源: 天天基金';
+      }
+      html += '</table></div>';
+    }
+    
+    // 移除旧的table（如果存在），直接注入HTML到容器
+    const oldTable = container.querySelector('.product-table');
+    if (oldTable) oldTable.remove();
+    container.innerHTML = html;
   } else {
     // 手动模式
-    table.innerHTML = `
-      <tr><th>产品</th><th>近1日(%)</th><th>近5日(%)</th><th>近20日(%)</th><th>相对微盘</th><th>最大回撤(%)</th><th>状态</th></tr>
-      ${products.map((p, i) => `
-        <tr>
-          <td><input value="${p.name}" style="width:80px" onchange="products[${i}].name=this.value"></td>
-          <td><input value="${p.n1d}" placeholder="—" onchange="products[${i}].n1d=this.value"></td>
-          <td><input value="${p.n5d}" placeholder="—" onchange="products[${i}].n5d=this.value"></td>
-          <td><input value="${p.n20d}" placeholder="—" onchange="products[${i}].n20d=this.value"></td>
-          <td><input value="${p.vsWeipan}" placeholder="—" onchange="products[${i}].vsWeipan=this.value"></td>
-          <td><input value="${p.maxDD}" placeholder="—" onchange="products[${i}].maxDD=this.value"></td>
-          <td style="font-size:12px;color:#94a3b8">${p.status || '待填入'}</td>
-        </tr>
-      `).join('')}
-    `;
+    const table = document.getElementById('productTable');
+    if (table) {
+      table.innerHTML = `
+        <tr><th>产品</th><th>近1日(%)</th><th>近5日(%)</th><th>近20日(%)</th><th>相对微盘</th><th>最大回撤(%)</th><th>状态</th></tr>
+        ${products.map((p, i) => `
+          <tr>
+            <td><input value="${p.name}" style="width:80px" onchange="products[${i}].name=this.value"></td>
+            <td><input value="${p.n1d}" placeholder="—" onchange="products[${i}].n1d=this.value"></td>
+            <td><input value="${p.n5d}" placeholder="—" onchange="products[${i}].n5d=this.value"></td>
+            <td><input value="${p.n20d}" placeholder="—" onchange="products[${i}].n20d=this.value"></td>
+            <td><input value="${p.vsWeipan}" placeholder="—" onchange="products[${i}].vsWeipan=this.value"></td>
+            <td><input value="${p.maxDD}" placeholder="—" onchange="products[${i}].maxDD=this.value"></td>
+            <td style="font-size:12px;color:#94a3b8">${p.status || '待填入'}</td>
+          </tr>
+        `).join('')}
+      `;
+    }
   }
 }
 
@@ -850,7 +879,7 @@ function renderChecklist(d, s) {
     {text:'关注基金净值开始跟随修复', met: (() => {
       const af = typeof FUND_PRODUCTS !== 'undefined' ? FUND_PRODUCTS : null;
       if (!af) return false;
-      const wf = af.filter(f => f.status !== '高弹性非纯微盘');
+      const wf = af.filter(f => (f.tier === '微盘量化' || f.tier === '人肉量化') && f.week1 !== null);
       return wf.length > 0 && wf.filter(f => f.week1 > 0).length >= wf.length / 2;
     })()},
   ];

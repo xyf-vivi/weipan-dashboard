@@ -184,31 +184,87 @@ const AUTO_DATA = {
 })();
 
 // === 微盘量化产品跟踪 (天天基金数据, 2026-06-12) ===
+// 分层：第一梯队微盘量化 | 人肉量化 | 对照组 | 风格对照
 const FUND_PRODUCTS = [
+  // === 第一梯队：微盘量化核心观察池 ===
   {
-    name: "诺安多策略A",
-    code: "320016",
-    type: "混合型-偏股",
+    tier: "微盘量化",
+    name: "国金量化多因子A",
+    code: "006195",
+    type: "股票型",
     navDate: "2026-06-12",
-    nav: 3.22,
-    dayChange: 1.19,
-    week1: -3.27,
-    month1: -13.53,
-    month3: -12.69,
-    month6: 1.16,
-    year1: 22.62,
-    ytd: -2.42,
-    sinceInception: 222.00,
-    scale: 25.41,  // 亿
-    // 相对微盘超额（近1月）
-    vsWeipan1m: null,  // 微盘近1月跌幅约-7.56%（5/12高点到6/12）
-    status: "跟随修复",
-    statusNote: "近1月跌13.53%，跌幅大于微盘指数，微盘暴露较高"
+    nav: null,
+    dayChange: 0.68,
+    week1: -1.35,
+    month1: -7.58,
+    month3: 2.52,
+    month6: null,
+    year1: 45.69,
+    ytd: 13.72,
+    scale: 40.17,
+    status: "微盘量化标杆",
+    statusNote: "持仓300-500只，与微盘指数相关性高，近1月跌7.58%"
   },
   {
+    tier: "微盘量化",
+    name: "国金量化精选A",
+    code: "014805",
+    type: "混合型-偏股",
+    navDate: "2026-06-12",
+    nav: null,
+    dayChange: 0.61,
+    week1: -1.45,
+    month1: -7.91,
+    month3: 1.22,
+    month6: null,
+    year1: 43.01,
+    ytd: 11.93,
+    scale: 29.24,
+    status: "同门互补",
+    statusNote: "与国金多因子同门，小盘风格明显，近1月跌7.91%"
+  },
+  {
+    tier: "微盘量化",
+    name: "大成动态量化A",
+    code: "003147",
+    type: "混合型-灵活",
+    navDate: "2026-06-12",
+    nav: null,
+    dayChange: 0.91,
+    week1: -1.62,
+    month1: -6.51,
+    month3: -0.27,
+    month6: null,
+    year1: 41.28,
+    ytd: 8.44,
+    scale: 0.53,
+    status: "市值下沉型",
+    statusNote: "多数持仓市值低于20亿，典型微盘量化，规模仅0.53亿"
+  },
+  {
+    tier: "微盘量化",
+    name: "富荣价值精选A",
+    code: "006109",
+    type: "混合型-灵活",
+    navDate: "2026-06-12",
+    nav: null,
+    dayChange: 0.05,
+    week1: -2.58,
+    month1: null,
+    month3: null,
+    month6: null,
+    year1: -1.86,
+    ytd: null,
+    scale: 0.10,
+    status: "微型产品",
+    statusNote: "规模仅0.1亿，部分数据缺失，参考意义有限"
+  },
+  // === 人肉量化 ===
+  {
+    tier: "人肉量化",
     name: "金元顺安元启",
     code: "004685",
-    type: "混合型-灵活配置",
+    type: "混合型-灵活",
     navDate: "2026-06-12",
     nav: 6.5298,
     dayChange: 1.10,
@@ -218,13 +274,13 @@ const FUND_PRODUCTS = [
     month6: -0.39,
     year1: 19.00,
     ytd: -2.06,
-    sinceInception: 552.98,
     scale: 15.76,
-    vsWeipan1m: null,
-    status: "风控较强",
-    statusNote: "近1月跌7.56%，与微盘指数跌幅接近，回撤控制好于同类"
+    status: "人肉量化天花板",
+    statusNote: "主观投资但持仓极度分散，偏好小微盘，近1月跌7.56%"
   },
+  // === 对照组 ===
   {
+    tier: "对照组",
     name: "万家精选A",
     code: "519185",
     type: "混合型-偏股",
@@ -237,13 +293,31 @@ const FUND_PRODUCTS = [
     month6: 26.65,
     year1: 47.30,
     ytd: 28.82,
-    sinceInception: 449.34,
     scale: 8.66,
-    vsWeipan1m: null,
-    status: "修复偏强",
-    statusNote: "近1月涨5.27%，逆势上涨，可能已降低微盘暴露或切换至科技"
+    status: "黄海管理",
+    statusNote: "近1月涨5.27%，逆势上涨，已脱离微盘风格"
+  },
+  // === 风格对照 ===
+  {
+    tier: "风格对照",
+    name: "诺安多策略A",
+    code: "320016",
+    type: "混合型-偏股",
+    navDate: "2026-06-12",
+    nav: 3.22,
+    dayChange: 1.19,
+    week1: -3.27,
+    month1: -13.53,
+    month3: -12.69,
+    month6: 1.16,
+    year1: 22.62,
+    ytd: -2.42,
+    scale: 25.41,
+    status: "高暴露微盘",
+    statusNote: "近1月跌13.53%，跌幅大于微盘指数，微盘暴露最高"
   },
   {
+    tier: "风格对照",
     name: "新华策略精选A",
     code: "001040",
     type: "股票型",
@@ -256,10 +330,8 @@ const FUND_PRODUCTS = [
     month6: 66.08,
     year1: 158.97,
     ytd: 67.37,
-    sinceInception: 368.34,
     scale: 7.85,
-    vsWeipan1m: null,
-    status: "高弹性非纯微盘",
-    statusNote: "近1年涨158.97%，今年涨67.37%，可能含较多科技/成长暴露，非纯微盘策略"
+    status: "科技成长风格",
+    statusNote: "近1年涨158.97%，今年涨67.37%，含大量科技暴露"
   }
 ];
