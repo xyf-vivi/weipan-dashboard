@@ -176,4 +176,90 @@ const AUTO_DATA = {
   wp.forEach(item => { if (item.close > maxClose) maxClose = item.close; });
   d.weipanDrawdown = (wp[wp.length-1].close / maxClose - 1) * 100;
   
+  // 微盘近1月涨跌幅（用于产品相对微盘对比）
+  if (wp.length >= 20) {
+    d.weipan1m = (wp[wp.length-1].close / wp[wp.length-20].close - 1) * 100;
+  }
+  
 })();
+
+// === 微盘量化产品跟踪 (天天基金数据, 2026-06-12) ===
+const FUND_PRODUCTS = [
+  {
+    name: "诺安多策略A",
+    code: "320016",
+    type: "混合型-偏股",
+    navDate: "2026-06-12",
+    nav: 3.22,
+    dayChange: 1.19,
+    week1: -3.27,
+    month1: -13.53,
+    month3: -12.69,
+    month6: 1.16,
+    year1: 22.62,
+    ytd: -2.42,
+    sinceInception: 222.00,
+    scale: 25.41,  // 亿
+    // 相对微盘超额（近1月）
+    vsWeipan1m: null,  // 微盘近1月跌幅约-7.56%（5/12高点到6/12）
+    status: "跟随修复",
+    statusNote: "近1月跌13.53%，跌幅大于微盘指数，微盘暴露较高"
+  },
+  {
+    name: "金元顺安元启",
+    code: "004685",
+    type: "混合型-灵活配置",
+    navDate: "2026-06-12",
+    nav: 6.5298,
+    dayChange: 1.10,
+    week1: -1.58,
+    month1: -7.56,
+    month3: -8.28,
+    month6: -0.39,
+    year1: 19.00,
+    ytd: -2.06,
+    sinceInception: 552.98,
+    scale: 15.76,
+    vsWeipan1m: null,
+    status: "风控较强",
+    statusNote: "近1月跌7.56%，与微盘指数跌幅接近，回撤控制好于同类"
+  },
+  {
+    name: "万家精选A",
+    code: "519185",
+    type: "混合型-偏股",
+    navDate: "2026-06-12",
+    nav: 2.1792,
+    dayChange: 1.25,
+    week1: -2.75,
+    month1: 5.27,
+    month3: 1.55,
+    month6: 26.65,
+    year1: 47.30,
+    ytd: 28.82,
+    sinceInception: 449.34,
+    scale: 8.66,
+    vsWeipan1m: null,
+    status: "修复偏强",
+    statusNote: "近1月涨5.27%，逆势上涨，可能已降低微盘暴露或切换至科技"
+  },
+  {
+    name: "新华策略精选A",
+    code: "001040",
+    type: "股票型",
+    navDate: "2026-06-12",
+    nav: 3.7465,
+    dayChange: -1.28,
+    week1: -0.46,
+    month1: 5.66,
+    month3: 35.06,
+    month6: 66.08,
+    year1: 158.97,
+    ytd: 67.37,
+    sinceInception: 368.34,
+    scale: 7.85,
+    vsWeipan1m: null,
+    status: "高弹性非纯微盘",
+    statusNote: "近1年涨158.97%，今年涨67.37%，可能含较多科技/成长暴露，非纯微盘策略"
+  }
+];

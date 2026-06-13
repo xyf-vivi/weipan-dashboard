@@ -233,8 +233,11 @@ canvas{width:100%!important;height:100%!important}
   <!-- ====== 产品跟踪 ====== -->
   <div class="card">
     <h2><span class="icon" style="background:#8b5cf6">🏷️</span> 微盘量化产品跟踪 <span class="manual-toggle" onclick="toggleProduct()">展开/收起</span></h2>
-    <div id="productSection" style="display:none">
-      <div style="font-size:12px;color:#64748b;margin-bottom:8px">重点看：微盘反弹时基金有没有跟上？微盘下跌时基金是不是少跌？</div>
+    <div id="productSection">
+      <div style="font-size:12px;color:#64748b;margin-bottom:8px">
+        <span class="fund-date" style="margin-right:12px"></span>
+        重点看：微盘反弹时基金有没有跟上？微盘下跌时基金是不是少跌？
+      </div>
       <table class="product-table" id="productTable"></table>
       <div style="margin-top:10px">
         <button class="btn btn-primary" onclick="saveProducts()">保存</button>
@@ -744,20 +747,53 @@ function renderRiskCalendar() {
 // ====== 产品跟踪 ======
 function renderProducts() {
   const table = document.getElementById('productTable');
-  table.innerHTML = `
-    <tr><th>产品</th><th>近1日(%)</th><th>近5日(%)</th><th>近20日(%)</th><th>相对微盘</th><th>最大回撤(%)</th><th>状态</th></tr>
-    ${products.map((p, i) => `
-      <tr>
-        <td><input value="${p.name}" style="width:80px" onchange="products[${i}].name=this.value"></td>
-        <td><input value="${p.n1d}" placeholder="—" onchange="products[${i}].n1d=this.value"></td>
-        <td><input value="${p.n5d}" placeholder="—" onchange="products[${i}].n5d=this.value"></td>
-        <td><input value="${p.n20d}" placeholder="—" onchange="products[${i}].n20d=this.value"></td>
-        <td><input value="${p.vsWeipan}" placeholder="—" onchange="products[${i}].vsWeipan=this.value"></td>
-        <td><input value="${p.maxDD}" placeholder="—" onchange="products[${i}].maxDD=this.value"></td>
-        <td style="font-size:12px;color:#94a3b8">${p.status || '待填入'}</td>
-      </tr>
-    `).join('')}
-  `;
+  // 优先使用天天基金自动数据
+  const autoFunds = typeof FUND_PRODUCTS !== 'undefined' ? FUND_PRODUCTS : null;
+  
+  if (autoFunds && autoFunds.length > 0) {
+    table.innerHTML = `
+      <tr><th>产品</th><th>代码</th><th>规模</th><th>日涨跌</th><th>近1周</th><th>近1月</th><th>近3月</th><th>今年</th><th>近1年</th><th>状态</th></tr>
+      ${autoFunds.map(f => {
+        const dayColor = f.dayChange > 0 ? '#ef4444' : f.dayChange < 0 ? '#22c55e' : '#94a3b8';
+        const w1Color = f.week1 > 0 ? '#ef4444' : f.week1 < 0 ? '#22c55e' : '#94a3b8';
+        const m1Color = f.month1 > 0 ? '#ef4444' : f.month1 < 0 ? '#22c55e' : '#94a3b8';
+        const m3Color = f.month3 > 0 ? '#ef4444' : f.month3 < 0 ? '#22c55e' : '#94a3b8';
+        const ytdColor = f.ytd > 0 ? '#ef4444' : f.ytd < 0 ? '#22c55e' : '#94a3b8';
+        const y1Color = f.year1 > 0 ? '#ef4444' : f.year1 < 0 ? '#22c55e' : '#94a3b8';
+        return `<tr>
+          <td style="font-weight:600;font-size:12px">${f.name}</td>
+          <td style="font-size:11px;color:#64748b">${f.code}</td>
+          <td style="font-size:12px">${f.scale}亿</td>
+          <td style="color:${dayColor};font-weight:600">${f.dayChange > 0 ? '+' : ''}${f.dayChange}%</td>
+          <td style="color:${w1Color}">${f.week1 > 0 ? '+' : ''}${f.week1}%</td>
+          <td style="color:${m1Color};font-weight:600">${f.month1 > 0 ? '+' : ''}${f.month1}%</td>
+          <td style="color:${m3Color}">${f.month3 > 0 ? '+' : ''}${f.month3}%</td>
+          <td style="color:${ytdColor};font-weight:600">${f.ytd > 0 ? '+' : ''}${f.ytd}%</td>
+          <td style="color:${y1Color}">${f.year1 > 0 ? '+' : ''}${f.year1}%</td>
+          <td style="font-size:11px;color:#94a3b8;max-width:120px" title="${f.statusNote}">${f.status}</td>
+        </tr>`;
+      }).join('')}
+    `;
+    // 更新产品跟踪区标题
+    const title = table.parentElement.querySelector('.fund-date');
+    if (title) title.textContent = '净值日期: ' + autoFunds[0].navDate + '  |  数据来源: 天天基金';
+  } else {
+    // 手动模式
+    table.innerHTML = `
+      <tr><th>产品</th><th>近1日(%)</th><th>近5日(%)</th><th>近20日(%)</th><th>相对微盘</th><th>最大回撤(%)</th><th>状态</th></tr>
+      ${products.map((p, i) => `
+        <tr>
+          <td><input value="${p.name}" style="width:80px" onchange="products[${i}].name=this.value"></td>
+          <td><input value="${p.n1d}" placeholder="—" onchange="products[${i}].n1d=this.value"></td>
+          <td><input value="${p.n5d}" placeholder="—" onchange="products[${i}].n5d=this.value"></td>
+          <td><input value="${p.n20d}" placeholder="—" onchange="products[${i}].n20d=this.value"></td>
+          <td><input value="${p.vsWeipan}" placeholder="—" onchange="products[${i}].vsWeipan=this.value"></td>
+          <td><input value="${p.maxDD}" placeholder="—" onchange="products[${i}].maxDD=this.value"></td>
+          <td style="font-size:12px;color:#94a3b8">${p.status || '待填入'}</td>
+        </tr>
+      `).join('')}
+    `;
+  }
 }
 
 function saveProducts() {
