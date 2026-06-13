@@ -88,7 +88,9 @@
       border-left: 3px solid var(--accent-yellow);
     }
     .risk-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-    .risk-desc { font-size: 12px; color: var(--text-muted); }
+    .risk-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+    .risk-trigger { font-size: 11px; color: var(--accent-yellow); background: rgba(251, 191, 36, 0.1); padding: 6px; border-radius: 4px; }
+    .evidence-sub { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
     
     /* Fund Pool */
     .fund-tier { margin-bottom: 20px; }
@@ -173,11 +175,11 @@
       <div class="hero-subtitle">判断现在是否适合配置微盘策略。不看单日涨跌，看资金是否从科技抱团重新扩散到小票。</div>
       <div class="hero-score" id="heroScore">58</div>
       <div class="hero-status" id="heroStatus">等待确认</div>
-      <div class="hero-desc" id="heroDesc">微盘已经从拥挤区降温，但资金尚未确认回流。科技抱团仍需观察，微盘反弹更像技术性修复，不是风格切换确认。</div>
+      <div class="hero-desc" id="heroDesc">微盘已经跌到有吸引力的位置，但资金还没有真正回来。现在是观察区，不是重仓区。</div>
       <div class="hero-tags" id="heroTags">
-        <span class="tag tag-yellow">🟡 科技松动</span>
-        <span class="tag tag-green">🟢 小票修复</span>
-        <span class="tag tag-yellow">🟡 资金待确认</span>
+        <span class="tag tag-yellow">🟡 科技尚未退潮</span>
+        <span class="tag tag-green">🟢 赚钱效应改善</span>
+        <span class="tag tag-yellow">🟡 资金回流不足</span>
       </div>
     </div>
 
@@ -185,11 +187,11 @@
     <div class="card">
       <h2>📊 今天市场发生了什么？</h2>
       <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;" id="todayWhat">
-        今天最重要的变化，不是微盘涨了，而是科技抱团开始松动。当资金不再只挤在少数高位科技方向时，微盘才有重新喘气的机会。
+        今天不是"微盘反转"，而是小票从极弱状态里喘了一口气。能不能变成行情，要看资金是否连续回流。
       </p>
       <div class="evidence-grid" style="grid-template-columns: repeat(4, 1fr);">
         <div style="text-align: center;">
-          <div style="font-size: 12px; color: var(--text-muted);">中证2000</div>
+          <div style="font-size: 12px; color: var(--text-muted);">中证2000 <span title="中证2000是小盘风格代理，不等同于万得微盘指数" style="cursor:help">📌</span></div>
           <div style="font-size: 20px; font-weight: 700;" id="zz2000Today">+1.8%</div>
         </div>
         <div style="text-align: center;">
@@ -206,7 +208,7 @@
         </div>
       </div>
       <p style="font-size: 13px; color: var(--text-muted); margin-top: 12px;" id="todayConclusion">
-        结论：小票开始修复，但还不能确认新一轮微盘行情已经启动。
+        结论：这是今天最积极的信号。微盘策略最需要的不是指数涨，而是多数股票一起涨。
       </p>
     </div>
 
@@ -217,17 +219,20 @@
         <div class="evidence-card">
           <div class="evidence-title">1. 科技还在吸血吗？</div>
           <div class="evidence-value negative" id="techFlow">-12.4%</div>
-          <div class="evidence-desc" id="techFlowDesc">微盘相对科技近20日跑输12.4%，科技仍然吸金</div>
+          <div class="evidence-sub">近20日相对强弱</div>
+          <div class="evidence-desc" id="techFlowDesc">小票还在明显跑输科技。只要科技继续跑赢小票，微盘就很难走出持续行情。微盘反弹的前提，是科技抱团开始降温。</div>
         </div>
         <div class="evidence-card">
           <div class="evidence-title">2. 资金回来了吗？</div>
           <div class="evidence-value neutral" id="moneyFlow">15.9%</div>
-          <div class="evidence-desc" id="moneyFlowDesc">小票成交占比15.9%，略有回升但还需确认</div>
+          <div class="evidence-sub">近5日均值 15.2% | 近20日均值 14.7%</div>
+          <div class="evidence-desc" id="moneyFlowDesc">微盘不是跌多了就会涨，必须看到成交占比回升。没有资金，反弹容易一日游。当前略高于均值，但还不是强回流。</div>
         </div>
         <div class="evidence-card">
           <div class="evidence-title">3. 大部分股票赚钱吗？</div>
           <div class="evidence-value positive" id="profitSpread">73%</div>
-          <div class="evidence-desc" id="profitSpreadDesc">上涨家数占比73%，赚钱效应扩散</div>
+          <div class="evidence-sub">上涨家数占比</div>
+          <div class="evidence-desc" id="profitSpreadDesc">这是今天最积极的信号。微盘策略最需要的不是指数涨，而是多数股票一起涨。赚钱效应扩散，比指数单日上涨更重要。</div>
         </div>
       </div>
     </div>
@@ -236,24 +241,28 @@
     <div class="card" style="border-left: 3px solid var(--accent-yellow);">
       <h2>⚠️ 但是提醒</h2>
       <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">
-        科技抱团并未彻底结束。如果科创50重新放量上涨，而中证2000成交占比回落，微盘修复可能只是短线反弹。
+        科技抱团并未彻底结束。只要资金还没有持续离开科技主线，微盘反弹就只能先看作修复。
       </p>
       <div class="risk-grid">
         <div class="risk-card">
-          <div class="risk-title">🔴 科技重新加速风险</div>
-          <div class="risk-desc">科技一旦重新加速，微盘容易再次被抽血</div>
+          <div class="risk-title">🟡 科技重新加速风险</div>
+          <div class="risk-desc">科创50重新放量跑赢中证2000</div>
+          <div class="risk-trigger">触发条件：科技一旦重新加速，微盘容易再次被抽血</div>
         </div>
         <div class="risk-card">
           <div class="risk-title">🟡 流动性踩踏风险</div>
-          <div class="risk-desc">跌停家数上升，说明小票流动性风险变大</div>
+          <div class="risk-desc">跌停家数 > 30家转黄，> 60家转红</div>
+          <div class="risk-trigger">触发条件：跌停家数快速增加，说明小票流动性风险变大</div>
         </div>
         <div class="risk-card">
           <div class="risk-title">🟡 市场缩量风险</div>
-          <div class="risk-desc">没有成交量，微盘反弹容易一日游</div>
+          <div class="risk-desc">全A成交额连续3日下降</div>
+          <div class="risk-trigger">触发条件：没有成交量，微盘反弹容易一日游</div>
         </div>
         <div class="risk-card">
           <div class="risk-title">🟢 退市风险</div>
-          <div class="risk-desc">当前处于财报真空期，尾部风险可控</div>
+          <div class="risk-desc">ST板块大跌或跌停扩散</div>
+          <div class="risk-trigger">触发条件：当前处于财报真空期，尾部风险可控</div>
         </div>
       </div>
     </div>
@@ -315,35 +324,52 @@
       <h2>📍 现在处在什么位置？</h2>
       <div class="history-grid">
         <div class="history-card">
-          <div class="history-label">微盘相对科技</div>
+          <div class="history-label">价格位置</div>
           <div class="history-value negative" id="historyRelTech">8%</div>
-          <div style="font-size: 11px; color: var(--text-muted);">近一年低位</div>
+          <div style="font-size: 11px; color: var(--text-muted);">近一年低位 → 接近机会区</div>
         </div>
         <div class="history-card">
-          <div class="history-label">微盘回撤幅度</div>
-          <div class="history-value negative" id="historyDrawdown">82%</div>
-          <div style="font-size: 11px; color: var(--text-muted);">近一年高位</div>
+          <div class="history-label">资金位置</div>
+          <div class="history-value neutral" id="historyDrawdown">54%</div>
+          <div style="font-size: 11px; color: var(--text-muted);">近一年中位 → 还没完全回来</div>
         </div>
         <div class="history-card">
-          <div class="history-label">小票成交占比</div>
-          <div class="history-value neutral" id="historyVol">54%</div>
-          <div style="font-size: 11px; color: var(--text-muted);">近一年中位</div>
+          <div class="history-label">风险位置</div>
+          <div class="history-value positive" id="historyVol">🟢</div>
+          <div style="font-size: 11px; color: var(--text-muted);">财报真空期 → 风险可控</div>
         </div>
       </div>
       <div class="history-conclusion" id="historyConclusion">
-        价格位置已经接近机会区，但资金确认还不充分。
+        <strong>左侧有吸引力，右侧还没确认。</strong> 微盘想真正走强，需要看到科技继续分化、小票成交占比继续上升、上涨家数持续扩散。
       </div>
     </div>
 
     <!-- 操作建议 -->
     <div class="card">
       <h2>🎯 现在怎么做？</h2>
+      
+      <!-- 三类用户建议 -->
       <div class="action-box">
         <div class="action-title" id="actionTitle">当前建议：等待确认</div>
-        <div class="action-desc" id="actionDesc">
-          微盘还没有走出弱势，短线反弹不代表趋势已经反转。建议仓位：0%-10%，只观察不追涨，重点看上涨家数是否持续超过60%。
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0;">
+          <div style="background: rgba(148, 163, 184, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
+            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">保守型</div>
+            <div style="font-size: 12px; color: var(--text-muted);">继续观察，不急着动</div>
+          </div>
+          <div style="background: rgba(251, 191, 36, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
+            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">稳健型</div>
+            <div style="font-size: 12px; color: var(--text-muted);">最多小仓试探 0%-10%</div>
+          </div>
+          <div style="background: rgba(239, 68, 68, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
+            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">激进型</div>
+            <div style="font-size: 12px; color: var(--text-muted);">只做左侧观察仓，不追涨</div>
+          </div>
         </div>
-        <div class="action-suggestion" id="actionSuggestion">观察为主</div>
+        
+        <div class="action-desc" id="actionDesc">
+          <strong>真正加仓信号：</strong>中证2000连续跑赢科创50；小票成交占比连续回升；上涨家数连续维持在60%以上。
+        </div>
       </div>
       
       <h3 style="margin-top: 20px;">📅 明天重点看什么？</h3>
