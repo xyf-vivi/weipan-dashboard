@@ -54,15 +54,16 @@ const ScoringEngine = {
       });
 
       // 4. 抱团风险：市场集中度HHI
+      // 注：当前无历史分位阈值，暂不作为否决条件，仅作观察项展示
       const hhi = v6.hhi;
       gates.push({
         key: 'concentrate',
         label: '抱团风险',
         metric: '市场集中度HHI',
         value: hhi !== undefined ? hhi.toFixed(4) + '%' : '—',
-        status: 'ok', // 当前HHI=0.1579%很低，未触发。阈值需积累历史数据后定义
+        status: 'watch', // 始终标记为观察——无历史分位，不作为否决条件
         threshold: '待积累历史分位',
-        note: hhi !== undefined ? `HHI=${hhi.toFixed(4)}%，成交较分散，量化友好` : '数据异常'
+        note: hhi !== undefined ? '当前HHI=' + hhi.toFixed(4) + '%，成交较分散。尚未建立历史阈值，暂不作为否决条件' : '数据异常'
       });
 
       // 汇总
@@ -105,16 +106,21 @@ const ScoringEngine = {
         } else { d.ma243 = '数据不足'; }
 
         // b. 20日回归斜率 (10分) — 看方向+t值
+        // |t|>2 显著，1~2 方向较明确，<1 不显著
         const slope = rel.slope20;
         const tVal = rel.tValue20;
         if (slope !== undefined && slope !== null) {
-          if (slope > 0 && Math.abs(tVal) > 1) { score += 10; d.slope = '20日斜率转正且显著（t=' + tVal.toFixed(2) + '）'; }
-          else if (slope > 0) { score += 6; d.slope = '20日斜率转正但不显著（t=' + tVal.toFixed(2) + '）'; }
-          else if (Math.abs(tVal) > 1) { d.slope = '20日斜率为负且显著（t=' + tVal.toFixed(2) + '），趋势仍向下'; }
+          const absT = Math.abs(tVal);
+          if (slope > 0 && absT > 2) { score += 10; d.slope = '20日斜率转正且显著（t=' + tVal.toFixed(2) + '）'; }
+          else if (slope > 0 && absT > 1) { score += 7; d.slope = '20日斜率转正，方向较明确（t=' + tVal.toFixed(2) + '）'; }
+          else if (slope > 0) { score += 4; d.slope = '20日斜率转正但不显著（t=' + tVal.toFixed(2) + '）'; }
+          else if (slope < 0 && absT > 2) { d.slope = '20日斜率为负且显著（t=' + tVal.toFixed(2) + '），趋势仍向下'; }
+          else if (slope < 0 && absT > 1) { d.slope = '20日斜率为负，方向较明确（t=' + tVal.toFixed(2) + '）'; }
           else { score += 3; d.slope = '20日斜率为负但不显著（t=' + tVal.toFixed(2) + '）'; }
         } else { d.slope = '数据不足'; }
 
-        // c. 微盘相对科创50近期表现 (8分)
+        // c. 小票相对科技近期表现 (8分)
+        // 用中证2000代理小票，科创50代理科技。明确标注为小票vs科技
         const rel20d = (data.zz2000_20d_change || 0) - (data.kc50_20d_change || 0);
         if (rel20d > 5) { score += 8; d.rel20d = '小票明显跑赢科技（+' + rel20d.toFixed(1) + 'pct）'; }
         else if (rel20d > 0) { score += 5; d.rel20d = '小票略跑赢科技（+' + rel20d.toFixed(1) + 'pct）'; }
@@ -135,11 +141,13 @@ const ScoringEngine = {
         const v6 = data.v6 || {};
 
         // a. 小票成交占比 (10分) — 严格口径
+        // 评分逻辑：偏低不给高分（资金未回流），温和回升给高分，过高只给中低分（过热拥挤反而危险）
         const smallRatio = v6.smallCapRatio;
         if (smallRatio !== undefined && smallRatio !== null) {
-          if (smallRatio > 2.0) { score += 10; d.smallRatio = '小票成交占比偏高（' + smallRatio.toFixed(2) + '%），资金活跃'; }
-          else if (smallRatio > 1.5) { score += 7; d.smallRatio = '小票成交占比适中（' + smallRatio.toFixed(2) + '%）'; }
-          else { score += 3; d.smallRatio = '小票成交占比偏低（' + smallRatio.toFixed(2) + '%），资金回流待确认'; }
+          if (smallRatio > 2.5) { score += 6; d.smallRatio = '小票成交占比' + smallRatio.toFixed(2) + '%，偏高，需警惕过热拥挤'; }
+          else if (smallRatio > 1.8) { score += 10; d.smallRatio = '小票成交占比' + smallRatio.toFixed(2) + '%，温和活跃，资金回流中'; }
+          else if (smallRatio > 1.3) { score += 6; d.smallRatio = '小票成交占比' + smallRatio.toFixed(2) + '%，适中偏低'; }
+          else { score += 3; d.smallRatio = '小票成交占比' + smallRatio.toFixed(2) + '%，偏低，资金回流待确认'; }
         } else { d.smallRatio = '数据不足'; }
 
         // b. 换手率近一年分位 (8分)
@@ -194,15 +202,18 @@ const ScoringEngine = {
           else { d.median = '全A中位数涨跌幅' + median.toFixed(2) + '%，多数下跌'; }
         } else { d.median = '数据不足'; }
 
-        // c. 横截面分化度IQR (5分) — IQR越大分化越大，量化越好赚钱
+        // c. 横截面分化度IQR (5分)
+        // 适度分化有利于量化选股，过低说明机会少，过高说明波动和尾部风险上升
         const iqr = v6.iqr;
         if (iqr !== undefined && iqr !== null) {
-          if (iqr > 4) { score += 5; d.iqr = '横截面分化度(P75-P25)=' + iqr.toFixed(1) + 'pct，分化大，量化友好'; }
-          else if (iqr > 2) { score += 3; d.iqr = '横截面分化度=' + iqr.toFixed(1) + 'pct，适中'; }
-          else { score += 1; d.iqr = '横截面分化度=' + iqr.toFixed(1) + 'pct，分化小'; }
+          if (iqr > 6) { score += 3; d.iqr = '横截面分化度(P75-P25)=' + iqr.toFixed(1) + 'pct，分化过大，尾部风险上升'; }
+          else if (iqr > 2.5) { score += 5; d.iqr = '横截面分化度=' + iqr.toFixed(1) + 'pct，适度分化，量化友好'; }
+          else if (iqr > 1.5) { score += 3; d.iqr = '横截面分化度=' + iqr.toFixed(1) + 'pct，分化偏小'; }
+          else { score += 1; d.iqr = '横截面分化度=' + iqr.toFixed(1) + 'pct，分化过小，选股机会少'; }
         } else { d.iqr = '数据不足'; }
 
         // d. 市场集中度HHI (5分) — HHI越低越分散，量化越好赚钱
+        // 注：当前无历史分位，仅作截面快照参考
         const hhi = v6.hhi;
         if (hhi !== undefined && hhi !== null) {
           if (hhi < 0.2) { score += 5; d.hhi = 'HHI=' + hhi.toFixed(4) + '%，成交分散，量化友好'; }
@@ -223,15 +234,16 @@ const ScoringEngine = {
         const d = {};
         const v6 = data.v6 || {};
 
-        // a. 基金连续修复天数 (8分)
+        // a. 标杆基金连续修复天数 (8分)
+        // 注：当前基于观察池标杆基金006195.OF的净值序列计算
         const repairDays = v6.fundRepairDays;
         if (repairDays !== undefined && repairDays !== null) {
-          if (repairDays >= 3) { score += 8; d.repair = '观察池标杆基金连续修复' + repairDays + '天'; }
-          else if (repairDays >= 1) { score += 4; d.repair = '观察池标杆基金仅连续修复' + repairDays + '天，未达确认标准'; }
-          else { d.repair = '观察池标杆基金未连续修复'; }
+          if (repairDays >= 3) { score += 8; d.repair = '标杆基金（006195）连续修复' + repairDays + '天'; }
+          else if (repairDays >= 1) { score += 4; d.repair = '标杆基金（006195）仅连续修复' + repairDays + '天，未达确认标准'; }
+          else { d.repair = '标杆基金（006195）未连续修复'; }
         } else { d.repair = '数据不足'; }
 
-        // b. 观察池中位收益近1日 (6分)
+        // b. 观察池中位数近1日 (6分)
         const f1d = data.fund_avg_1d;
         if (f1d !== undefined && f1d !== null) {
           if (f1d > 0.5) { score += 6; d.dayChange = '观察池中位数近1日' + f1d.toFixed(2) + '%，修复中'; }
@@ -239,18 +251,18 @@ const ScoringEngine = {
           else { d.dayChange = '观察池中位数近1日' + f1d.toFixed(2) + '%，仍在调整'; }
         } else { d.dayChange = '数据不足'; }
 
-        // c. 观察池中位收益近1周 (3分)
+        // c. 观察池中位数近1周 (3分)
         const f1w = data.fund_avg_1w;
         if (f1w !== undefined && f1w !== null) {
-          if (f1w > 0) { score += 3; d.weekChange = '近1周' + f1w.toFixed(2) + '%，为正'; }
-          else { d.weekChange = '近1周' + f1w.toFixed(2) + '%，仍在调整'; }
+          if (f1w > 0) { score += 3; d.weekChange = '观察池中位数近1周' + f1w.toFixed(2) + '%，为正'; }
+          else { d.weekChange = '观察池中位数近1周' + f1w.toFixed(2) + '%，仍在调整'; }
         } else { d.weekChange = '数据不足'; }
 
-        // d. 跑赢中证2000情况 (3分)
-        const relZz2000 = data.fund_rel_zz2000;
-        if (relZz2000 !== undefined && relZz2000 !== null) {
-          if (relZz2000 > 0) { score += 3; d.excess = '跑赢中证2000（超额' + relZz2000.toFixed(1) + 'pct）'; }
-          else { d.excess = '跑输中证2000（超额' + relZz2000.toFixed(1) + 'pct）'; }
+        // d. 跑赢万得微盘指数情况 (3分)
+        const relBench = data.fund_rel_bench;
+        if (relBench !== undefined && relBench !== null) {
+          if (relBench > 0) { score += 3; d.excess = '观察池近1月跑赢微盘指数（超额' + relBench.toFixed(1) + 'pct）'; }
+          else { d.excess = '观察池近1月跑输微盘指数（超额' + relBench.toFixed(1) + 'pct）'; }
         } else { d.excess = '数据不足'; }
 
         return { score: Math.min(20, score), max: 20, detail: d };
@@ -321,7 +333,7 @@ const ScoringEngine = {
       pct,
       avail,
       total,
-      reason: `核心日频指标已覆盖 ${avail}/${total} 项（${(pct * 100).toFixed(0)}%），低频产品同质化指标不纳入今日判断`
+      reason: `核心日频截面指标已覆盖 ${avail}/${total} 项（${(pct * 100).toFixed(0)}%），连续性确认指标部分待补，低频产品指标不纳入今日判断`
     };
   },
 
