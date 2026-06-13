@@ -263,7 +263,17 @@ const AUTO_DATA = {
   
 })();
 
-// === 微盘量化产品跟踪 (Wind MCP真实数据, 2026-06-12) ===
+// === NeoData 补充数据 (2026-06-12) ===
+// 中证红利指数 000922.SH
+AUTO_DATA.zzlh_20d = -0.54;       // 近20日涨跌幅（NeoData返回的"20日涨跌幅"）
+AUTO_DATA.zzlh_1d = 1.49;         // 当日涨跌幅
+AUTO_DATA.zzlh_5d = -0.60;        // 近5日涨跌幅
+AUTO_DATA.zzlh_pe_ttm = 8.68;     // 市盈率TTM
+
+// 中国10年期国债收益率
+AUTO_DATA.bond_10y = 1.743;       // 中债国债到期收益率:10年:日 (%)
+
+// === 微盘量化产品跟踪 (NeoData + Wind MCP, 2026-06-12) ===
 // 分层：微盘暴露型 | 稳健分散型 | 风格对照型 | 微盘量化
 const FUND_PRODUCTS = [
   // === 微盘暴露型 ===
@@ -273,17 +283,17 @@ const FUND_PRODUCTS = [
     code: "320016",
     type: "混合型-偏股",
     navDate: "2026-06-12",
-    nav: 2.3930,
-    dayChange: -2.84,
-    week1: -6.04,
-    month1: -16.37,
-    month3: null,
-    month6: null,
-    year1: null,
-    ytd: null,
+    nav: 3.2200,
+    dayChange: 1.19,
+    week1: -3.27,
+    month1: -13.53,
+    month3: -12.69,
+    month6: 1.16,
+    year1: 22.62,
+    ytd: -2.42,
     scale: null,
     status: "高暴露微盘",
-    statusNote: "Wind MCP真实数据，近1月跌16.37%"
+    statusNote: "NeoData真实数据"
   },
   {
     tier: "微盘暴露型",
@@ -328,17 +338,17 @@ const FUND_PRODUCTS = [
     code: "004685",
     type: "混合型-灵活",
     navDate: "2026-06-12",
-    nav: 4.9918,
-    dayChange: -3.65,
-    week1: -5.59,
-    month1: -13.35,
-    month3: null,
-    month6: null,
-    year1: null,
-    ytd: null,
+    nav: 6.5298,
+    dayChange: 1.10,
+    week1: -1.58,
+    month1: -7.56,
+    month3: -8.28,
+    month6: -0.39,
+    year1: 19.00,
+    ytd: -2.06,
     scale: null,
     status: "人肉量化天花板",
-    statusNote: "Wind MCP真实数据，近1月跌13.35%"
+    statusNote: "NeoData真实数据"
   },
   {
     tier: "稳健分散型",
@@ -383,17 +393,17 @@ const FUND_PRODUCTS = [
     code: "519185",
     type: "混合型-偏股",
     navDate: "2026-06-12",
-    nav: 2.6141,
-    dayChange: -3.16,
-    week1: -4.99,
-    month1: 0.68,
-    month3: null,
-    month6: null,
-    year1: null,
-    ytd: null,
+    nav: 2.1792,
+    dayChange: 1.25,
+    week1: -2.75,
+    month1: 5.27,
+    month3: 1.55,
+    month6: 26.65,
+    year1: 47.30,
+    ytd: 28.82,
     scale: null,
     status: "黄海管理",
-    statusNote: "Wind MCP真实数据，近1月涨0.68%"
+    statusNote: "NeoData真实数据"
   },
   {
     tier: "风格对照型",
@@ -401,17 +411,17 @@ const FUND_PRODUCTS = [
     code: "001040",
     type: "股票型",
     navDate: "2026-06-12",
-    nav: 3.0290,
-    dayChange: -2.66,
-    week1: -4.17,
-    month1: 6.37,
-    month3: null,
-    month6: null,
-    year1: null,
-    ytd: null,
+    nav: 3.7465,
+    dayChange: -1.28,
+    week1: -0.46,
+    month1: 5.66,
+    month3: 35.06,
+    month6: 66.08,
+    year1: 158.97,
+    ytd: 67.37,
     scale: null,
     status: "科技成长风格",
-    statusNote: "Wind MCP真实数据，近1月涨6.37%"
+    statusNote: "NeoData真实数据"
   },
   // === 微盘量化（原第一梯队）===
   {
@@ -420,17 +430,17 @@ const FUND_PRODUCTS = [
     code: "006195",
     type: "股票型",
     navDate: "2026-06-12",
-    nav: 1.7653,
-    dayChange: -2.49,
-    week1: -5.58,
-    month1: -12.59,
-    month3: null,
-    month6: null,
-    year1: null,
-    ytd: null,
+    nav: 3.4213,
+    dayChange: 0.68,
+    week1: -1.35,
+    month1: -7.58,
+    month3: 2.52,
+    month6: 17.41,
+    year1: 45.69,
+    ytd: 13.72,
     scale: null,
     status: "微盘量化标杆",
-    statusNote: "Wind MCP真实数据，近1月跌12.59%"
+    statusNote: "NeoData真实数据"
   },
   {
     tier: "微盘量化",
@@ -456,17 +466,17 @@ const FUND_PRODUCTS = [
     code: "003147",
     type: "混合型-灵活",
     navDate: "2026-06-12",
-    nav: 2.0630,
-    dayChange: -2.59,
-    week1: -4.66,
-    month1: -10.80,
-    month3: null,
-    month6: null,
-    year1: null,
-    ytd: null,
+    nav: 1.6088,
+    dayChange: 0.91,
+    week1: -1.62,
+    month1: -6.51,
+    month3: -0.27,
+    month6: 12.22,
+    year1: 41.28,
+    ytd: 8.44,
     scale: null,
     status: "市值下沉型",
-    statusNote: "Wind MCP真实数据，近1月跌10.80%"
+    statusNote: "NeoData真实数据"
   },
   {
     tier: "微盘量化",

@@ -185,7 +185,7 @@
     </div>
     <div class="risk-items">
       <div class="risk-item"><span class="risk-dot dot-wait"></span><span>波动拥挤：待接入</span></div>
-      <div class="risk-item"><span class="risk-dot dot-watch"></span><span>利率约束：低频观察</span></div>
+      <div class="risk-item"><span class="risk-dot dot-watch"></span><span>利率约束：10年国债 ${AUTO_DATA.bond_10y ? AUTO_DATA.bond_10y.toFixed(2) + '%' : '低频观察'}（低频观察）</span></div>
       <div class="risk-item"><span class="risk-dot dot-ok"></span><span>流动性踩踏：未见触发</span></div>
       <div class="risk-item"><span class="risk-dot dot-wait"></span><span>产品同质化：低频观察</span></div>
     </div>
@@ -364,7 +364,7 @@ function renderFundTables() {
       </div>
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">${tc.desc}</div>
       <table class="fund-table">
-        <thead><tr><th>基金</th><th>近1日</th><th>近1周</th><th>近1月</th><th>主要风险</th><th>数据状态</th><th>观察结论</th></tr></thead>
+        <thead><tr><th>基金</th><th>近1日</th><th>近1周</th><th>近1月</th><th>近3月</th><th>近6月</th><th>YTD</th><th>主要风险</th><th>数据状态</th><th>观察结论</th></tr></thead>
         <tbody>
           ${tc.funds.map(f => {
             const hasData = f.dayChange !== null && f.dayChange !== undefined;
@@ -379,6 +379,9 @@ function renderFundTables() {
               <td style="color:${pctColor(f.dayChange)};font-weight:600">${fmtPct(f.dayChange)}</td>
               <td style="color:${pctColor(f.week1)}">${fmtPct(f.week1)}</td>
               <td style="color:${pctColor(f.month1)}">${fmtPct(f.month1)}</td>
+              <td style="color:${pctColor(f.month3)}">${fmtPct(f.month3)}</td>
+              <td style="color:${pctColor(f.month6)}">${fmtPct(f.month6)}</td>
+              <td style="color:${pctColor(f.ytd)}">${fmtPct(f.ytd)}</td>
               <td style="font-size:11px;color:var(--text-muted)">${risk}</td>
               <td>${hasData ? '<span class="tag tag-green">已接入</span>' : '<span class="tag tag-gray">待接入</span>'}</td>
               <td style="font-size:11px">${conclusion}</td>
@@ -402,7 +405,7 @@ function renderStyleCompare() {
     { name: '中证2000 · 932000.CSI', val: AUTO_DATA.zz2000_20d, desc: '小票环境代理', dataType: 'auto' },
     { name: '科创50 · 000688.SH', val: AUTO_DATA.kc50_20d, desc: '科技抱团代理', dataType: 'auto' },
     { name: '沪深300 · 000300.SH', val: AUTO_DATA.hs300_20d, desc: '核心资产代理', dataType: 'auto' },
-    { name: '中证红利', val: null, desc: '防守风格代理', dataType: 'wait' }
+    { name: '中证红利 · 000922.SH', val: AUTO_DATA.zzlh_20d, desc: '防守风格代理', dataType: 'auto' }
   ];
 
   const vals = items.filter(i => i.val !== undefined && i.val !== null).map(i => i.val);
@@ -602,10 +605,12 @@ function renderMissingData() {
   const missing = [
     '小票成交占比', '换手率分位真实口径', '相对换手率',
     '市场集中度', '横截面分化度', '全A中位数涨跌幅真实口径',
-    '跌停家数', '中证红利指数数据', '微盘/茅指数相对净值',
+    '跌停家数（仅返回涨幅排行，无汇总值）',
+    '微盘/茅指数相对净值',
     '243日均线真实口径', '20日斜率真实口径', '波动率拥挤度',
-    '10年国债风控阈值', '持仓重叠度',
-    '基金规模/YTD/近3月/近6月', '基金连续修复天数序列'
+    '持仓重叠度',
+    '基金规模',
+    '基金连续修复天数序列'
   ];
   container.innerHTML = missing.map(m => `<div class="missing-item">○ ${m} <span style="color:var(--accent-yellow)">不纳入今日评分</span></div>`).join('');
 }
