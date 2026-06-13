@@ -188,15 +188,15 @@ const ScoringEngine = {
   // 模块数据类型标签
   MODULE_INFO: {
     hardRisk: { label: '硬风控', dataType: 'wait', meaning: '有没有不能碰的风险',
-      included: '流动性踩踏（已接入）', excluded: '波动拥挤、利率约束、产品同质化（待接入/低频观察）' },
-    styleDirection: { label: '风格方向', dataType: 'auto', meaning: '微盘有没有重新占优',
-      included: '中证2000 vs 科创50相对强弱、微盘20日斜率、243日均线位置(代理)', excluded: '微盘/茅指数相对净值（待接入）' },
+      included: '流动性踩踏（已接入）', excluded: '波动拥挤、利率约束、产品同质化（待接入/低频观察，4项中仅1项已确认）' },
+    styleDirection: { label: '风格方向', dataType: 'proxy', meaning: '微盘有没有重新占优',
+      included: '中证2000 vs 科创50相对强弱（真实）、20日代理斜率、243日均线代理', excluded: '微盘/茅指数相对净值（待接入）、真实回归斜率（待接入）' },
     crowdingLiquidity: { label: '拥挤与流动性', dataType: 'proxy', meaning: '资金是否健康回流',
-      included: '微盘成交占比（已接入）、换手率分位（已接入）', excluded: '小票成交占比（待接入）' },
-    quantFriendliness: { label: '量化友好度', dataType: 'auto', meaning: '市场是否适合分散量化赚钱',
-      included: '上涨家数占比（已接入）、全A中位数涨跌幅（代理）', excluded: '市场集中度、横截面分化度（待接入）' },
+      included: '微盘成交占比（真实）、换手率分位（样本内28日，精度有限）', excluded: '小票成交占比（待接入）、相对换手率（待接入）' },
+    quantFriendliness: { label: '量化友好度', dataType: 'proxy', meaning: '市场是否适合分散量化赚钱',
+      included: '上涨家数占比（真实）、全A中位数（微盘近5日代理，精度有限）', excluded: '市场集中度、横截面分化度（待接入）' },
     productVerification: { label: '产品验证', dataType: 'auto', meaning: '基金净值是否确认',
-      included: '微盘暴露型+分散量化型基金均值（已接入）', excluded: '风格对照型不参与产品验证评分' }
+      included: '微盘暴露型+分散量化型基金均值（真实，有效样本有限）', excluded: '风格对照型不参与产品验证评分' }
   },
 
   // 计算
@@ -225,29 +225,53 @@ const ScoringEngine = {
     };
   },
 
-  // 评分置信度
+  // 评分置信度 — 区分真实数据和代理数据，硬风控未完整接入时降低置信度
   calcConfidence(data) {
-    let total = 0, available = 0;
-    const checks = [
+    let realTotal = 0, realAvail = 0;
+    let proxyTotal = 0, proxyAvail = 0;
+
+    const realChecks = [
       { has: data.zz2000_20d_change !== undefined, weight: 15 },
       { has: data.kc50_20d_change !== undefined, weight: 10 },
       { has: data.wp_volume_ratio !== undefined, weight: 10 },
-      { has: data.wp_turnover_pct !== undefined, weight: 10 },
       { has: data.up_ratio !== undefined, weight: 15 },
-      { has: data.allA_median_chg !== undefined, weight: 10 },
       { has: data.fund_avg_1d !== undefined, weight: 15 },
-      { has: data.hard_risk_liquidity !== undefined && data.hard_risk_liquidity !== 'wait', weight: 15 }
+      { has: data.hard_risk_liquidity !== undefined && data.hard_risk_liquidity !== 'wait', weight: 10 }
     ];
-    checks.forEach(c => {
-      total += c.weight;
-      if (c.has) available += c.weight;
+    realChecks.forEach(c => { realTotal += c.weight; if (c.has) realAvail += c.weight; });
+
+    const proxyChecks = [
+      { has: data.wp_turnover_pct !== undefined, weight: 10, label: '换手率分位（样本内）' },
+      { has: data.allA_median_chg !== undefined, weight: 10, label: '全A中位数（代理）' }
+    ];
+    proxyChecks.forEach(c => { proxyTotal += c.weight; if (c.has) proxyAvail += c.weight; });
+
+    // 硬风控完整度惩罚：4项中多少是wait
+    let hardRiskWaitCount = 0;
+    ['hard_risk_volatility', 'hard_risk_rate', 'hard_risk_homogenization'].forEach(k => {
+      if (data[k] === 'wait' || data[k] === undefined) hardRiskWaitCount++;
     });
-    const pct = total > 0 ? available / total : 0;
+
+    const realPct = realTotal > 0 ? realAvail / realTotal : 0;
+    const proxyPct = proxyTotal > 0 ? proxyAvail / proxyTotal : 0;
+
+    // 硬风控不完整时降低置信度
+    let adjustedPct = realPct;
+    if (hardRiskWaitCount >= 2) adjustedPct = realPct * 0.75;
+
     let level = '低', reason = '';
-    if (pct >= 0.8) { level = '较高'; reason = '主要信号已接入'; }
-    else if (pct >= 0.5) { level = '中'; reason = '部分指标待接入（小票成交占比、市场集中度、跌停家数、硬风控部分项）'; }
-    else { level = '低'; reason = '大量指标待接入，评分仅供参考'; }
-    return { level, pct, reason };
+    const hrNote = hardRiskWaitCount > 0 ? `，硬风控4项中${hardRiskWaitCount}项待接入` : '';
+    if (adjustedPct >= 0.8) {
+      level = '较高';
+      reason = '真实数据覆盖率' + (realPct*100).toFixed(0) + '%，代理数据' + (proxyPct*100).toFixed(0) + '%' + hrNote;
+    } else if (adjustedPct >= 0.5) {
+      level = '中';
+      reason = '真实数据覆盖率' + (realPct*100).toFixed(0) + '%（部分缺失），代理数据' + (proxyPct*100).toFixed(0) + '%' + hrNote;
+    } else {
+      level = '低';
+      reason = '真实数据覆盖率仅' + (realPct*100).toFixed(0) + '%' + hrNote;
+    }
+    return { level, realPct, proxyPct, adjustedPct, reason };
   },
 
   getLevel(score, hardRiskStatus) {

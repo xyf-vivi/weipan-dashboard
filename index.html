@@ -181,16 +181,16 @@
   <div class="card">
     <h2>硬风控状态</h2>
     <div class="risk-bar" id="hardRiskBar">
-      <div style="font-size:14px;font-weight:600" id="hardRiskStatus">硬风控：部分指标待接入，暂未发现流动性踩踏信号</div>
+      <div style="font-size:14px;font-weight:600" id="hardRiskStatus">硬风控未完整接入，当前只确认未见流动性踩踏信号</div>
     </div>
     <div class="risk-items">
       <div class="risk-item"><span class="risk-dot dot-wait"></span><span>波动拥挤：待接入</span></div>
-      <div class="risk-item"><span class="risk-dot dot-watch"></span><span>利率约束：10年国债 ${AUTO_DATA.bond_10y ? AUTO_DATA.bond_10y.toFixed(2) + '%' : '低频观察'}（低频观察）</span></div>
+      <div class="risk-item"><span class="risk-dot dot-wait"></span><span>利率约束：待接入（10年国债 <span id="bond10yVal">—</span>，风控阈值未接入）</span></div>
       <div class="risk-item"><span class="risk-dot dot-ok"></span><span>流动性踩踏：未见触发</span></div>
       <div class="risk-item"><span class="risk-dot dot-wait"></span><span>产品同质化：低频观察</span></div>
     </div>
     <div style="font-size:11px;color:var(--text-muted);margin-top:8px;padding:8px;background:var(--bg-hover);border-radius:6px">
-      ⚠️ 波动拥挤和利率约束数据待接入，硬风控尚未完整检查。当前评分置信度受此影响。
+      ⚠️ 波动拥挤和利率约束数据待接入，硬风控尚未完整检查。4项中仅1项（流动性踩踏）已确认。当前评分置信度受此影响。
     </div>
 
     <h2 style="margin-top:20px">当前市场风格对照</h2>
@@ -198,7 +198,13 @@
     <div class="style-compare" id="styleCompareGrid"></div>
   </div>
 
-  <!-- ========== 5. 四个信号灯 ========== -->
+  <!-- ========== 5. 当前最关键的三个结论 ========== -->
+  <div class="card">
+    <h2>当前最关键的三个结论</h2>
+    <div id="keyConclusions"></div>
+  </div>
+
+  <!-- ========== 6. 四个信号灯 ========== -->
   <div class="card">
     <h2>四个核心信号灯</h2>
     <div class="signal-grid" id="signalGrid"></div>
@@ -287,7 +293,7 @@
         <tr><td>科技是否重新吸金</td><td>科创50 vs 中证2000</td><td style="color:var(--accent-green)">科技不再压制小票</td><td style="color:var(--accent-red)">科技放量大涨时停止试探</td></tr>
         <tr><td>小票资金是否延续</td><td>微盘成交占比</td><td style="color:var(--accent-green)">占比连续回升</td><td style="color:var(--accent-red)">回落则继续观察</td></tr>
         <tr><td>赚钱效应是否扩散</td><td>上涨家数占比</td><td style="color:var(--accent-green)">持续>60%</td><td style="color:var(--accent-red)">跌破50%不追涨</td></tr>
-        <tr><td>踩踏风险是否抬头</td><td>跌停家数</td><td style="color:var(--accent-green)">风险可控</td><td style="color:var(--accent-red)">跌停放大则停止试探</td></tr>
+        <tr><td>踩踏风险是否抬头</td><td>跌停家数 <span style="color:var(--accent-yellow);font-size:10px">（待接入，暂看下跌家数代理）</span></td><td style="color:var(--accent-green)">风险可控</td><td style="color:var(--accent-red)">跌停放大则停止试探</td></tr>
         <tr><td>产品端是否确认</td><td>观察池基金净值</td><td style="color:var(--accent-green)">连续修复</td><td style="color:var(--accent-red)">指数涨但基金不涨</td></tr>
       </tbody>
     </table>
@@ -350,47 +356,67 @@ function renderFundTables() {
   const container = document.getElementById('fundTables');
   if (!container) return;
 
+  // #4: 共性风险放表头描述里
+  // #5: 加产品角色
   const tierConfigs = [
-    { title: '高微盘暴露观察', desc: '观察微盘量化是否真正修复（含微盘暴露型+微盘量化）', funds: [...tiers.exposure], tagClass: 'tag-red', tagText: '高弹性/高波动' },
-    { title: '分散量化观察', desc: '观察分散持仓、偏稳健的小微盘策略回撤控制能力', funds: tiers.stable, tagClass: 'tag-green', tagText: '分散/风控优先' },
-    { title: '风格对照观察', desc: '判断市场是否偏离微盘转向其他风格（非微盘确认信号）', funds: tiers.control, tagClass: 'tag-blue', tagText: '风格对照/非买入对象' }
+    { title: '高微盘/量化观察', desc: '观察微盘量化是否真正修复（含微盘暴露型+微盘量化）。共性风险：弹性高、回撤快、风格暴露高、流动性敏感', funds: [...tiers.exposure], tagClass: 'tag-red', tagText: '高弹性/高波动',
+      roles: { '诺安多策略A': '高暴露', '国金量化多因子A': '量化标杆', '大成动态量化A': '市值下沉', '富荣价值精选A': '数据待接入', '金元顺安元启': '人肉量化' } },
+    { title: '分散量化观察', desc: '观察分散持仓、偏稳健的小微盘策略回撤控制能力。共性风险：分散持仓、波动较低，但仍有微盘敞口', funds: tiers.stable, tagClass: 'tag-green', tagText: '分散/风控优先',
+      roles: {} },
+    { title: '风格对照观察', desc: '判断市场是否偏离微盘转向其他风格。共性风险：非微盘策略，风格暴露不同。跑赢微盘不等于微盘量化变好', funds: tiers.control, tagClass: 'tag-blue', tagText: '风格对照/非买入对象',
+      roles: { '万家精选A': '黄海管理', '新华策略精选A': '科技成长' } }
   ];
 
-  container.innerHTML = tierConfigs.map(tc => `
+  container.innerHTML = tierConfigs.map(tc => {
+    // #2: 三档数据状态
+    const dataStatusOf = (f) => {
+      const fields = [f.dayChange, f.week1, f.month1, f.month3, f.month6, f.ytd];
+      const valid = fields.filter(v => v !== null && v !== undefined).length;
+      if (valid === 6) return { text: '完整', cls: 'tag-green' };
+      if (valid >= 3) return { text: '部分', cls: 'tag-yellow' };
+      if (valid > 0) return { text: '部分', cls: 'tag-yellow' };
+      return { text: '待接入', cls: 'tag-gray' };
+    };
+
+    return `
     <div style="margin-bottom:20px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         <span style="font-size:14px;font-weight:600">${tc.title}</span>
         <span class="tag ${tc.tagClass}">${tc.tagText}</span>
       </div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">${tc.desc}</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;padding:6px 8px;background:var(--bg-hover);border-radius:6px">${tc.desc}</div>
       <table class="fund-table">
-        <thead><tr><th>基金</th><th>近1日</th><th>近1周</th><th>近1月</th><th>近3月</th><th>近6月</th><th>YTD</th><th>主要风险</th><th>数据状态</th><th>观察结论</th></tr></thead>
+        <thead><tr><th>基金</th><th>角色</th><th>近1日</th><th>近1周</th><th>近1月</th><th>数据状态</th><th>观察结论</th></tr></thead>
         <tbody>
           ${tc.funds.map(f => {
-            const hasData = f.dayChange !== null && f.dayChange !== undefined;
-            const risk = TIER_RISKS[f.tier] || '观察';
-            const dataNote = hasData ? '已接入' : '待接入';
+            const ds = dataStatusOf(f);
+            // #3: 无数据显示"数据待接入，暂不判断"
+            const hasAnyData = f.dayChange !== null && f.dayChange !== undefined;
             let conclusion = '仍在修复';
-            if (f.tier === '风格对照型') conclusion = '非微盘确认信号';
-            else if (hasData && f.month1 !== null && f.month1 > 0) conclusion = '近1月已修复';
-            else if (hasData && f.month1 !== null && f.month1 < -10) conclusion = '仍在调整';
-            return `<tr${!hasData ? ' style="opacity:0.6"' : ''}>
+            if (!hasAnyData) {
+              conclusion = '数据待接入，暂不判断';
+            } else if (f.tier === '风格对照型') {
+              conclusion = '非微盘确认信号';
+            } else if (f.month1 !== null && f.month1 !== undefined && f.month1 > 0) {
+              conclusion = '近1月已修复';
+            } else if (f.month1 !== null && f.month1 !== undefined && f.month1 < -10) {
+              conclusion = '仍在调整';
+            }
+            const role = tc.roles[f.name] || '—';
+            return `<tr${!hasAnyData ? ' style="opacity:0.6"' : ''}>
               <td><strong>${f.name}</strong><br><span style="font-size:10px;color:var(--text-muted)">${f.code}</span></td>
+              <td style="font-size:11px;color:var(--text-secondary)">${role}</td>
               <td style="color:${pctColor(f.dayChange)};font-weight:600">${fmtPct(f.dayChange)}</td>
               <td style="color:${pctColor(f.week1)}">${fmtPct(f.week1)}</td>
               <td style="color:${pctColor(f.month1)}">${fmtPct(f.month1)}</td>
-              <td style="color:${pctColor(f.month3)}">${fmtPct(f.month3)}</td>
-              <td style="color:${pctColor(f.month6)}">${fmtPct(f.month6)}</td>
-              <td style="color:${pctColor(f.ytd)}">${fmtPct(f.ytd)}</td>
-              <td style="font-size:11px;color:var(--text-muted)">${risk}</td>
-              <td>${hasData ? '<span class="tag tag-green">已接入</span>' : '<span class="tag tag-gray">待接入</span>'}</td>
+              <td><span class="tag ${ds.cls}">${ds.text}</span></td>
               <td style="font-size:11px">${conclusion}</td>
             </tr>`;
           }).join('')}
         </tbody>
       </table>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 // ========== 市场风格对照 ==========
@@ -405,7 +431,7 @@ function renderStyleCompare() {
     { name: '中证2000 · 932000.CSI', val: AUTO_DATA.zz2000_20d, desc: '小票环境代理', dataType: 'auto' },
     { name: '科创50 · 000688.SH', val: AUTO_DATA.kc50_20d, desc: '科技抱团代理', dataType: 'auto' },
     { name: '沪深300 · 000300.SH', val: AUTO_DATA.hs300_20d, desc: '核心资产代理', dataType: 'auto' },
-    { name: '中证红利 · 000922.SH', val: AUTO_DATA.zzlh_20d, desc: '防守风格代理', dataType: 'auto' }
+    { name: '中证红利 · 000922.SH', val: AUTO_DATA.zzlh_20d, desc: AUTO_DATA.zzlh_20d !== undefined ? '防守风格代理' : '防守风格代理（已接入但暂不参与主判断）', dataType: 'auto' }
   ];
 
   const vals = items.filter(i => i.val !== undefined && i.val !== null).map(i => i.val);
@@ -447,6 +473,8 @@ function renderSignals(data) {
   const wpArr = AUTO_DATA.weipan || [];
   let wpAvg5 = '—';
   if (wpArr.length >= 5) { const t = wpArr.slice(-5).reduce((s,d)=>s+(d.turnover||0),0); wpAvg5 = (t/1e8/5).toFixed(0)+'亿'; }
+  // #20: 换手率分位标"样本内分位"
+  const tpPct = data.wp_turnover_pct; // 样本内分位（近28个交易日）
 
   // 3. 量化
   const upR = data.up_ratio || 0.5;
@@ -454,12 +482,15 @@ function renderSignals(data) {
   const quantColor = upR > 0.6 ? 'var(--accent-green)' : upR > 0.5 ? 'var(--accent-yellow)' : 'var(--accent-red)';
 
   // 4. 产品（只统计微盘暴露+分散量化）
-  const prodFunds = (FUND_PRODUCTS || []).filter(f => f.tier !== '风格对照型' && f.dayChange !== null && f.dayChange !== undefined);
+  const prodFundsAll = (FUND_PRODUCTS || []).filter(f => f.tier !== '风格对照型');
+  const prodFunds = prodFundsAll.filter(f => f.dayChange !== null && f.dayChange !== undefined);
   const prodAvg1d = prodFunds.length > 0 ? prodFunds.reduce((s,f)=>s+f.dayChange,0)/prodFunds.length : null;
   const prodAvg1w = prodFunds.length > 0 ? prodFunds.filter(f=>f.week1!=null).reduce((s,f)=>s+f.week1,0)/Math.max(1,prodFunds.filter(f=>f.week1!=null).length) : null;
   const prodAvg1m = prodFunds.length > 0 ? prodFunds.filter(f=>f.month1!=null).reduce((s,f)=>s+f.month1,0)/Math.max(1,prodFunds.filter(f=>f.month1!=null).length) : null;
   let prodJudge = (prodAvg1d !== null && prodAvg1d > 0) ? '有修复' : '仍在调整';
   const prodColor = (prodAvg1d !== null && prodAvg1d > 0) ? 'var(--accent-green)' : 'var(--accent-red)';
+  // #22: 有效样本数
+  const prodSampleText = `${prodFunds.length} / ${prodFundsAll.length}`;
 
   container.innerHTML = [
     { title: '风格是否站回微盘？', judge: styleJudge, jColor: styleColor, obs: styleObs,
@@ -474,9 +505,9 @@ function renderSignals(data) {
       obs: `微盘成交占比${wpR.toFixed(2)}%，资金${wpR>0.8?'有回升但仍需观察':'回流迹象不强'}。`,
       metrics: [
         {label:'微盘成交占比', val:wpR.toFixed(2)+'%'},
-        {label:'近5日均额', val:wpAvg5},
+        {label:'微盘近5日均额', val:wpAvg5},
         {label:'小票成交占比', pending:true},
-        {label:'换手率分位', pending:true}
+        {label:'换手率分位（样本内）', val: tpPct !== undefined ? (tpPct*100).toFixed(0)+'%（近28日）' : '—'}
       ], why: '微盘不是跌多了就会涨，必须看到资金回来。过热也不好，会带来踩踏风险。',
       good: '成交占比从低位连续回升，未到极端拥挤', bad: '占比快速冲高，换手率进入极端高分位' },
 
@@ -491,12 +522,12 @@ function renderSignals(data) {
       good: '上涨家数持续较多，成交不只集中在少数科技股', bad: '指数涨但多数股票不涨，或成交继续集中在少数热门方向' },
 
     { title: '产品端是否开始确认？', judge: prodJudge, jColor: prodColor,
-      obs: `微盘暴露+分散量化基金均值：近1日${fmtPct(prodAvg1d)}，近1周${fmtPct(prodAvg1w)}，近1月${fmtPct(prodAvg1m)}。<br><span style="font-size:11px;color:var(--text-muted)">⚠️ 风格对照型不参与产品验证</span>`,
+      obs: `微盘暴露+分散量化基金均值：近1日${fmtPct(prodAvg1d)}，近1周${fmtPct(prodAvg1w)}，近1月${fmtPct(prodAvg1m)}。<br><span style="font-size:11px;color:var(--text-muted)">⚠️ 风格对照型不参与产品验证 · 有效样本 ${prodSampleText}</span>`,
       metrics: [
         {label:'近1日均值', val:fmtPct(prodAvg1d)},
         {label:'近1周均值', val:fmtPct(prodAvg1w)},
         {label:'近1月均值', val:fmtPct(prodAvg1m)},
-        {label:'连续修复天数', pending:true}
+        {label:'有效样本', val: prodSampleText}
       ], why: '指数涨不代表微盘量化基金一定跟得上。最终看产品端是否真的修复。',
       good: '微盘量化基金净值连续修复，并跑赢基准', bad: '指数反弹但基金不跟，甚至继续回撤' }
   ].map(s => `
@@ -518,15 +549,39 @@ function renderSignals(data) {
 
 // ========== 趋势确认清单 + 下修条件（自动判定）==========
 function renderChecklists(data) {
+  // --- 辅助：计算中证2000 vs 科创50 最近3个交易日的逐日相对强弱 ---
+  const zzArr = (AUTO_DATA.zz2000 || []).slice(-4); // 最近4个交易日（算3天相对变化）
+  const kcArr = (AUTO_DATA.kc50 || []).slice(-4);
+  let beatCount = 0;
+  let canCalc3d = false;
+  if (zzArr.length >= 4 && kcArr.length >= 4) {
+    canCalc3d = true;
+    for (let i = 1; i < zzArr.length; i++) {
+      const zzRet = zzArr[i-1].close > 0 ? (zzArr[i].close / zzArr[i-1].close - 1) * 100 : 0;
+      const kcRet = kcArr[i-1].close > 0 ? (kcArr[i].close / kcArr[i-1].close - 1) * 100 : 0;
+      if (zzRet > kcRet) beatCount++;
+    }
+  }
+
   // 确认清单
   const confirmItems = [
-    { text: '微盘相对核心资产长期趋势没有破坏', status: 'cross', note: '万得微盘从高点回撤约' + (AUTO_DATA.weipanDrawdown||0).toFixed(1) + '%，远低于均线' },
-    { text: '微盘20日斜率转正，并强于核心资产', status: (data.wp_slope20||0) > 0 ? 'check' : 'cross', note: '当前斜率' + (data.wp_slope20||0).toFixed(3) + '（' + ((data.wp_slope20||0)>0?'正':'负') + '）' },
-    { text: '连续3个交易日，小票跑赢科技', status: 'wait', note: '数据不足，暂不确认（需日频序列）' },
+    // #6: 微盘相对核心资产长期趋势 — 缺243日均线和相对净值，改待接入
+    { text: '微盘相对核心资产长期趋势没有破坏', status: 'wait',
+      note: '需微盘/茅指数相对净值+243日均线判断，当前待接入（微盘从高点回撤约' + (AUTO_DATA.weipanDrawdown||0).toFixed(1) + '%，但回撤不等于趋势破坏）' },
+    // #7: 20日斜率标"代理斜率"
+    { text: '微盘20日斜率转正，并强于核心资产', status: (data.wp_slope20||0) > 0 ? 'half' : 'cross',
+      note: '20日代理斜率' + (data.wp_slope20||0).toFixed(3) + '（' + ((data.wp_slope20||0)>0?'正':'负') + '），非真实回归斜率，强于核心资产待接入' },
+    // #8: 连续3日跑赢科技 — 现在可以计算了！
+    { text: '连续3个交易日，小票跑赢科技', status: canCalc3d ? (beatCount >= 3 ? 'check' : 'cross') : 'wait',
+      note: canCalc3d ? `近3个交易日小票跑赢${beatCount}次` : '日K线数据不足' },
     { text: '小票成交占比连续回升', status: 'wait', note: '小票成交占比待接入' },
-    { text: '上涨家数占比连续高于60%', status: 'half', note: '当日占比约' + ((data.up_ratio||0)*100).toFixed(0) + '%，但无连续序列确认' },
-    { text: '跌停家数没有明显扩散', status: 'wait', note: '跌停家数待接入' },
-    { text: '观察池微盘量化基金净值连续修复', status: 'cross', note: '近1日均值' + fmtPct(data.fund_avg_1d) + '，未修复' }
+    // #9: 上涨家数文案改"单日满足，连续性待确认"
+    { text: '上涨家数占比连续高于60%', status: 'half',
+      note: '当日占比约' + ((data.up_ratio||0)*100).toFixed(0) + '%，单日满足，连续性待确认' },
+    { text: '跌停家数没有明显扩散', status: 'wait', note: '跌停家数待接入（NeoData只返回排行，无汇总值）' },
+    // #10: 产品净值文案改"单日修复，但未达到连续修复"
+    { text: '观察池微盘量化基金净值连续修复', status: 'half',
+      note: (data.fund_avg_1d !== null && data.fund_avg_1d > 0) ? '单日修复（近1日均值' + fmtPct(data.fund_avg_1d) + '），但连续修复需至少3个交易日序列' : '近1日均值' + fmtPct(data.fund_avg_1d) + '，单日未修复' }
   ];
 
   const iconMap = { check: {c:'icon-check',i:'✓'}, half: {c:'icon-half',i:'◐'}, cross: {c:'icon-cross',i:'✗'}, wait: {c:'icon-wait',i:'?'} };
@@ -541,12 +596,23 @@ function renderChecklists(data) {
 
   // 下修条件
   const rel20d = (data.zz2000_20d_change||0) - (data.kc50_20d_change||0);
+  // #12: 指数反弹但基金不修复 — 改为同周期比较（近1日微盘 vs 基金近1日）
+  const wp1dChg = AUTO_DATA.weipan && AUTO_DATA.weipan.length > 0
+    ? ((AUTO_DATA.weipan[AUTO_DATA.weipan.length-1].close / AUTO_DATA.weipan[AUTO_DATA.weipan.length-2].close - 1) * 100)
+    : null;
+  const fund1d = data.fund_avg_1d;
+  const indexUpFundDown = (wp1dChg !== null && wp1dChg > 0 && fund1d !== null && fund1d < 0);
+
   const downgradeItems = [
-    { text: '科技重新放量领涨，小票再次跑输', triggered: rel20d < 0, note: rel20d < 0 ? `已触发：相对强弱${rel20d.toFixed(1)}pct` : `未触发：相对强弱${rel20d.toFixed(1)}pct` },
-    { text: '小票成交占比只反弹一天就回落', triggered: false, note: '数据不足，暂不确认' },
-    { text: '上涨家数占比跌回50%以下', triggered: (data.up_ratio||1) < 0.5, note: `当前占比${((data.up_ratio||0)*100).toFixed(0)}%` },
-    { text: '跌停家数明显扩散', triggered: false, note: '跌停家数待接入' },
-    { text: '指数反弹但观察池基金净值不修复', triggered: (data.fund_avg_1d||0) < 0 && (AUTO_DATA.weipan20d||0) > -3, note: `基金近1日${fmtPct(data.fund_avg_1d)}` },
+    // #11: 改"科技相对重新占优"（不写"放量"）
+    { text: '科技相对重新占优，小票再次跑输', triggered: rel20d < 0,
+      note: rel20d < 0 ? `已触发：近20日科技跑赢小票${Math.abs(rel20d).toFixed(1)}pct（成交量待接入，暂无法判断是否放量）` : `未触发：近20日小票${rel20d>=0?'未跑输':'跑赢'}科技` },
+    { text: '小票成交占比只反弹一天就回落', triggered: false, note: '小票成交占比待接入，暂不确认' },
+    { text: '上涨家数占比跌回50%以下', triggered: (data.up_ratio||1) < 0.5, note: `当日占比${((data.up_ratio||0)*100).toFixed(0)}%（单日快照，非连续判断）` },
+    { text: '跌停家数明显扩散', triggered: false, note: '跌停家数待接入（暂看下跌家数代理）' },
+    // #12: 同周期比较
+    { text: '指数反弹但观察池基金净值不修复', triggered: indexUpFundDown,
+      note: `同日比较：微盘近1日${wp1dChg !== null ? fmtPct(wp1dChg) : '—'}，基金近1日${fund1d !== null ? fmtPct(fund1d) : '—'}${indexUpFundDown?'（已触发）':''}` },
     { text: '硬风控从观察变成触发', triggered: data.hard_risk_liquidity === 'trigger', note: '当前：' + (data.hard_risk_liquidity === 'trigger' ? '已触发' : '未触发') }
   ];
 
@@ -602,17 +668,30 @@ function renderScoreTable(scoreResult, data) {
 function renderMissingData() {
   const container = document.getElementById('missingGrid');
   if (!container) return;
+  // #16: 区分"代理纳入已影响评分" vs "不纳入今日评分"
   const missing = [
-    '小票成交占比', '换手率分位真实口径', '相对换手率',
-    '市场集中度', '横截面分化度', '全A中位数涨跌幅真实口径',
-    '跌停家数（仅返回涨幅排行，无汇总值）',
-    '微盘/茅指数相对净值',
-    '243日均线真实口径', '20日斜率真实口径', '波动率拥挤度',
-    '持仓重叠度',
-    '基金规模',
-    '基金连续修复天数序列'
+    { name: '全A中位数涨跌幅（真实口径）', type: 'proxy', note: '当前用微盘近5日代理，已影响评分' },
+    { name: '20日斜率（真实回归口径）', type: 'proxy', note: '当前用代理斜率（涨跌幅/20），已影响评分' },
+    { name: '243日均线（真实口径）', type: 'proxy', note: '当前用回撤幅度代理，已影响评分' },
+    { name: '小票成交占比', type: 'excluded', note: '不纳入今日评分' },
+    { name: '换手率分位（历史长期口径）', type: 'partial', note: '当前只有样本内分位（近28日），已纳入评分但精度有限' },
+    { name: '相对换手率', type: 'excluded', note: '不纳入今日评分' },
+    { name: '市场集中度', type: 'excluded', note: '不纳入今日评分' },
+    { name: '横截面分化度', type: 'excluded', note: '不纳入今日评分' },
+    { name: '跌停家数', type: 'excluded', note: 'NeoData只返回排行，无汇总值，不纳入今日评分' },
+    { name: '微盘/茅指数相对净值', type: 'excluded', note: '不纳入今日评分' },
+    { name: '波动率拥挤度', type: 'excluded', note: '不纳入今日评分' },
+    { name: '持仓重叠度', type: 'excluded', note: '不纳入今日评分' },
+    { name: '基金规模', type: 'excluded', note: '不纳入今日评分' },
+    { name: '基金连续修复天数序列', type: 'excluded', note: '不纳入今日评分' }
   ];
-  container.innerHTML = missing.map(m => `<div class="missing-item">○ ${m} <span style="color:var(--accent-yellow)">不纳入今日评分</span></div>`).join('');
+  container.innerHTML = missing.map(m => {
+    let badge = '';
+    if (m.type === 'proxy') badge = '<span style="color:var(--accent-yellow)">代理纳入，已影响评分</span>';
+    else if (m.type === 'partial') badge = '<span style="color:var(--accent-yellow)">部分纳入，精度有限</span>';
+    else badge = '<span style="color:var(--text-muted)">不纳入今日评分</span>';
+    return `<div class="missing-item">○ ${m.name}：${badge}<div style="font-size:10px;color:var(--text-muted);margin-top:2px">${m.note}</div></div>`;
+  }).join('');
 }
 
 // ========== Hero ==========
@@ -647,6 +726,58 @@ function toggleFold(id) {
   if (content && icon) { content.classList.toggle('open'); icon.classList.toggle('open'); }
 }
 
+// ========== 关键结论（动态生成）==========
+function renderKeyConclusions(data) {
+  const container = document.getElementById('keyConclusions');
+  if (!container) return;
+
+  const conclusions = [];
+
+  // 1. 资金回流连续性
+  const zzArr = AUTO_DATA.zz2000 || [];
+  const kcArr = AUTO_DATA.kc50 || [];
+  let beatCount = 0;
+  if (zzArr.length >= 4 && kcArr.length >= 4) {
+    for (let i = zzArr.length - 3; i < zzArr.length; i++) {
+      if (i < 1) continue;
+      const zzRet = zzArr[i-1].close > 0 ? (zzArr[i].close / zzArr[i-1].close - 1) * 100 : 0;
+      const kcRet = kcArr[i-1].close > 0 ? (kcArr[i].close / kcArr[i-1].close - 1) * 100 : 0;
+      if (zzRet > kcRet) beatCount++;
+    }
+  }
+  conclusions.push({
+    priority: 1,
+    text: beatCount >= 2 ? '资金回流开始连续，但还需更多交易日确认' : '资金回流不够连续，近3日小票跑赢科技仅' + beatCount + '次',
+    detail: '中证2000近20日' + (data.zz2000_20d_change||0).toFixed(1) + '%，科创50近20日' + (data.kc50_20d_change||0).toFixed(1) + '%'
+  });
+
+  // 2. 产品端修复
+  const fund1d = data.fund_avg_1d;
+  const fund1m = data.fund_avg_1m;
+  conclusions.push({
+    priority: 2,
+    text: (fund1d !== null && fund1d > 0) ? '产品端单日有修复，但未达到连续修复标准' : '产品端仍未修复',
+    detail: '基金近1日均值' + fmtPct(fund1d) + '，近1月均值' + fmtPct(fund1m) + '。连续修复需至少3个交易日'
+  });
+
+  // 3. 硬风控+置信度
+  conclusions.push({
+    priority: 3,
+    text: '硬风控未完整接入，评分置信度有限',
+    detail: '4项硬风控仅1项（流动性踩踏）已确认。波动拥挤、利率约束待接入，不加分也不扣分'
+  });
+
+  container.innerHTML = conclusions.map(c => `
+    <div style="display:flex;gap:12px;padding:12px;background:var(--bg-hover);border-radius:8px;margin-bottom:8px;border-left:3px solid var(--accent-yellow)">
+      <div style="font-size:20px;font-weight:800;color:var(--accent-yellow);flex-shrink:0">${c.priority}</div>
+      <div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:4px">${c.text}</div>
+        <div style="font-size:12px;color:var(--text-muted)">${c.detail}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
 // ========== 初始化 ==========
 function init() {
   // 1. 基金表格
@@ -658,7 +789,7 @@ function init() {
     data.weipanRatio = (AUTO_DATA.weipanRatio || 0) * 100;
     data.zz2000_20d_change = AUTO_DATA.zz2000_20d || 0;
     data.kc50_20d_change = AUTO_DATA.kc50_20d || 0;
-    data.wp_slope20 = (AUTO_DATA.weipan20d || 0) / 20;
+    data.wp_slope20 = (AUTO_DATA.weipan20d || 0) / 20; // 代理斜率，非真实回归斜率
     data.wp_ma243_pos = (AUTO_DATA.weipanDrawdown || -20) > -5 ? 0.02 : (AUTO_DATA.weipanDrawdown || -20) / 100;
     data.wp_volume_ratio = (AUTO_DATA.weipanRatio || 0) * 100;
     const wpArr = AUTO_DATA.weipan || [];
@@ -700,6 +831,10 @@ function init() {
 
   // 4. 渲染
   renderHero(scoreResult);
+  renderKeyConclusions(data);
+  // 设置10年国债显示
+  const bondEl = document.getElementById('bond10yVal');
+  if (bondEl && AUTO_DATA.bond_10y) bondEl.textContent = AUTO_DATA.bond_10y.toFixed(2) + '%';
   renderStyleCompare();
   renderSignals(data);
   renderChecklists(data);
