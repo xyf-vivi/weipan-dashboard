@@ -17,16 +17,39 @@ const ScoringEngine = {
       const v6 = data.v6 || {};
       const gates = [];
 
-      // 1. 踩踏风险：跌停家数
+      // 1. 踩踏风险：跌停家数（结合近5日趋势）
       const limitDown = v6.limitDownCount;
+      const limitDownAvg5 = v6.limitDownAvg5;
+      const limitDownTrend = v6.limitDownTrend;
+      let crashStatus = 'ok';
+      let crashNote = '';
+      if (limitDown !== undefined) {
+        if (limitDown > 50) {
+          crashStatus = 'trigger';
+          crashNote = `当日${limitDown}只跌停`;
+        } else if (limitDown > 20) {
+          crashStatus = 'watch';
+          crashNote = `当日${limitDown}只跌停`;
+          if (limitDownAvg5 !== undefined) {
+            crashNote += `，近5日均${limitDownAvg5}只（趋势${limitDownTrend}）`;
+          }
+        } else {
+          crashNote = `当日${limitDown}只跌停`;
+          if (limitDownAvg5 !== undefined) {
+            crashNote += `，近5日均${limitDownAvg5}只（趋势${limitDownTrend}）`;
+          }
+        }
+      } else {
+        crashNote = '数据异常';
+      }
       gates.push({
         key: 'crash',
         label: '踩踏风险',
         metric: '跌停家数',
         value: limitDown,
-        status: limitDown > 50 ? 'trigger' : limitDown > 20 ? 'watch' : 'ok',
+        status: crashStatus,
         threshold: '>50触发 / >20观察',
-        note: limitDown !== undefined ? `当日${limitDown}只跌停` : '数据异常'
+        note: crashNote
       });
 
       // 2. 交易过热：换手率分位
@@ -302,40 +325,50 @@ const ScoringEngine = {
     };
   },
 
-  // 置信度
-  calcConfidence(data) {
-    const v6 = data.v6 || {};
-    let checks = [
-      { key: 'relKc50_current', has: v6.relKc50 && v6.relKc50.current !== undefined },
-      { key: 'relKc50_ma243', has: v6.relKc50 && v6.relKc50.ma243 !== undefined },
-      { key: 'relKc50_slope20', has: v6.relKc50 && v6.relKc50.slope20 !== undefined },
-      { key: 'smallCapRatio', has: v6.smallCapRatio !== undefined },
-      { key: 'turnover_pct', has: v6.turnover && v6.turnover.percentile1y !== undefined },
-      { key: 'allAMedianChg', has: v6.allAMedianChg !== undefined },
-      { key: 'hhi', has: v6.hhi !== undefined },
-      { key: 'iqr', has: v6.iqr !== undefined },
-      { key: 'upCount', has: v6.upCount !== undefined },
-      { key: 'limitDownCount', has: v6.limitDownCount !== undefined },
-      { key: 'fundRepairDays', has: v6.fundRepairDays !== undefined },
-      { key: 'fund_avg_1d', has: data.fund_avg_1d !== undefined }
-    ];
+    // 置信度
+    calcConfidence(data) {
+      const v6 = data.v6 || {};
+      // 核心日频截面指标（12项）
+      let checks = [
+        { key: 'relKc50_current', has: v6.relKc50 && v6.relKc50.current !== undefined },
+        { key: 'relKc50_ma243', has: v6.relKc50 && v6.relKc50.ma243 !== undefined },
+        { key: 'relKc50_slope20', has: v6.relKc50 && v6.relKc50.slope20 !== undefined },
+        { key: 'smallCapRatio', has: v6.smallCapRatio !== undefined },
+        { key: 'turnover_pct', has: v6.turnover && v6.turnover.percentile1y !== undefined },
+        { key: 'allAMedianChg', has: v6.allAMedianChg !== undefined },
+        { key: 'hhi', has: v6.hhi !== undefined },
+        { key: 'iqr', has: v6.iqr !== undefined },
+        { key: 'upCount', has: v6.upCount !== undefined },
+        { key: 'limitDownCount', has: v6.limitDownCount !== undefined },
+        { key: 'fundRepairDays', has: v6.fundRepairDays !== undefined },
+        { key: 'fund_avg_1d', has: data.fund_avg_1d !== undefined }
+      ];
 
-    const total = checks.length;
-    const avail = checks.filter(c => c.has).length;
-    const pct = avail / total;
+      // 连续性确认指标（5项）
+      const continuityChecks = [
+        { key: 'breadth_series', has: v6.dailySeries && v6.dailySeries.breadth && v6.dailySeries.breadth.length >= 5 },
+        { key: 'median_series', has: v6.dailySeries && v6.dailySeries.allAMedian && v6.dailySeries.allAMedian.length >= 5 },
+        { key: 'fund006195_series', has: v6.dailySeries && v6.dailySeries.fund006195 && v6.dailySeries.fund006195.length >= 5 },
+        { key: 'allATurnover_series', has: v6.dailySeries && v6.dailySeries.allATurnover && v6.dailySeries.allATurnover.length >= 5 },
+        { key: 'upPositiveDays5', has: v6.upPositiveDays5 !== undefined }
+      ];
 
-    let level = '低';
-    if (pct >= 0.9) level = '较高';
-    else if (pct >= 0.7) level = '中';
+      const total = checks.length + continuityChecks.length;
+      const avail = checks.filter(c => c.has).length + continuityChecks.filter(c => c.has).length;
+      const pct = avail / total;
 
-    return {
-      level,
-      pct,
-      avail,
-      total,
-      reason: `核心日频截面指标已覆盖 ${avail}/${total} 项（${(pct * 100).toFixed(0)}%），连续性确认指标部分待补，低频产品指标不纳入今日判断`
-    };
-  },
+      let level = '低';
+      if (pct >= 0.9) level = '较高';
+      else if (pct >= 0.7) level = '中';
+
+      return {
+        level,
+        pct,
+        avail,
+        total,
+        reason: `核心日频截面指标已覆盖 ${checks.filter(c=>c.has).length}/${checks.length} 项，连续性确认指标已覆盖 ${continuityChecks.filter(c=>c.has).length}/${continuityChecks.length} 项（共${avail}/${total}，${(pct * 100).toFixed(0)}%），低频产品指标不纳入今日判断`
+      };
+    },
 
   // 评级
   getLevel(score, gateStatus) {

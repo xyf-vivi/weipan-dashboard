@@ -237,8 +237,117 @@ AUTO_DATA.v6 = {
   downCount: 1513,               // 全A下跌家数
   limitDownCount: 23,            // 跌停家数（区分ST/主板/科创创业）
   // --- 10年国债 ---
-  bond_10y: 1.743                // %
+  bond_10y: 1.743,                // %
+
+  // === 连续性确认序列（近10日）===
+  // 数据来源：Wind index_data + analytics_data
+  dailySeries: {
+    // 万得全A每日涨跌/涨跌停家数（近10交易日）
+    breadth: [
+      {date:"2026-06-01", up:3774, down:1678, limitUp:170, limitDown:25},
+      {date:"2026-06-02", up:1540, down:3873, limitUp:98,  limitDown:17},
+      {date:"2026-06-03", up:1711, down:3723, limitUp:82,  limitDown:30},
+      {date:"2026-06-04", up:1339, down:4120, limitUp:90,  limitDown:34},
+      {date:"2026-06-05", up:3276, down:2110, limitUp:88,  limitDown:18},
+      {date:"2026-06-08", up:898,  down:4587, limitUp:64,  limitDown:56},
+      {date:"2026-06-09", up:3320, down:2045, limitUp:144, limitDown:19},
+      {date:"2026-06-10", up:1556, down:3878, limitUp:76,  limitDown:74},
+      {date:"2026-06-11", up:1369, down:4065, limitUp:79,  limitDown:55},
+      {date:"2026-06-12", up:3923, down:1511, limitUp:105, limitDown:23}
+    ],
+    // 全A中位数涨跌幅（近5交易日）
+    allAMedian: [
+      {date:"2026-06-08", median: -2.98},
+      {date:"2026-06-09", median:  0.52},
+      {date:"2026-06-10", median: -1.46},
+      {date:"2026-06-11", median: -1.47},
+      {date:"2026-06-12", median:  1.28}
+    ],
+    // 标杆基金006195.OF近10日净值序列（用于计算连续修复天数）
+    fund006195: [
+      {date:"2026-06-01", nav:3.4724},
+      {date:"2026-06-02", nav:3.4879},
+      {date:"2026-06-03", nav:3.5186},
+      {date:"2026-06-04", nav:3.5199},
+      {date:"2026-06-05", nav:3.4682},
+      {date:"2026-06-08", nav:3.3447},
+      {date:"2026-06-09", nav:3.4403},
+      {date:"2026-06-10", nav:3.4020},
+      {date:"2026-06-11", nav:3.3981},
+      {date:"2026-06-12", nav:3.4213}
+    ],
+    // 万得全A近10日成交额（用于计算微盘/全A占比连续性）
+    // 来源：881001.WI K线 TURNOVER字段
+    allATurnover: [
+      {date:"2026-06-01", turnover:2896724496300},
+      {date:"2026-06-02", turnover:2812849119400},
+      {date:"2026-06-03", turnover:3153124583800},
+      {date:"2026-06-04", turnover:2779163742100},
+      {date:"2026-06-05", turnover:3100690304700},
+      {date:"2026-06-08", turnover:2823428976900},
+      {date:"2026-06-09", turnover:2666732928300},
+      {date:"2026-06-10", turnover:2644143270900},
+      {date:"2026-06-11", turnover:2574932584500},
+      {date:"2026-06-12", turnover:3236111011400}
+    ]
+  }
 };
+
+// === 连续性派生计算 ===
+(function() {
+  const ds = AUTO_DATA.v6.dailySeries;
+
+  // 1. 基金连续修复天数：从最新日向前数连续上涨天数
+  const nav = ds.fund006195;
+  let repairDays = 0;
+  for (let i = nav.length - 1; i > 0; i--) {
+    if (nav[i].nav > nav[i - 1].nav) repairDays++;
+    else break;
+  }
+  AUTO_DATA.v6.fundRepairDays = repairDays;
+
+  // 2. 上涨家数连续性：近5日上涨占比均值
+  const br = ds.breadth;
+  const last5 = br.slice(-5);
+  let upPositiveDays = 0;
+  for (const d of last5) {
+    if (d.up / (d.up + d.down) > 0.5) upPositiveDays++;
+  }
+  AUTO_DATA.v6.upPositiveDays5 = upPositiveDays; // 近5日中"多数上涨"的天数
+
+  // 3. 跌停家数趋势：近5日跌停均值 vs 前5日跌停均值
+  const first5 = br.slice(0, 5);
+  const recentLimitDownAvg = last5.reduce((s, d) => s + d.limitDown, 0) / 5;
+  const priorLimitDownAvg = first5.reduce((s, d) => s + d.limitDown, 0) / 5;
+  AUTO_DATA.v6.limitDownTrend = recentLimitDownAvg < priorLimitDownAvg ? '收敛' : '扩散';
+  AUTO_DATA.v6.limitDownAvg5 = Math.round(recentLimitDownAvg);
+  AUTO_DATA.v6.limitDownAvgPrior5 = Math.round(priorLimitDownAvg);
+
+  // 4. 全A中位数连续正天数
+  const med = ds.allAMedian;
+  let medianPositiveDays = 0;
+  for (let i = med.length - 1; i >= 0; i--) {
+    if (med[i].median > 0) medianPositiveDays++;
+    else break;
+  }
+  AUTO_DATA.v6.medianPositiveDays = medianPositiveDays;
+
+  // 5. 微盘/全A成交额占比近5日序列（用已有微盘成交额 / 全A成交额）
+  const wp = AUTO_DATA.weipan;
+  const allA = ds.allATurnover;
+  const wpRatio5 = [];
+  for (let i = 1; i <= 5; i++) {
+    const wpItem = wp[wp.length - i];
+    const allAItem = allA[allA.length - i];
+    if (wpItem && allAItem) {
+      wpRatio5.unshift({
+        date: wpItem.date,
+        ratio: (wpItem.turnover / allAItem.turnover) * 100
+      });
+    }
+  }
+  AUTO_DATA.v6.weipanAllARatio5 = wpRatio5;
+})();
 
 // === 计算派生指标 ===
 (function() {

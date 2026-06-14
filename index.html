@@ -313,7 +313,7 @@ function renderHero(scoreResult, data) {
     { label: '当前状态', val: level.label },
     { label: '当前动作', val: action.textContent },
     { label: '当前依据', val: gate.summary },
-    { label: '数据覆盖', val: '核心日频截面指标已覆盖，连续性确认指标部分待补' }
+    { label: '数据覆盖', val: '核心日频截面+连续性确认指标已覆盖' }
   ];
   document.getElementById('heroInfoGrid').innerHTML = infoItems.map(it => `
     <div class="hero-info-item">
@@ -459,16 +459,16 @@ function renderChecklist(data) {
       note: '当前相对净值位置：' + (rel.ma243Position ? (rel.ma243Position * 100).toFixed(1) + '%' : '—') },
     { text: '20日回归斜率转正', met: rel.slopePositive,
       note: '斜率' + (rel.slope20 || 0).toFixed(2) + '，t值' + (rel.tValue20 || 0).toFixed(2) },
-    { text: '小票成交占比连续回升', met: null, // 需要序列判断，当前只有单日快照
-      note: '当日小票成交占比' + (v6.smallCapRatio || 0).toFixed(2) + '%。需近3日序列才能判断连续性，当前只有截面快照' },
-    { text: '全A中位数涨跌幅为正', met: (v6.allAMedianChg || 0) > 0,
-      note: '全A中位数' + (v6.allAMedianChg || 0).toFixed(2) + '%' },
-    { text: '上涨家数占比高于60%', met: v6.upCount && v6.downCount ? (v6.upCount / (v6.upCount + v6.downCount)) > 0.6 : false,
-      note: '上涨' + (v6.upCount || 0) + ' / 下跌' + (v6.downCount || 0) + ' = 占比' + (v6.upCount && v6.downCount ? (v6.upCount / (v6.upCount + v6.downCount) * 100).toFixed(0) : '0') + '%' },
-    { text: '跌停家数未扩散', met: (v6.limitDownCount || 0) <= 20,
-      note: '当日跌停' + (v6.limitDownCount || 0) + '只' },
-    { text: '基金观察池连续修复≥3天', met: (v6.fundRepairDays || 0) >= 3,
-      note: '当前连续修复' + (v6.fundRepairDays || 0) + '天' },
+    { text: '小票成交占比连续回升', met: (v6.weipanAllARatio5 || []).length >= 2 && v6.weipanAllARatio5[v6.weipanAllARatio5.length-1].ratio > v6.weipanAllARatio5[0].ratio,
+      note: '微盘/全A成交额占比近5日：' + (v6.weipanAllARatio5 || []).map(d => d.date.slice(5)+'='+d.ratio.toFixed(2)+'%').join(' → ') },
+    { text: '全A中位数涨跌幅连续为正', met: (v6.medianPositiveDays || 0) >= 2,
+      note: '近5日中位数：' + (v6.dailySeries && v6.dailySeries.allAMedian ? v6.dailySeries.allAMedian.map(d => d.date.slice(5)+'='+(d.median>0?'+':'')+d.median.toFixed(2)+'%').join(' / ') : '—') + '，连续正' + (v6.medianPositiveDays||0) + '天' },
+    { text: '近5日多数交易日上涨家数>50%', met: (v6.upPositiveDays5 || 0) >= 3,
+      note: '近5日中' + (v6.upPositiveDays5 || 0) + '天多数上涨' + (v6.dailySeries && v6.dailySeries.breadth ? '（' + v6.dailySeries.breadth.slice(-5).map(d => d.date.slice(5)+' '+d.up+'/'+(d.up+d.down)).join(' / ') + '）' : '') },
+    { text: '跌停家数趋势收敛', met: v6.limitDownTrend === '收敛' && (v6.limitDownCount || 0) <= 30,
+      note: '当日跌停' + (v6.limitDownCount || 0) + '只，近5日均' + (v6.limitDownAvg5 || '—') + '只 vs 前5日均' + (v6.limitDownAvgPrior5 || '—') + '只（趋势' + (v6.limitDownTrend || '—') + '）' },
+    { text: '标杆基金连续修复≥3天', met: (v6.fundRepairDays || 0) >= 3,
+      note: '006195.OF当前连续修复' + (v6.fundRepairDays || 0) + '天（近5日净值：' + (v6.dailySeries && v6.dailySeries.fund006195 ? v6.dailySeries.fund006195.slice(-5).map(d => d.date.slice(5)+'='+d.nav.toFixed(4)).join(' / ') : '—') + '）' },
     { text: '市场集中度未明显上升', met: (v6.hhi || 1) < 0.3,
       note: 'HHI=' + (v6.hhi || 0).toFixed(4) + '%，' + ((v6.hhi || 1) < 0.2 ? '成交分散' : '适度集中') }
   ];
@@ -615,11 +615,11 @@ function renderCaliber() {
     { name: '微盘/科创50相对净值', q: '资金有没有从科技分流到小票？', caliber: '万得微盘÷科创50，归一化到100', why: '比看微盘自身涨跌更准确——只有跑赢科技，才说明风格切换', limit: '受指数编制影响，不代表全市场小票' },
     { name: '243日相对均线', q: '微盘相对科技是否回到长期均值之上？', caliber: '近243交易日相对净值均值。R_t/MA243-1', why: '243日约一年，看相对趋势是否反转', limit: '均线是滞后指标，只能确认不能预判' },
     { name: '20日回归斜率+t值', q: '近一个月趋势方向够不够明确？', caliber: '20日相对净值线性回归斜率，|t|>2为显著', why: '比涨跌幅/20更严谨，t值能判断可靠性', limit: '20日窗口偏短，对突发事件敏感' },
-    { name: '小票成交占比', q: '小市值股票有没有持续获得资金关注？', caliber: '自由流通市值后20%股票成交额÷全A成交额', why: '严格口径，不用中证2000混充', limit: '单日值波动大，需看连续性' },
+    { name: '小票成交占比', q: '小市值股票有没有持续获得资金关注？', caliber: '自由流通市值后20%股票成交额÷全A成交额', why: '严格口径，不用中证2000混充', limit: '单日值波动大，已有近5日序列辅助判断' },
     { name: '换手率近一年分位', q: '当前交易热度在过去一年算高还是低？', caliber: '微盘换手率在近251个交易日中的排名', why: '过热可能拥挤踩踏，过低说明无人关注', limit: '只有近一年样本，非三年' },
     { name: '上涨/下跌家数', q: '今天是多数股票涨还是少数股票涨？', caliber: '全A当日上涨家数÷(上涨+下跌)', why: '比指数更代表赚钱效应', limit: '不含停牌和新股异常样本' },
     { name: '跌停家数', q: '有没有踩踏风险在扩散？', caliber: '通达信筛选：当日触及跌停价的股票数', why: '跌停扩散是流动性危机的先行指标', limit: '区分主板(-10%)/科创创业(±20%)/ST(-5%)' },
-    { name: '全A中位数涨跌幅', q: '普通股票的中间表现是什么？', caliber: '全A有交易股票当日涨跌幅中位数', why: '比指数均值更代表多数股票真实表现', limit: '单日中位数，不看连续性' },
+    { name: '全A中位数涨跌幅', q: '普通股票的中间表现是什么？', caliber: '全A有交易股票当日涨跌幅中位数', why: '比指数均值更代表多数股票真实表现', limit: '单日中位数+近5日序列辅助连续性判断' },
     { name: '市场集中度HHI', q: '成交是不是集中在少数股票？', caliber: 'sum((个股成交额/全A成交额)²)', why: 'HHI越高越集中，量化越难赚钱', limit: '当前无历史分位阈值，仅作截面参考' },
     { name: '横截面分化度IQR', q: '股票涨跌分布有多分散？', caliber: '全A当日涨跌幅P75-P25', why: '适度分化量化最好选股', limit: '分化过大也可能是尾部风险' },
     { name: '标杆基金连续修复天数', q: '微盘量化产品净值是否连续回暖？', caliber: '观察池标杆基金006195.OF连续正收益天数', why: '指数涨不代表基金涨，需产品端验证', limit: '当前仅1只标杆，未来需扩展到池中位数' },
