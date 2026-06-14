@@ -42,6 +42,15 @@
     .hero-info-label{font-size:11px;color:var(--text-muted);margin-bottom:2px}
     .hero-info-val{font-size:13px;color:var(--text-secondary)}
 
+    /* 评分摘要 */
+    .score-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+    .score-summary-card{background:var(--bg-hover);border-radius:8px;padding:12px;border-left:3px solid var(--accent-yellow)}
+    .score-summary-card.good{border-left-color:var(--accent-green)}
+    .score-summary-card.bad{border-left-color:var(--accent-red)}
+    .score-summary-label{font-size:12px;font-weight:600;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+    .score-summary-val{font-size:18px;font-weight:700}
+    .score-summary-detail{font-size:11px;color:var(--text-muted);margin-top:4px;line-height:1.5}
+
     .user-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
     .user-card{background:var(--bg-hover);border-radius:10px;padding:16px}
     .user-type{font-size:14px;font-weight:700;margin-bottom:8px}
@@ -50,7 +59,7 @@
 
     .reason-list{list-style:none;padding:0}
     .reason-list li{padding:10px 14px;margin-bottom:8px;background:var(--bg-hover);border-radius:8px;font-size:14px;color:var(--text-secondary)}
-    .reason-list li::before{content:"→ ";color:var(--accent-yellow);font-weight:700}
+    .reason-list li::before{content:"-> ";color:var(--accent-yellow);font-weight:700}
     .key-quote{font-size:15px;font-weight:600;color:var(--accent-yellow);text-align:center;padding:12px;margin-top:12px;background:rgba(234,179,8,.15);border-radius:8px}
 
     /* 硬风控闸门 */
@@ -103,10 +112,8 @@
     .caliber-section{margin-bottom:12px}
     .caliber-title{font-size:12px;font-weight:600;margin:10px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border-color)}
     .caliber-item{padding:6px 10px;background:var(--bg-hover);border-radius:4px;font-size:11px;color:var(--text-secondary);margin-bottom:4px}
-    .caliber-item .src{color:var(--accent-green);font-size:10px}
-    .caliber-item.excluded{opacity:0.6}
-    .caliber-item.excluded .src{color:var(--text-muted)}
 
+    .model-boundary{text-align:center;font-size:12px;color:var(--text-muted);padding:10px 14px;background:rgba(59,130,246,.06);border-radius:8px;margin-top:8px;line-height:1.6}
     .final-quote{text-align:center;padding:20px;font-size:14px;color:var(--text-secondary);border-top:1px solid var(--border-color);margin-top:20px;font-style:italic}
     .data-source{font-size:11px;color:var(--text-muted);text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--border-color)}
 
@@ -115,6 +122,7 @@
       .gate-grid{grid-template-columns:1fr}
       .signal-grid{grid-template-columns:1fr}
       .hero-info-grid{grid-template-columns:1fr}
+      .score-summary-grid{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -124,30 +132,56 @@
   <!-- ========== 1. 首屏结论 ========== -->
   <div class="card hero">
     <div class="hero-title">微盘量化基金，现在适合买吗？</div>
-    <div class="hero-subtitle">买前信号检查 — 核心日频截面指标已覆盖</div>
+    <div class="hero-subtitle">买前信号检查 - 核心日频截面指标已覆盖</div>
     <div class="hero-main-status badge-observe" id="heroStatusBadge">观察区</div>
     <div class="hero-action-line" id="heroActionLine">不重仓，不追涨，只做观察</div>
-    <div class="hero-sub-score">信号评分 <span class="score-num" id="heroScore">—</span> / 100</div>
-    <div class="hero-conf" id="heroConf">评分置信度：—</div>
+    <div class="hero-sub-score">信号评分 <span class="score-num" id="heroScore">-</span> / 100</div>
+    <div class="hero-conf" id="heroConf">评分置信度：-</div>
 
     <div class="hero-info-grid" id="heroInfoGrid"></div>
 
     <div style="font-size:12px;color:var(--text-muted);margin:10px 0;padding:8px;background:rgba(100,116,139,.1);border-radius:6px">
       <span style="color:var(--text-secondary)">分数说明：</span>辅助判断工具，<strong style="color:var(--accent-yellow)">不等于买入或加仓建议</strong>。
     </div>
-    <div style="font-size:11px;color:var(--text-muted);margin-top:8px" id="heroMeta">📅 数据截至：2026年6月12日收盘</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:8px" id="heroMeta">数据截至：2026年6月12日收盘</div>
   </div>
 
   <!-- ========== 使用说明 ========== -->
   <div style="background:rgba(59,130,246,.08);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--text-secondary);line-height:1.8">
     <strong style="color:var(--accent-blue)">这页怎么看？</strong>
-    ① 先看最上面的<strong>状态</strong>（观察区/试探区/回避区）→
-    ② 再看<strong>硬风控</strong>有没有触发 →
-    ③ 最后看<strong>趋势确认清单</strong>满足了几项。
+    先看最上面的<strong>状态</strong>（观察区/试探区/回避区）->
+    再看<strong>硬风控</strong>有没有触发 ->
+    最后看<strong>趋势确认清单</strong>满足了几项。
     <span style="color:var(--text-muted)">不要只看分数高低，要看各模块为什么得分。</span>
   </div>
 
-  <!-- ========== 2. 三类投资者动作 ========== -->
+  <!-- ========== 2. 为什么是这个分数（默认折叠，仅露出四模块摘要）========== -->
+  <div class="card">
+    <h2>为什么是这个分数？</h2>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
+      四个模块组成100分。以下是每个模块的得分摘要，点击展开看详细口径。
+    </div>
+    <div class="score-summary-grid" id="scoreSummaryGrid"></div>
+
+    <div class="fold-header" onclick="toggleFold('scoreDetail')">
+      <span style="font-weight:600;font-size:13px">查看详细评分拆解</span>
+      <span class="fold-icon" id="foldIcon_scoreDetail">v</span>
+    </div>
+    <div class="fold-content" id="foldContent_scoreDetail">
+      <table class="score-table">
+        <thead><tr><th>模块</th><th>权重</th><th>含义</th><th>评分</th></tr></thead>
+        <tbody id="scoreTableBody"></tbody>
+      </table>
+      <div style="margin-top:16px;padding:12px;background:var(--bg-hover);border-radius:8px;font-size:13px">
+        <div style="font-size:18px;font-weight:700;margin-bottom:6px">总分：<span id="totalScore">-</span> / 100</div>
+        <div style="font-weight:600;color:var(--accent-yellow);margin-bottom:6px" id="totalStatus"></div>
+        <div style="font-size:12px;color:var(--text-secondary)" id="totalExplain"></div>
+        <div style="margin-top:8px;font-size:12px;color:var(--text-muted)" id="totalConfidence"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 3. 三类投资者动作 ========== -->
   <div class="card">
     <h2>不同投资者现在应该怎么做？</h2>
     <div class="user-cards">
@@ -169,14 +203,14 @@
     </div>
   </div>
 
-  <!-- ========== 3. 为什么不能重仓 ========== -->
+  <!-- ========== 4. 为什么不能重仓 ========== -->
   <div class="card">
     <h2>为什么现在不能重仓？</h2>
     <ul class="reason-list" id="reasonList"></ul>
     <div class="key-quote">核心判断：风格修复中，资金回流待确认，产品端仍需连续验证。</div>
   </div>
 
-  <!-- ========== 4. 日频硬风控状态栏 ========== -->
+  <!-- ========== 5. 日频硬风控状态栏 ========== -->
   <div class="card">
     <h2>日频硬风控状态栏</h2>
     <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
@@ -186,49 +220,29 @@
     <div style="font-size:12px;margin-top:10px;padding:8px;background:var(--bg-hover);border-radius:6px" id="gateSummary"></div>
   </div>
 
-  <!-- ========== 5. 四个核心信号灯 ========== -->
+  <!-- ========== 6. 四个核心信号灯 ========== -->
   <div class="card">
     <h2>四个核心信号灯</h2>
     <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">每项由数据自动判定，不是人工判断。</div>
     <div class="signal-grid" id="signalGrid"></div>
   </div>
 
-  <!-- ========== 6. 趋势确认清单 ========== -->
+  <!-- ========== 7. 趋势确认清单 ========== -->
   <div class="card">
     <h2>趋势确认清单</h2>
     <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">每一项由数据自动判断。状态只有三种：已满足、未满足、数据异常。</div>
     <div id="confirmList"></div>
     <div style="margin-top:10px;padding:10px;background:var(--bg-hover);border-radius:8px;font-size:12px">
       <div style="font-weight:600;margin-bottom:4px" id="confirmSummary">满足 0 项</div>
-      <div style="color:var(--text-muted)">满足0-2项：继续观察 · 满足3-5项：进入试探区 · 满足6项以上：信号更可信</div>
+      <div style="color:var(--text-muted)">满足0-2项：继续观察 - 满足3-5项：进入试探区 - 满足6项以上：信号更可信</div>
     </div>
     <!-- 判断规则小卡片 -->
     <div style="margin-top:12px;padding:14px;background:var(--bg-hover);border-radius:8px;border-left:4px solid var(--accent-blue)">
-      <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--accent-blue)">⚠️ 数据怎么翻译成动作</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--accent-blue)">数据怎么翻译成动作</div>
       <div style="font-size:12px;color:var(--text-secondary);line-height:2">
         <strong style="color:var(--accent-red)">硬风控触发</strong>：不参与。<br>
         <strong style="color:var(--accent-yellow)">风格未确认且产品未修复</strong>：继续观察。<br>
         <strong style="color:var(--accent-green)">满足多数确认项</strong>：只代表信号更可信，不代表可以买入。
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== 7. 评分拆解 ========== -->
-  <div class="card">
-    <div class="fold-header" onclick="toggleFold('score')">
-      <span style="font-weight:600">信号评分拆解（点击展开）</span>
-      <span class="fold-icon" id="foldIcon_score">▼</span>
-    </div>
-    <div class="fold-content" id="foldContent_score">
-      <table class="score-table">
-        <thead><tr><th>模块</th><th>权重</th><th>含义</th><th>评分</th></tr></thead>
-        <tbody id="scoreTableBody"></tbody>
-      </table>
-      <div style="margin-top:16px;padding:12px;background:var(--bg-hover);border-radius:8px;font-size:13px">
-        <div style="font-size:18px;font-weight:700;margin-bottom:6px">总分：<span id="totalScore">—</span> / 100</div>
-        <div style="font-weight:600;color:var(--accent-yellow);margin-bottom:6px" id="totalStatus"></div>
-        <div style="font-size:12px;color:var(--text-secondary)" id="totalExplain"></div>
-        <div style="margin-top:8px;font-size:12px;color:var(--text-muted)" id="totalConfidence"></div>
       </div>
     </div>
   </div>
@@ -253,21 +267,18 @@
         <tr><td>资金是否回来</td><td>小票成交占比 + 换手率分位</td><td style="color:var(--accent-green)">占比连续回升</td><td style="color:var(--accent-red)">回落或换手率极端</td></tr>
         <tr><td>市场是否适合量化</td><td>全A中位数 + 上涨家数占比 + HHI</td><td style="color:var(--accent-green)">中位数正且HHI低</td><td style="color:var(--accent-red)">中位数转负或HHI上升</td></tr>
         <tr><td>踩踏风险</td><td>跌停家数</td><td style="color:var(--accent-green)">跌停未扩散</td><td style="color:var(--accent-red)">跌停放大停止试探</td></tr>
-        <tr><td>产品端确认</td><td>观察池基金连续修复天数</td><td style="color:var(--accent-green)">连续修复≥3天</td><td style="color:var(--accent-red)">指数涨但基金不涨</td></tr>
+        <tr><td>产品端确认</td><td>观察池基金连续修复天数</td><td style="color:var(--accent-green)">连续修复>=3天</td><td style="color:var(--accent-red)">指数涨但基金不涨</td></tr>
       </tbody>
     </table>
   </div>
 
-  <!-- ========== 10. 数据口径与未纳入项 ========== -->
+  <!-- ========== 10. 名词和口径解释 ========== -->
   <div class="card">
     <div class="fold-header" onclick="toggleFold('caliber')">
-      <span style="font-weight:600">数据口径与未纳入项（点击展开）</span>
-      <span class="fold-icon" id="foldIcon_caliber">▼</span>
+      <span style="font-weight:600">名词和口径解释（点击展开）</span>
+      <span class="fold-icon" id="foldIcon_caliber">v</span>
     </div>
     <div class="fold-content" id="foldContent_caliber">
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">
-        以下指标不是缺失，而是按产品定位选择是否参与今日配置检查。
-      </div>
       <div id="caliberContent"></div>
     </div>
   </div>
@@ -323,8 +334,40 @@ function renderHero(scoreResult, data) {
   `).join('');
 
   if (confidence) {
-    document.getElementById('heroConf').textContent = `评分置信度：${confidence.level} · ${confidence.reason}`;
+    document.getElementById('heroConf').textContent = `评分置信度：${confidence.level} - ${confidence.reason}`;
   }
+}
+
+// ========== 评分摘要（首屏后展示四模块） ==========
+function renderScoreSummary(scoreResult) {
+  const container = document.getElementById('scoreSummaryGrid');
+  if (!container || !scoreResult.results) return;
+
+  const moduleInfo = [
+    { key: 'styleConfirm', label: '风格确认', max: 30 },
+    { key: 'capitalCrowding', label: '资金与拥挤', max: 25 },
+    { key: 'marketBreadth', label: '市场广度', max: 25 },
+    { key: 'productValidation', label: '产品验证', max: 20 }
+  ];
+
+  container.innerHTML = moduleInfo.map(m => {
+    const r = scoreResult.results[m.key];
+    if (!r) return '';
+    const pct = (r.score / m.max * 100).toFixed(0);
+    const cls = pct >= 60 ? 'good' : pct >= 30 ? '' : 'bad';
+    const color = pct >= 60 ? 'var(--accent-green)' : pct >= 30 ? 'var(--accent-yellow)' : 'var(--accent-red)';
+    // 提取一句摘要
+    const detailVals = Object.values(r.detail || {});
+    const summary = detailVals.length > 0 ? detailVals[detailVals.length - 1] : '';
+    return `<div class="score-summary-card ${cls}">
+      <div class="score-summary-label">
+        <span>${m.label}</span>
+        <span style="font-size:11px;color:var(--text-muted)">满分${m.max}</span>
+      </div>
+      <div class="score-summary-val" style="color:${color}">${r.score}<span style="font-size:13px;color:var(--text-muted)">/${m.max}</span></div>
+      <div class="score-summary-detail">${summary}</div>
+    </div>`;
+  }).join('');
 }
 
 // ========== 原因列表 ==========
@@ -364,17 +407,17 @@ function renderGate(gate) {
         <span class="gate-status" style="color:${s.color}">${s.text}</span>
       </div>
       <div class="gate-metric">${g.metric}：<strong style="color:var(--text-primary)">${g.value}</strong></div>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">${g.note} · 阈值：${g.threshold}</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">${g.note} - 阈值：${g.threshold}</div>
     </div>`;
   }).join('');
 
   const summary = document.getElementById('gateSummary');
   if (gate.triggered) {
-    summary.innerHTML = '<strong style="color:var(--accent-red)">⚠ ' + gate.summary + '</strong>';
+    summary.innerHTML = '<strong style="color:var(--accent-red)">' + gate.summary + '</strong>';
   } else if (gate.watching) {
-    summary.innerHTML = '<strong style="color:var(--accent-yellow)">⚠ ' + gate.summary + '</strong>';
+    summary.innerHTML = '<strong style="color:var(--accent-yellow)">' + gate.summary + '</strong>';
   } else {
-    summary.innerHTML = '<strong style="color:var(--accent-green)">✓ ' + gate.summary + '</strong>';
+    summary.innerHTML = '<strong style="color:var(--accent-green)">' + gate.summary + '</strong>';
   }
 }
 
@@ -422,16 +465,16 @@ function renderSignals(data) {
   const signals = [
     { title: '风格是否站回微盘？', judge: styleJudge, cls: styleCls,
       metrics: '相对净值站上243日均线：' + (styleAbove ? '是' : '否（' + (rel.ma243Position * 100).toFixed(1) + '%）') +
-        ' · 20日斜率：' + (styleSlope ? '正' : '负（t=' + (rel.tValue20 || 0).toFixed(2) + '）'),
+        ' - 20日斜率：' + (styleSlope ? '正' : '负（t=' + (rel.tValue20 || 0).toFixed(2) + '）'),
       why: '回答：资金有没有从科技主线分流出来，重新关注小票。' },
     { title: '资金是否真的回来？', judge: fundJudge, cls: fundCls,
-      metrics: '小票成交占比：' + smallR.toFixed(2) + '% · 换手率近一年分位：' + (trPct * 100).toFixed(0) + '%',
+      metrics: '小票成交占比：' + smallR.toFixed(2) + '% - 换手率近一年分位：' + (trPct * 100).toFixed(0) + '%',
       why: '回答：小票不是跌多就会涨，必须看到成交占比持续回升才算资金回流。' },
     { title: '市场是否适合量化赚钱？', judge: quantJudge, cls: quantCls,
-      metrics: '全A中位数：' + median.toFixed(2) + '% · 上涨家数占比：' + (upRatio * 100).toFixed(0) + '% · HHI：' + hhi.toFixed(4) + '%',
+      metrics: '全A中位数：' + median.toFixed(2) + '% - 上涨家数占比：' + (upRatio * 100).toFixed(0) + '% - HHI：' + hhi.toFixed(4) + '%',
       why: '回答：指数涨但多数股票不涨，量化策略也很难赚钱。中位数和上涨家数比指数更真实。' },
     { title: '产品端是否确认？', judge: prodJudge, cls: prodCls,
-      metrics: '连续修复天数：' + repairDays + '天 · 近1日中位数：' + fmtPct(data.fund_avg_1d) + ' · 近1周中位数：' + fmtPct(data.fund_avg_1w),
+      metrics: '连续修复天数：' + repairDays + '天 - 近1日中位数：' + fmtPct(data.fund_avg_1d) + ' - 近1周中位数：' + fmtPct(data.fund_avg_1w),
       why: '回答：不能只看某一天反弹，需要观察池连续修复才说明策略在恢复。' }
   ];
 
@@ -443,7 +486,7 @@ function renderSignals(data) {
         <span class="signal-judge" style="color:${jColor}">${s.judge}</span>
       </div>
       <div class="signal-metrics">${s.metrics}</div>
-      <div style="font-size:11px;color:var(--accent-blue);margin-top:4px">💡 ${s.why}</div>
+      <div style="font-size:11px;color:var(--accent-blue);margin-top:4px">${s.why}</div>
     </div>`;
   }).join('');
 }
@@ -456,24 +499,23 @@ function renderChecklist(data) {
 
   const items = [
     { text: '微盘相对科创50站上243日均线', met: rel.aboveMA243,
-      note: '当前相对净值位置：' + (rel.ma243Position ? (rel.ma243Position * 100).toFixed(1) + '%' : '—') },
+      note: '当前相对净值位置：' + (rel.ma243Position ? (rel.ma243Position * 100).toFixed(1) + '%' : '-') },
     { text: '20日回归斜率转正', met: rel.slopePositive,
       note: '斜率' + (rel.slope20 || 0).toFixed(2) + '，t值' + (rel.tValue20 || 0).toFixed(2) },
     { text: '小票成交占比连续回升', met: (v6.weipanAllARatio5 || []).length >= 2 && v6.weipanAllARatio5[v6.weipanAllARatio5.length-1].ratio > v6.weipanAllARatio5[0].ratio,
-      note: '微盘/全A成交额占比近5日：' + (v6.weipanAllARatio5 || []).map(d => d.date.slice(5)+'='+d.ratio.toFixed(2)+'%').join(' → ') },
+      note: '微盘/全A成交额占比近5日：' + (v6.weipanAllARatio5 || []).map(d => d.date.slice(5)+'='+d.ratio.toFixed(2)+'%').join(' -> ') },
     { text: '全A中位数涨跌幅连续为正', met: (v6.medianPositiveDays || 0) >= 2,
-      note: '近5日中位数：' + (v6.dailySeries && v6.dailySeries.allAMedian ? v6.dailySeries.allAMedian.map(d => d.date.slice(5)+'='+(d.median>0?'+':'')+d.median.toFixed(2)+'%').join(' / ') : '—') + '，连续正' + (v6.medianPositiveDays||0) + '天' },
+      note: '近5日中位数：' + (v6.dailySeries && v6.dailySeries.allAMedian ? v6.dailySeries.allAMedian.map(d => d.date.slice(5)+'='+(d.median>0?'+':'')+d.median.toFixed(2)+'%').join(' / ') : '-') + '，连续正' + (v6.medianPositiveDays||0) + '天' },
     { text: '近5日多数交易日上涨家数>50%', met: (v6.upPositiveDays5 || 0) >= 3,
       note: '近5日中' + (v6.upPositiveDays5 || 0) + '天多数上涨' + (v6.dailySeries && v6.dailySeries.breadth ? '（' + v6.dailySeries.breadth.slice(-5).map(d => d.date.slice(5)+' '+d.up+'/'+(d.up+d.down)).join(' / ') + '）' : '') },
     { text: '跌停家数趋势收敛', met: v6.limitDownTrend === '收敛' && (v6.limitDownCount || 0) <= 30,
-      note: '当日跌停' + (v6.limitDownCount || 0) + '只，近5日均' + (v6.limitDownAvg5 || '—') + '只 vs 前5日均' + (v6.limitDownAvgPrior5 || '—') + '只（趋势' + (v6.limitDownTrend || '—') + '）' },
-    { text: '标杆基金连续修复≥3天', met: (v6.fundRepairDays || 0) >= 3,
-      note: '006195.OF当前连续修复' + (v6.fundRepairDays || 0) + '天（近5日净值：' + (v6.dailySeries && v6.dailySeries.fund006195 ? v6.dailySeries.fund006195.slice(-5).map(d => d.date.slice(5)+'='+d.nav.toFixed(4)).join(' / ') : '—') + '）' },
+      note: '当日跌停' + (v6.limitDownCount || 0) + '只，近5日均' + (v6.limitDownAvg5 || '-') + '只 vs 前5日均' + (v6.limitDownAvgPrior5 || '-') + '只（趋势' + (v6.limitDownTrend || '-') + '）' },
+    { text: '标杆基金连续修复>=3天', met: (v6.fundRepairDays || 0) >= 3,
+      note: '006195.OF当前连续修复' + (v6.fundRepairDays || 0) + '天（近5日净值：' + (v6.dailySeries && v6.dailySeries.fund006195 ? v6.dailySeries.fund006195.slice(-5).map(d => d.date.slice(5)+'='+d.nav.toFixed(4)).join(' / ') : '-') + '）' },
     { text: '市场集中度未明显上升', met: (v6.hhi || 1) < 0.3,
       note: 'HHI=' + (v6.hhi || 0).toFixed(4) + '%，' + ((v6.hhi || 1) < 0.2 ? '成交分散' : '适度集中') }
   ];
 
-  // 状态判定：met=true→check, met=false→cross, met=null→wait
   const items2 = items.map(it => {
     let status;
     if (it.met === true) status = 'check';
@@ -482,7 +524,7 @@ function renderChecklist(data) {
     return { ...it, status };
   });
 
-  const iconMap = { check: { c: 'icon-check', i: '✓' }, cross: { c: 'icon-cross', i: '✗' }, wait: { c: 'icon-wait', i: '?' } };
+  const iconMap = { check: { c: 'icon-check', i: '\u2713' }, cross: { c: 'icon-cross', i: '\u2717' }, wait: { c: 'icon-wait', i: '?' } };
   const checkCount = items2.filter(i => i.status === 'check').length;
   const crossCount = items2.filter(i => i.status === 'cross').length;
 
@@ -497,7 +539,7 @@ function renderChecklist(data) {
   document.getElementById('confirmSummary').textContent = `满足 ${checkCount} 项 / 共 ${items2.length} 项（未满足 ${crossCount} 项）`;
 }
 
-// ========== 评分表 ==========
+// ========== 详细评分表（折叠区内） ==========
 function renderScoreTable(scoreResult) {
   const tbody = document.getElementById('scoreTableBody');
   if (!tbody) return;
@@ -583,7 +625,7 @@ function renderFundTables() {
     let statsHtml = '';
     if (stats) {
       statsHtml = `<div style="font-size:11px;color:var(--text-muted);margin:6px 0;padding:6px 8px;background:rgba(59,130,246,.06);border-radius:4px">
-        有效样本 ${stats.count}/${stats.total} · 近1日中位数 ${fmtPct(stats.med1d)} · 近1周中位数 ${fmtPct(stats.med1wVal)}
+        有效样本 ${stats.count}/${stats.total} - 近1日中位数 ${fmtPct(stats.med1d)} - 近1周中位数 ${fmtPct(stats.med1wVal)}
       </div>`;
     }
 
@@ -605,34 +647,24 @@ function renderFundTables() {
   }).join('');
 }
 
-// ========== 数据口径区 ==========
+// ========== 名词和口径解释 ==========
 function renderCaliber() {
   const container = document.getElementById('caliberContent');
   if (!container) return;
 
-  // 五列口径表：指标 / 回答什么问题 / 计算口径 / 为什么选它 / 局限
-  const included = [
-    { name: '微盘/科创50相对净值', q: '资金有没有从科技分流到小票？', caliber: '万得微盘÷科创50，归一化到100', why: '比看微盘自身涨跌更准确——只有跑赢科技，才说明风格切换', limit: '受指数编制影响，不代表全市场小票' },
+  // 只解释已纳入评分的8项核心指标
+  const indicators = [
     { name: '243日相对均线', q: '微盘相对科技是否回到长期均值之上？', caliber: '近243交易日相对净值均值。R_t/MA243-1', why: '243日约一年，看相对趋势是否反转', limit: '均线是滞后指标，只能确认不能预判' },
     { name: '20日回归斜率+t值', q: '近一个月趋势方向够不够明确？', caliber: '20日相对净值线性回归斜率，|t|>2为显著', why: '比涨跌幅/20更严谨，t值能判断可靠性', limit: '20日窗口偏短，对突发事件敏感' },
-    { name: '小票成交占比', q: '小市值股票有没有持续获得资金关注？', caliber: '自由流通市值后20%股票成交额÷全A成交额', why: '严格口径，不用中证2000混充', limit: '单日值波动大，已有近5日序列辅助判断' },
+    { name: '小票成交占比', q: '小市值股票有没有持续获得资金关注？', caliber: '自由流通市值后20%股票成交额/全A成交额', why: '严格口径，不用中证2000混充', limit: '单日值波动大，已有近5日序列辅助判断' },
     { name: '换手率近一年分位', q: '当前交易热度在过去一年算高还是低？', caliber: '微盘换手率在近251个交易日中的排名', why: '过热可能拥挤踩踏，过低说明无人关注', limit: '只有近一年样本，非三年' },
-    { name: '上涨/下跌家数', q: '今天是多数股票涨还是少数股票涨？', caliber: '全A当日上涨家数÷(上涨+下跌)', why: '比指数更代表赚钱效应', limit: '不含停牌和新股异常样本' },
-    { name: '跌停家数', q: '有没有踩踏风险在扩散？', caliber: '通达信筛选：当日触及跌停价的股票数', why: '跌停扩散是流动性危机的先行指标', limit: '区分主板(-10%)/科创创业(±20%)/ST(-5%)' },
     { name: '全A中位数涨跌幅', q: '普通股票的中间表现是什么？', caliber: '全A有交易股票当日涨跌幅中位数', why: '比指数均值更代表多数股票真实表现', limit: '单日中位数+近5日序列辅助连续性判断' },
-    { name: '市场集中度HHI', q: '成交是不是集中在少数股票？', caliber: 'sum((个股成交额/全A成交额)²)', why: 'HHI越高越集中，量化越难赚钱', limit: '当前无历史分位阈值，仅作截面参考' },
+    { name: '市场集中度HHI', q: '成交是不是集中在少数股票？', caliber: 'sum((个股成交额/全A成交额)^2)', why: 'HHI越高越集中，量化越难赚钱', limit: '当前无历史分位阈值，仅作截面参考' },
     { name: '横截面分化度IQR', q: '股票涨跌分布有多分散？', caliber: '全A当日涨跌幅P75-P25', why: '适度分化量化最好选股', limit: '分化过大也可能是尾部风险' },
-    { name: '标杆基金连续修复天数', q: '微盘量化产品净值是否连续回暖？', caliber: '观察池标杆基金006195.OF连续正收益天数', why: '指数涨不代表基金涨，需产品端验证', limit: '当前仅1只标杆，未来需扩展到池中位数' },
-    { name: '观察池区间收益', q: '微盘量化产品近期表现如何？', caliber: '观察池中位数近1日/1周/1月收益', why: '中位数比均值抗极端值干扰', limit: '样本量少（6只），统计意义有限' }
+    { name: '标杆基金连续修复天数', q: '微盘量化产品净值是否连续回暖？', caliber: '观察池标杆基金006195.OF连续正收益天数', why: '指数涨不代表基金涨，需产品端验证', limit: '当前仅1只标杆，未来需扩展到池中位数' }
   ];
 
-  const excluded = [
-    { name: '基金规模', reason: '更新低频（季度），不适合日频判断。适合季度专题。' },
-    { name: '持仓重叠度', reason: '更新低频（季报/半年报），解释成本高。适合季度专题。' },
-    { name: '波动率拥挤度', reason: '自定义研究模型，暂不进入评分。需积累历史数据定义阈值。' }
-  ];
-
-  // 名词解释
+  // 名词解释（同步精简到8项）
   const glossary = [
     { term: '243日相对均线', def: '约等于一年交易日。用来看微盘相对科技是否重新走强。不是看微盘自己涨没涨。' },
     { term: '20日回归斜率', def: '看最近一个月趋势方向，不是简单涨跌幅除以天数。用线性回归算更可靠。' },
@@ -641,17 +673,16 @@ function renderCaliber() {
     { term: '换手率分位', def: '当前交易热度在过去一年里排到什么位置。80%以上算偏高。' },
     { term: '全A中位数', def: '全部A股涨跌幅排序后正中间那只的表现。比指数更能代表多数股票。' },
     { term: 'HHI', def: '成交是否集中在少数股票。HHI越低越分散，量化越好赚钱。' },
-    { term: 'IQR', def: '股票涨跌分布有多分散。IQR=P75-P25。适度分化有利，过高可能是风险。' },
-    { term: '基金连续修复天数', def: '观察池产品净值是否连续回暖。不是单日反弹，而是连续为正。' }
+    { term: 'IQR', def: '股票涨跌分布有多分散。IQR=P75-P25。适度分化有利，过高可能是风险。' }
   ];
 
   container.innerHTML = `
     <div class="caliber-section">
-      <div class="caliber-title" style="color:var(--accent-green)">已纳入口径（参与今日评分）</div>
+      <div class="caliber-title" style="color:var(--accent-green)">已纳入评分的指标说明</div>
       <table class="fund-table" style="margin-top:8px">
         <thead><tr><th>指标</th><th>回答什么问题</th><th>计算口径</th><th>为什么选它</th><th>局限</th></tr></thead>
         <tbody>
-          ${included.map(it => `<tr>
+          ${indicators.map(it => `<tr>
             <td><strong>${it.name}</strong></td>
             <td style="font-size:11px;color:var(--text-secondary)">${it.q}</td>
             <td style="font-size:11px;color:var(--text-muted)">${it.caliber}</td>
@@ -667,16 +698,8 @@ function renderCaliber() {
         <strong>${it.term}</strong>：<span style="color:var(--text-secondary)">${it.def}</span>
       </div>`).join('')}
     </div>
-    <div class="caliber-section" style="margin-top:16px">
-      <div class="caliber-title" style="color:var(--text-muted)">不纳入口径（不是缺失，而是不适合日频判断）</div>
-      ${excluded.map(it => `<div class="caliber-item excluded">
-        <strong>${it.name}</strong>
-        <span class="src">[不纳入]</span>
-        ${it.reason}
-      </div>`).join('')}
-      <div style="font-size:11px;color:var(--text-muted);margin-top:8px;padding:8px;background:rgba(59,130,246,.06);border-radius:6px">
-        <strong>关键说明：</strong>这些指标不是缺失，而是不参与今日配置检查。基金规模和持仓重叠度适合季度专题，波动率拥挤度为自定义研究模型。
-      </div>
+    <div class="model-boundary">
+      本页只做日频配置检查，季度持仓、基金规模、产品同质化等低频专题不参与今日判断。
     </div>
   `;
 }
@@ -703,7 +726,6 @@ function init() {
   // 产品端统计
   if (typeof FUND_PRODUCTS !== 'undefined') {
     const prodFunds = FUND_PRODUCTS.filter(f => f.tier !== '风格对照型');
-    // 使用中位数而非均值——基金样本少，均值容易被单只产品带偏
     const calcMedian = (arr, key) => {
       const v = arr.filter(f => f[key] !== null && f[key] !== undefined).map(f => f[key]).sort((a, b) => a - b);
       return v.length > 0 ? v[Math.floor(v.length / 2)] : null;
@@ -711,7 +733,6 @@ function init() {
     data.fund_avg_1d = calcMedian(prodFunds, 'dayChange');
     data.fund_avg_1w = calcMedian(prodFunds, 'week1');
     data.fund_avg_1m = calcMedian(prodFunds, 'month1');
-    // 跑赢万得微盘指数（不是中证2000，因为观察的是微盘策略产品 vs 微盘基准）
     data.fund_rel_bench = (data.fund_avg_1m !== null) ? data.fund_avg_1m - (AUTO_DATA.weipan1m || 0) : null;
   }
 
@@ -721,8 +742,9 @@ function init() {
     try { scoreResult = ScoringEngine.calculate(data); } catch (e) { console.error(e); }
   }
 
-  // 渲染
+  // 渲染（按新页面顺序）
   renderHero(scoreResult, data);
+  renderScoreSummary(scoreResult);
   renderReasons(data);
   renderGate(scoreResult.gate);
   renderSignals(data);
