@@ -611,16 +611,19 @@ async function main() {
       const step = res.data.data[0];
       const cols = step.columns.map(c => c.name);
       const medIdx = cols.findIndex(c => c.name && c.name.includes('中位数'));
+      const dateIdx = cols.findIndex(c => c.name && (c.name.includes('日期') || c.name.includes('Date')));
       if (medIdx >= 0) {
         allAMedianSeries = step.rows.map(r => ({
+          date: dateIdx >= 0 ? r[dateIdx] : (wp[wp.length-1] ? wp[wp.length-1].date : todayISO),
           median: r[medIdx]
-        })).filter(d => d.median !== null && d.median !== undefined);
+        })).filter(d => d.median !== null && d.median !== undefined && d.date);
       }
     }
-    // 如果批量查询失败，用今日单日值兜底
+    // 如果批量查询失败，用今日单日值兜底（补齐 date 字段，避免前端崩溃）
     if (allAMedianSeries.length === 0 && allAMedian !== null) {
-      allAMedianSeries = [{ median: allAMedian }];
-      console.log(`  allAMedian 批量查询失败，用单日值(${allAMedian})兜底`);
+      const fallbackDate = wp[wp.length-1] ? wp[wp.length-1].date : todayISO;
+      allAMedianSeries = [{ date: fallbackDate, median: allAMedian }];
+      console.log(`  allAMedian 批量查询失败，用单日值(${allAMedian})兜底，date=${fallbackDate}`);
     }
     console.log(`  allAMedian 5日序列: ${allAMedianSeries.length} 条`);
   }
