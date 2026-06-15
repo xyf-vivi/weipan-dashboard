@@ -516,7 +516,7 @@ function renderChecklist(data) {
     { text: '小票成交占比连续回升', met: (v6.weipanAllARatio5 || []).length >= 2 && v6.weipanAllARatio5[v6.weipanAllARatio5.length-1].ratio > v6.weipanAllARatio5[0].ratio,
       note: '微盘/全A成交额占比近5日：' + (v6.weipanAllARatio5 || []).map(d => d.date.slice(5)+'='+d.ratio.toFixed(2)+'%').join(' -> ') },
     { text: '全A中位数涨跌幅连续为正', met: (v6.medianPositiveDays || 0) >= 2,
-      note: '近5日中位数：' + (v6.dailySeries && v6.dailySeries.allAMedian ? v6.dailySeries.allAMedian.map(d => d.date.slice(5)+'='+(d.median>0?'+':'')+d.median.toFixed(2)+'%').join(' / ') : '-') + '，连续正' + (v6.medianPositiveDays||0) + '天' },
+      note: '近5日中位数：' + (v6.dailySeries && Array.isArray(v6.dailySeries.allAMedian) && v6.dailySeries.allAMedian.length ? v6.dailySeries.allAMedian.map(d => (d.date ? d.date.slice(5) : '?')+'='+(d.median>0?'+':'')+d.median.toFixed(2)+'%').join(' / ') : '-') + '，连续正' + (v6.medianPositiveDays||0) + '天' },
     { text: '近5日多数交易日上涨家数>50%', met: (v6.upPositiveDays5 || 0) >= 3,
       note: '近5日中' + (v6.upPositiveDays5 || 0) + '天多数上涨' + (v6.dailySeries && v6.dailySeries.breadth ? '（' + v6.dailySeries.breadth.slice(-5).map(d => d.date.slice(5)+' '+d.up+'/'+(d.up+d.down)).join(' / ') + '）' : '') },
     { text: '跌停家数趋势收敛', met: v6.limitDownTrend === '收敛' && (v6.limitDownCount || 0) <= 30,
