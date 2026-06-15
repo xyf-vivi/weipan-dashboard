@@ -604,6 +604,8 @@ async function main() {
   }
 
   // 全A中位数5日序列（改用逐日查询拼接）
+  // 注意：此处不能引用后面才声明的 wp 变量，直接从 updateData 取最新微盘日期
+  const _wpLatestDate = (updateData.weipan && updateData.weipan.length) ? updateData.weipan[updateData.weipan.length - 1].date : todayISO;
   let allAMedianSeries = [];
   {
     const res = callWind('analytics_data', 'get_financial_data', { question: '近5个交易日每日全A股涨跌幅中位数' });
@@ -614,14 +616,14 @@ async function main() {
       const dateIdx = cols.findIndex(c => c.name && (c.name.includes('日期') || c.name.includes('Date')));
       if (medIdx >= 0) {
         allAMedianSeries = step.rows.map(r => ({
-          date: dateIdx >= 0 ? r[dateIdx] : (wp[wp.length-1] ? wp[wp.length-1].date : todayISO),
+          date: dateIdx >= 0 ? r[dateIdx] : _wpLatestDate,
           median: r[medIdx]
         })).filter(d => d.median !== null && d.median !== undefined && d.date);
       }
     }
     // 如果批量查询失败，用今日单日值兜底（补齐 date 字段，避免前端崩溃）
     if (allAMedianSeries.length === 0 && allAMedian !== null) {
-      const fallbackDate = wp[wp.length-1] ? wp[wp.length-1].date : todayISO;
+      const fallbackDate = _wpLatestDate;
       allAMedianSeries = [{ date: fallbackDate, median: allAMedian }];
       console.log(`  allAMedian 批量查询失败，用单日值(${allAMedian})兜底，date=${fallbackDate}`);
     }
