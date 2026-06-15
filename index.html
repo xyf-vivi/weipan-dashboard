@@ -730,8 +730,13 @@ function init() {
   // 数据准备
   const data = { v6: AUTO_DATA.v6 || {} };
   if (typeof AUTO_DATA !== 'undefined') {
+    data.weipan = AUTO_DATA.weipan || [];
+    data.kc50 = AUTO_DATA.kc50 || [];
+    data.hs300 = AUTO_DATA.hs300 || [];
+    data.zz2000 = AUTO_DATA.zz2000 || [];
     data.zz2000_20d_change = AUTO_DATA.zz2000_20d || 0;
     data.kc50_20d_change = AUTO_DATA.kc50_20d || 0;
+    data.weipan1m = AUTO_DATA.weipan1m || 0;
   }
 
   // 产品端统计
