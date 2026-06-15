@@ -38,9 +38,9 @@ const todayISO = NOW.getFullYear().toString() + '-' +
   String(NOW.getMonth() + 1).padStart(2, '0') + '-' +
   String(NOW.getDate()).padStart(2, '0');
 
-// 251天前（近一年K线起始）
+// 回溯400自然日，确保覆盖243个交易日（年化约250交易日，加节假日buffer）
 const startDateObj = new Date(NOW);
-startDateObj.setDate(startDateObj.getDate() - 260); // 多取几天确保有251个交易日
+startDateObj.setDate(startDateObj.getDate() - 400);
 const startDateCompact = startDateObj.getFullYear().toString() +
   String(startDateObj.getMonth() + 1).padStart(2, '0') +
   String(startDateObj.getDate()).padStart(2, '0');
