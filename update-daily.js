@@ -557,9 +557,18 @@ async function main() {
       
       const latest = rows[rows.length - 1];
       const prev = rows.length > 1 ? rows[rows.length - 2] : null;
+      const prev2 = rows.length > 2 ? rows[rows.length - 3] : null;
+      const prev3 = rows.length > 3 ? rows[rows.length - 4] : null;
       const nav = parseFloat(latest[navIdx]);
       const prevNav = prev ? parseFloat(prev[navIdx]) : null;
+      const prev2Nav = prev2 ? parseFloat(prev2[navIdx]) : null;
+      const prev3Nav = prev3 ? parseFloat(prev3[navIdx]) : null;
       const dayChange = prevNav ? ((nav / prevNav - 1) * 100) : null;
+
+      // T-1日涨跌幅（昨日相对前日）
+      const dayChangeT1 = (prevNav && prev2Nav) ? ((prevNav / prev2Nav - 1) * 100) : null;
+      // T-2日涨跌幅（前日相对大前日）
+      const dayChangeT2 = (prev2Nav && prev3Nav) ? ((prev2Nav / prev3Nav - 1) * 100) : null;
       
       // 近5日
       const w1Start = rows.length >= 6 ? rows[rows.length - 6] : rows[0];
@@ -573,8 +582,8 @@ async function main() {
         month1 = m1Nav ? ((nav / m1Nav - 1) * 100) : null;
       }
       
-      updatedFunds[code] = { nav, dayChange, week1, month1, date: normalizeDate(latest[dateIdx]) };
-      console.log(`  ✅ ${code}: nav=${nav}, dayChange=${dayChange ? dayChange.toFixed(2) + '%' : 'null'}, week1=${week1 ? week1.toFixed(2) + '%' : 'null'}`);
+      updatedFunds[code] = { nav, dayChange, dayChangeT1, dayChangeT2, week1, month1, date: normalizeDate(latest[dateIdx]) };
+      console.log(`  ✅ ${code}: nav=${nav}, 1d=${dayChange ? dayChange.toFixed(2) + '%' : 'null'}, T-1=${dayChangeT1 ? dayChangeT1.toFixed(2) + '%' : 'null'}, T-2=${dayChangeT2 ? dayChangeT2.toFixed(2) + '%' : 'null'}, 1w=${week1 ? week1.toFixed(2) + '%' : 'null'}`);
     } else {
       console.log(`  ⚠️ ${code}: 获取失败，将保留原值`);
     }
@@ -916,11 +925,11 @@ function generateFundProductsJS(updatedFunds, todayISO) {
     const u = updatedFunds[f.code];
     if (u) {
       return `  { tier: "${f.tier}", name: "${f.name}", code: "${f.code}", type: "${f.type}",
-    navDate: "${u.date}", nav: ${u.nav}, dayChange: ${u.dayChange !== null ? u.dayChange.toFixed(2) : 'null'}, week1: ${u.week1 !== null ? u.week1.toFixed(2) : 'null'}, month1: ${u.month1 !== null ? u.month1.toFixed(2) : 'null'},
+    navDate: "${u.date}", nav: ${u.nav}, dayChange: ${u.dayChange !== null ? u.dayChange.toFixed(2) : 'null'}, dayChangeT1: ${u.dayChangeT1 !== null ? u.dayChangeT1.toFixed(2) : 'null'}, dayChangeT2: ${u.dayChangeT2 !== null ? u.dayChangeT2.toFixed(2) : 'null'}, week1: ${u.week1 !== null ? u.week1.toFixed(2) : 'null'}, month1: ${u.month1 !== null ? u.month1.toFixed(2) : 'null'},
     status: "${f.status}", statusNote: "Wind自动更新 ${todayISO}" }`;
     } else {
       return `  { tier: "${f.tier}", name: "${f.name}", code: "${f.code}", type: "${f.type}",
-    navDate: "${todayISO}", nav: null, dayChange: null, week1: null, month1: null,
+    navDate: "${todayISO}", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
     status: "${f.status}", statusNote: "${f.status === '待接入' ? '数据待接入' : '自动更新失败'}" }`;
     }
   });

@@ -251,8 +251,11 @@
   <div class="card">
     <h2>基金观察池分组表</h2>
     <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">不是基金推荐，而是用代表产品观察策略是否修复。</div>
-    <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;padding:6px 8px;background:var(--bg-hover);border-radius:6px">
-      <strong>颜色说明：</strong>收益按A股习惯 <span style="color:var(--accent-red)">红=涨</span>/<span style="color:var(--accent-green)">绿=跌</span>。
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div style="padding:6px 8px;background:var(--bg-hover);border-radius:6px">
+        <strong>颜色说明：</strong>收益按A股习惯 <span style="color:var(--accent-red)">红=涨</span>/<span style="color:var(--accent-green)">绿=跌</span>。
+      </div>
+      <div id="fundUpdateTime" style="padding:6px 10px;background:rgba(59,130,246,.08);border-radius:6px;color:var(--accent-blue);font-weight:600;white-space:nowrap">数据加载中…</div>
     </div>
     <div id="fundTables"></div>
   </div>
@@ -612,7 +615,7 @@ function renderFundTables() {
     let tableHtml = '';
     if (active.length > 0) {
       tableHtml = `<table class="fund-table">
-        <thead><tr><th>基金</th><th>近1日</th><th>近1周</th><th>近1月</th><th>结论</th></tr></thead>
+        <thead><tr><th>基金</th><th>近1日</th><th>T-1日</th><th>T-2日</th><th>近1周</th><th>近1月</th><th>结论</th></tr></thead>
         <tbody>
           ${active.map(f => {
             let conclusion = '仍处修复阶段，尚未形成连续确认';
@@ -622,6 +625,8 @@ function renderFundTables() {
             return `<tr>
               <td><strong>${f.name}</strong><br><span style="font-size:10px;color:var(--text-muted)">${f.code}</span></td>
               <td style="color:${pctColor(f.dayChange)};font-weight:600">${fmtPct(f.dayChange)}</td>
+              <td style="color:${pctColor(f.dayChangeT1)};font-weight:600">${fmtPct(f.dayChangeT1)}</td>
+              <td style="color:${pctColor(f.dayChangeT2)}">${fmtPct(f.dayChangeT2)}</td>
               <td style="color:${pctColor(f.week1)}">${fmtPct(f.week1)}</td>
               <td style="color:${pctColor(f.month1)}">${fmtPct(f.month1)}</td>
               <td style="font-size:11px">${conclusion}</td>
@@ -724,6 +729,19 @@ function toggleFold(id) {
 
 // ========== 初始化 ==========
 function init() {
+  // 数据更新时间标注
+  const updateTimeEl = document.getElementById('fundUpdateTime');
+  if (updateTimeEl && typeof FUND_PRODUCTS !== 'undefined') {
+    const navDates = FUND_PRODUCTS.filter(f => f.navDate).map(f => f.navDate);
+    const latestNavDate = navDates.length > 0 ? navDates.sort().reverse()[0] : null;
+    const autoTime = (typeof AUTO_DATA !== 'undefined' && AUTO_DATA.updateTime) ? AUTO_DATA.updateTime : '';
+    if (latestNavDate) {
+      updateTimeEl.textContent = `净值数据日期：${latestNavDate}` + (autoTime ? `（更新于 ${autoTime}）` : '');
+    } else {
+      updateTimeEl.textContent = autoTime ? `数据更新于 ${autoTime}` : '数据加载中…';
+    }
+  }
+
   // 基金表格
   renderFundTables();
 
