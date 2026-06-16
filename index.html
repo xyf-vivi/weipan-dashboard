@@ -619,9 +619,33 @@ function renderFundTables() {
         <tbody>
           ${active.map(f => {
             let conclusion = '仍处修复阶段，尚未形成连续确认';
-            if (gd.key === 'style') conclusion = '非微盘确认信号';
-            else if (f.month1 != null && f.month1 > 0) conclusion = '近1月已修复';
-            else if (f.month1 != null && f.month1 < -10) conclusion = '仍在调整';
+            let conclusionColor = 'var(--text-muted)';
+            if (gd.key === 'style') {
+              conclusion = '非微盘确认信号';
+            } else {
+              // 连续正收益天数（近1日 + T-1 + T-2）
+              let posDays = 0;
+              if (f.dayChange != null && f.dayChange > 0) posDays++;
+              if (f.dayChangeT1 != null && f.dayChangeT1 > 0) posDays++;
+              if (f.dayChangeT2 != null && f.dayChangeT2 > 0) posDays++;
+
+              if (posDays >= 3) {
+                conclusion = '连续3日正收益，短期确认';
+                conclusionColor = 'var(--accent-red)';
+              } else if (posDays >= 2 && f.week1 != null && f.week1 > 0) {
+                conclusion = '近2日正收益且周线为正，修复中';
+                conclusionColor = 'var(--accent-red)';
+              } else if (f.month1 != null && f.month1 > 0) {
+                conclusion = '近1月已修复';
+                conclusionColor = 'var(--accent-red)';
+              } else if (f.month1 != null && f.month1 < -10) {
+                conclusion = '近1月跌幅>' + Math.abs(f.month1).toFixed(0) + '%，仍在调整';
+                conclusionColor = 'var(--accent-green)';
+              } else if (posDays === 0 && f.dayChange != null && f.dayChange < 0 && f.dayChangeT1 != null && f.dayChangeT1 < 0) {
+                conclusion = '连续下跌，尚未企稳';
+                conclusionColor = 'var(--accent-green)';
+              }
+            }
             return `<tr>
               <td><strong>${f.name}</strong><br><span style="font-size:10px;color:var(--text-muted)">${f.code}</span></td>
               <td style="color:${pctColor(f.dayChange)};font-weight:600">${fmtPct(f.dayChange)}</td>
@@ -629,7 +653,7 @@ function renderFundTables() {
               <td style="color:${pctColor(f.dayChangeT2)}">${fmtPct(f.dayChangeT2)}</td>
               <td style="color:${pctColor(f.week1)}">${fmtPct(f.week1)}</td>
               <td style="color:${pctColor(f.month1)}">${fmtPct(f.month1)}</td>
-              <td style="font-size:11px">${conclusion}</td>
+              <td style="font-size:11px;color:${conclusionColor};font-weight:600">${conclusion}</td>
             </tr>`;
           }).join('')}
         </tbody>
