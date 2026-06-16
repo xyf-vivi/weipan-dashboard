@@ -540,12 +540,19 @@ async function main() {
   }
 
   // --- 基金池净值更新 ---
+  // 近1月需要20个交易日，查询窗口拉到40自然日确保覆盖
+  const fundStartDate = new Date(NOW);
+  fundStartDate.setDate(fundStartDate.getDate() - 45);
+  const fundStartCompact = fundStartDate.getFullYear().toString() +
+    String(fundStartDate.getMonth() + 1).padStart(2, '0') +
+    String(fundStartDate.getDate()).padStart(2, '0');
+
   const fundCodes = ['320016', '004685', '519185', '002692', '006195', '003147'];
   const updatedFunds = {};
   for (const code of fundCodes) {
     const fk = callWind('fund_data', 'get_fund_kline', {
       windcode: `${code}.OF`,
-      begin_date: tenDaysAgoCompact,
+      begin_date: fundStartCompact,
       end_date: todayCompact,
       period: '10'
     });

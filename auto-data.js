@@ -1,12 +1,12 @@
 // ========================================
 // 微盘策略风格回流看板 - 自动数据 v6
 // 数据来源：Wind MCP + analytics_data
-// 自动更新时间：2026-06-16 21:35:53
+// 自动更新时间：2026-06-16 21:47:25
 // // 全部数据获取成功
 // ========================================
 
 const AUTO_DATA = {
-  updateTime: "2026-06-16 21:35",
+  updateTime: "2026-06-16 21:47",
 
   // === 万得微盘股指数 (868008.WI) 日K线 ===
   weipan: [
@@ -10534,7 +10534,7 @@ AUTO_DATA.v6 = {
 // === 微盘量化产品跟踪 ===
 const FUND_PRODUCTS = [
   { tier: "微盘暴露型", name: "诺安多策略A", code: "320016", type: "混合型-偏股",
-    navDate: "2026-06-16", nav: 3.203, dayChange: -0.03, dayChangeT1: -0.50, dayChangeT2: 1.19, week1: -1.72, month1: null,
+    navDate: "2026-06-16", nav: 3.203, dayChange: -0.03, dayChangeT1: -0.50, dayChangeT2: 1.19, week1: -1.72, month1: -13.99,
     status: "高暴露微盘", statusNote: "Wind自动更新 2026-06-16" },
   { tier: "微盘暴露型", name: "中信保诚景气优选A", code: "009853", type: "混合型-偏股",
     navDate: "2026-06-16", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
@@ -10543,7 +10543,7 @@ const FUND_PRODUCTS = [
     navDate: "2026-06-16", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
     status: "待接入", statusNote: "数据待接入" },
   { tier: "稳健分散型", name: "金元顺安元启", code: "004685", type: "混合型-灵活",
-    navDate: "2026-06-16", nav: 6.4878, dayChange: -0.28, dayChangeT1: -0.37, dayChangeT2: 1.10, week1: -0.57, month1: null,
+    navDate: "2026-06-16", nav: 6.4878, dayChange: -0.28, dayChangeT1: -0.37, dayChangeT2: 1.10, week1: -0.57, month1: -8.08,
     status: "人肉量化天花板", statusNote: "Wind自动更新 2026-06-16" },
   { tier: "稳健分散型", name: "建信灵活配置A", code: "000270", type: "混合型-灵活",
     navDate: "2026-06-16", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
@@ -10552,19 +10552,19 @@ const FUND_PRODUCTS = [
     navDate: "2026-06-16", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
     status: "待接入", statusNote: "数据待接入" },
   { tier: "风格对照型", name: "万家精选A", code: "519185", type: "混合型-偏股",
-    navDate: "2026-06-16", nav: 2.0867, dayChange: -2.11, dayChangeT1: -2.18, dayChangeT2: 1.25, week1: -4.24, month1: null,
+    navDate: "2026-06-16", nav: 2.0867, dayChange: -2.11, dayChangeT1: -2.18, dayChangeT2: 1.25, week1: -4.24, month1: 1.14,
     status: "黄海管理", statusNote: "Wind自动更新 2026-06-16" },
   { tier: "风格对照型", name: "富国创新科技A", code: "002692", type: "偏股混合型",
-    navDate: "2026-06-16", nav: 5.782, dayChange: 3.81, dayChangeT1: 7.55, dayChangeT2: -0.80, week1: 5.13, month1: null,
+    navDate: "2026-06-16", nav: 5.782, dayChange: 3.81, dayChangeT1: 7.55, dayChangeT2: -0.80, week1: 5.13, month1: 21.78,
     status: "科技成长主动权益", statusNote: "Wind自动更新 2026-06-16" },
   { tier: "微盘量化", name: "国金量化多因子A", code: "006195", type: "股票型",
-    navDate: "2026-06-16", nav: 3.5938, dayChange: 1.32, dayChangeT1: 3.68, dayChangeT2: 0.68, week1: 4.46, month1: null,
+    navDate: "2026-06-16", nav: 3.5938, dayChange: 1.32, dayChangeT1: 3.68, dayChangeT2: 0.68, week1: 4.46, month1: -1.40,
     status: "微盘量化标杆", statusNote: "Wind自动更新 2026-06-16" },
   { tier: "微盘量化", name: "国金量化精选A", code: "014805", type: "混合型-偏股",
     navDate: "2026-06-16", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
     status: "待接入", statusNote: "数据待接入" },
   { tier: "微盘量化", name: "大成动态量化A", code: "003147", type: "混合型-灵活",
-    navDate: "2026-06-16", nav: 1.6832, dayChange: 1.52, dayChangeT1: 3.06, dayChangeT2: 0.91, week1: 3.98, month1: null,
+    navDate: "2026-06-16", nav: 1.6832, dayChange: 1.52, dayChangeT1: 3.06, dayChangeT2: 0.91, week1: 3.98, month1: -2.71,
     status: "市值下沉型", statusNote: "Wind自动更新 2026-06-16" },
   { tier: "微盘量化", name: "富荣价值精选A", code: "006109", type: "混合型-灵活",
     navDate: "2026-06-16", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
