@@ -1,12 +1,12 @@
 // ========================================
 // 微盘策略风格回流看板 - 自动数据 v6
 // 数据来源：Wind MCP + analytics_data
-// 自动更新时间：2026-06-17 20:56:00
+// 自动更新时间：2026-06-17 23:11:29
 // // 全部数据获取成功
 // ========================================
 
 const AUTO_DATA = {
-  updateTime: "2026-06-17 20:56",
+  updateTime: "2026-06-17 23:11",
 
   // === 万得微盘股指数 (868008.WI) 日K线 ===
   weipan: [
@@ -10254,12 +10254,13 @@ AUTO_DATA.v6 = {
   allAMedianChg: -1.19,
   // --- 市场集中度 ---
   hhi: 0.1678,
+  hhiPercentile1y: 0.9,
   // --- 横截面分化度 ---
   iqr: 3.2800000000000002,
   p75: 0.66,
   p25: -2.62,
   // --- 基金连续修复天数 ---
-  fundRepairDays: 3,
+  fundRepairDays: 4,
   // --- 涨跌家数 ---
   upCount: 1720,
   downCount: 3732,
@@ -10387,6 +10388,10 @@ AUTO_DATA.v6 = {
           {
                 "date": "2026-06-16",
                 "nav": 3.5938
+          },
+          {
+                "date": "2026-06-17",
+                "nav": 3.6383
           }
     ],
     allATurnover: [
@@ -10554,7 +10559,7 @@ const FUND_PRODUCTS = [
     navDate: "2026-06-17", nav: 5.911, dayChange: 2.23, dayChangeT1: 3.81, dayChangeT2: 7.55, week1: 11.36, month1: 22.97,
     status: "科技成长主动权益", statusNote: "Wind自动更新 2026-06-17" },
   { tier: "微盘量化", name: "国金量化多因子A", code: "006195", type: "股票型",
-    navDate: "2026-06-16", nav: 3.5938, dayChange: 1.32, dayChangeT1: 3.68, dayChangeT2: 0.68, week1: 4.46, month1: -1.40,
+    navDate: "2026-06-17", nav: 3.6383, dayChange: 1.24, dayChangeT1: 1.32, dayChangeT2: 3.68, week1: 6.95, month1: -0.87,
     status: "微盘量化标杆", statusNote: "Wind自动更新 2026-06-17" },
   { tier: "微盘量化", name: "国金量化精选A", code: "014805", type: "混合型-偏股",
     navDate: "2026-06-17", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,

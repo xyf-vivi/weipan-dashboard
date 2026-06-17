@@ -76,17 +76,38 @@ const ScoringEngine = {
         note: smallRatio !== undefined ? `自由流通市值后20%股票成交占比${smallRatio.toFixed(2)}%` : '数据异常'
       });
 
-      // 4. 抱团风险：市场集中度HHI
-      // 注：当前无历史分位阈值，暂不作为否决条件，仅作观察项展示
+      // 4. 抱团风险：市场集中度HHI（近一年分位）
       const hhi = v6.hhi;
+      const hhiPct = v6.hhiPercentile1y;
+      let hhiStatus = 'ok';
+      let hhiThreshold = '>90%ile触发 / >80%ile观察';
+      let hhiNote = '';
+      if (hhiPct !== undefined && hhiPct !== null) {
+        if (hhiPct > 0.9) {
+          hhiStatus = 'trigger';
+          hhiNote = `HHI近一年${(hhiPct*100).toFixed(0)}%分位（HHI=${hhi ? hhi.toFixed(4) : '?'}%），成交高度集中，抱团风险显著`;
+        } else if (hhiPct > 0.8) {
+          hhiStatus = 'watch';
+          hhiNote = `HHI近一年${(hhiPct*100).toFixed(0)}%分位（HHI=${hhi ? hhi.toFixed(4) : '?'}%），成交偏集中，需关注抱团迹象`;
+        } else {
+          hhiNote = `HHI近一年${(hhiPct*100).toFixed(0)}%分位（HHI=${hhi ? hhi.toFixed(4) : '?'}%），成交分散，量化友好`;
+        }
+      } else if (hhi !== undefined) {
+        // 无分位数据时降级为绝对值参考
+        hhiStatus = 'watch';
+        hhiThreshold = '分位数据缺失，绝对值参考';
+        hhiNote = `HHI=${hhi.toFixed(4)}%，分位数据不足，暂列为观察`;
+      } else {
+        hhiNote = '数据异常';
+      }
       gates.push({
         key: 'concentrate',
         label: '抱团风险',
-        metric: '市场集中度HHI',
-        value: hhi !== undefined ? hhi.toFixed(4) + '%' : '—',
-        status: 'watch', // 始终标记为观察——无历史分位，不作为否决条件
-        threshold: '待积累历史分位',
-        note: hhi !== undefined ? '当前HHI=' + hhi.toFixed(4) + '%，成交较分散。尚未建立历史阈值，暂不作为否决条件' : '数据异常'
+        metric: 'HHI近一年分位',
+        value: hhiPct !== undefined && hhiPct !== null ? (hhiPct * 100).toFixed(0) + '%ile' : (hhi !== undefined ? hhi.toFixed(4) + '%' : '—'),
+        status: hhiStatus,
+        threshold: hhiThreshold,
+        note: hhiNote
       });
 
       // 汇总
@@ -235,10 +256,15 @@ const ScoringEngine = {
           else { score += 1; d.iqr = '横截面分化度=' + iqr.toFixed(1) + 'pct，分化过小，选股机会少'; }
         } else { d.iqr = '数据不足'; }
 
-        // d. 市场集中度HHI (5分) — HHI越低越分散，量化越好赚钱
-        // 注：当前无历史分位，仅作截面快照参考
+        // d. 市场集中度HHI (5分) — 近一年分位越低越分散，量化越好赚钱
         const hhi = v6.hhi;
-        if (hhi !== undefined && hhi !== null) {
+        const hhiPct = v6.hhiPercentile1y;
+        if (hhiPct !== undefined && hhiPct !== null) {
+          if (hhiPct < 0.5) { score += 5; d.hhi = `HHI近一年${(hhiPct*100).toFixed(0)}%分位，成交分散，量化友好`; }
+          else if (hhiPct < 0.8) { score += 3; d.hhi = `HHI近一年${(hhiPct*100).toFixed(0)}%分位，适度集中`; }
+          else { d.hhi = `HHI近一年${(hhiPct*100).toFixed(0)}%分位，成交偏集中，量化不利`; }
+        } else if (hhi !== undefined && hhi !== null) {
+          // 降级：无分位时用绝对值
           if (hhi < 0.2) { score += 5; d.hhi = 'HHI=' + hhi.toFixed(4) + '%，成交分散，量化友好'; }
           else if (hhi < 0.5) { score += 3; d.hhi = 'HHI=' + hhi.toFixed(4) + '%，适度集中'; }
           else { d.hhi = 'HHI=' + hhi.toFixed(4) + '%，成交集中，量化不利'; }

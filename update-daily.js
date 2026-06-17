@@ -380,7 +380,8 @@ async function main() {
     console.log(`  allAMedian: ${allAMedian}`);
   }
 
-  // HHI
+  // HHI（截面快照值）+ 近一年分位数
+  let hhiPercentile1y = null;
   {
     const res = extractAnalytics('全A股成交额的赫芬达尔指数HHI');
     if (res) {
@@ -388,6 +389,32 @@ async function main() {
       if (idx >= 0 && typeof res.row[idx] === 'number') hhi = res.row[idx];
     }
     console.log(`  hhi: ${hhi}`);
+
+    // 拉取近一年逐日 HHI 序列，自行计算当日分位数
+    // Wind 返回的"赫芬达尔指数"是 sum(amt_i^2) 原始值（元^2），值越大 = 越集中
+    // 注意：Wind 返回的 rows 按值降序排列，不是按日期排序
+    try {
+      const r = callWind('analytics_data', 'get_financial_data', { question: '近一年每日全A股成交额赫芬达尔指数' });
+      if (r && r.data && r.data.data && r.data.data[0] && r.data.data[0].rows) {
+        const step = r.data.data[0];
+        // 找日期最近的那条作为"今日"值
+        const dated = step.rows
+          .filter(row => row[0] && typeof row[1] === 'number')
+          .sort((a, b) => new Date(b[0]) - new Date(a[0]));
+        if (dated.length > 30) {
+          const latestDate = dated[0][0];
+          const todayRaw = dated[0][1];
+          const allValues = dated.map(r => r[1]);
+          const sorted = [...allValues].sort((a, b) => a - b);
+          const rank = sorted.filter(v => v <= todayRaw).length;
+          hhiPercentile1y = rank / sorted.length;
+          console.log(`  hhi series latest: ${latestDate}, percentile=${(hhiPercentile1y*100).toFixed(1)}%`);
+        }
+      }
+    } catch (e) {
+      console.log(`  [hhi percentile] ${e.message}`);
+    }
+    console.log(`  hhiPercentile1y: ${hhiPercentile1y !== null ? (hhiPercentile1y * 100).toFixed(1) + '%' : 'null'}`);
   }
 
   // P75, P25
@@ -412,7 +439,7 @@ async function main() {
   const iqr = (p75 !== null && p25 !== null) ? p75 - p25 : null;
   console.log(`  p75: ${p75}, p25: ${p25}, iqr: ${iqr}`);
 
-  updateData.v6_analytics = { smallCapRatio, allAMedian, hhi, p75, p25, iqr };
+  updateData.v6_analytics = { smallCapRatio, allAMedian, hhi, hhiPercentile1y, p75, p25, iqr };
 
   // --- 7. 涨跌家数（从 Wind 万得全A basicinfo 获取）---
   console.log('[7/10] 拉取涨跌家数...');
@@ -682,7 +709,7 @@ async function main() {
     wp, kc, hs, zz,
     wpLast, kcLast,
     updateData,
-    smallCapRatio, allAMedian, hhi, iqr, p75, p25,
+    smallCapRatio, allAMedian, hhi, hhiPercentile1y, iqr, p75, p25,
     breadthSeries, todayUp, todayDown, todayLimitDown,
     fund006195Series, fundRepairDays,
     allATurnoverSeries, allAMedianSeries,
@@ -710,7 +737,7 @@ async function main() {
 function generateAutoDataJS(ctx) {
   const {
     todayISO, wp, kc, hs, zz,
-    updateData, smallCapRatio, allAMedian, hhi, iqr, p75, p25,
+    updateData, smallCapRatio, allAMedian, hhi, hhiPercentile1y, iqr, p75, p25,
     breadthSeries, todayUp, todayDown, todayLimitDown,
     fund006195Series, fundRepairDays,
     allATurnoverSeries, allAMedianSeries,
@@ -795,6 +822,7 @@ AUTO_DATA.v6 = {
   allAMedianChg: ${allAMedian || 'null'},
   // --- 市场集中度 ---
   hhi: ${hhi || 'null'},
+  hhiPercentile1y: ${hhiPercentile1y !== null ? hhiPercentile1y : 'null'},
   // --- 横截面分化度 ---
   iqr: ${iqr || 'null'},
   p75: ${p75 || 'null'},
