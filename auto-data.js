@@ -1,25 +1,15 @@
 // ========================================
 // 微盘策略风格回流看板 - 自动数据 v6
 // 数据来源：Wind MCP + analytics_data
-// 自动更新时间：2026-06-17 23:11:29
+// 自动更新时间：2026-06-18 20:57:18
 // // 全部数据获取成功
 // ========================================
 
 const AUTO_DATA = {
-  updateTime: "2026-06-17 23:11",
+  updateTime: "2026-06-18 20:57",
 
   // === 万得微盘股指数 (868008.WI) 日K线 ===
   weipan: [
-    {
-      "date": "2025-05-13",
-      "open": 2025,
-      "close": 382293.77,
-      "high": 386577.42,
-      "low": 381478.07,
-      "turnover": 26407990300,
-      "volume": 2904657200,
-      "turnoverRate": 4.12
-    },
     {
       "date": "2025-05-14",
       "open": 2025,
@@ -2688,20 +2678,22 @@ const AUTO_DATA = {
       "low": 528447.54,
       "turnover": 19549491600,
       "volume": 2413330900,
-      "turnoverRate": 2.6814
+      "turnoverRate": 0
+    },
+    {
+      "date": "2026-06-18",
+      "open": 2026,
+      "close": 529565.99,
+      "high": 533863.01,
+      "low": 520032.97,
+      "turnover": 19802583900,
+      "volume": 2483454100,
+      "turnoverRate": 2.731
     }
   ],
 
   // === 沪深300 (000300.SH) 日K线 ===
   hs300: [
-    {
-      "date": "2025-05-13",
-      "open": 2025,
-      "close": 3896.26,
-      "high": 3915.59,
-      "low": 3890.69,
-      "turnover": 267586397700
-    },
     {
       "date": "2025-05-14",
       "open": 2025,
@@ -4837,21 +4829,19 @@ const AUTO_DATA = {
       "high": 4933.93,
       "low": 4859.7,
       "turnover": 850367581500
+    },
+    {
+      "date": "2026-06-18",
+      "open": 2026,
+      "close": 4941.6,
+      "high": 4976.89,
+      "low": 4916.04,
+      "turnover": 1021710711000
     }
   ],
 
   // === 中证2000 (932000.CSI) 日K线 ===
   zz2000: [
-    {
-      "date": "2025-05-13",
-      "open": 2025,
-      "close": 2562.91,
-      "high": 2596.15,
-      "low": 2558.84,
-      "turnover": 387178160680,
-      "volume": 33491867345,
-      "changeRate": 0
-    },
     {
       "date": "2025-05-14",
       "open": 2025,
@@ -7521,21 +7511,21 @@ const AUTO_DATA = {
       "turnover": 579484419400,
       "volume": 32214803200,
       "changeRate": 0
+    },
+    {
+      "date": "2026-06-18",
+      "open": 2026,
+      "close": 3561.71,
+      "high": 3577.81,
+      "low": 3519.36,
+      "turnover": 577201740100,
+      "volume": 31199537900,
+      "changeRate": 0
     }
   ],
 
   // === 科创50 (000688.SH) 日K线 ===
   kc50: [
-    {
-      "date": "2025-05-13",
-      "open": 2025,
-      "close": 1009.68,
-      "high": 1021.53,
-      "low": 1009.63,
-      "turnover": 22751576300,
-      "volume": 585073400,
-      "changeRate": 0
-    },
     {
       "date": "2025-05-14",
       "open": 2025,
@@ -10205,79 +10195,82 @@ const AUTO_DATA = {
       "turnover": 176921688200,
       "volume": 1801831300,
       "changeRate": 0
+    },
+    {
+      "date": "2026-06-18",
+      "open": 2026,
+      "close": 1911.51,
+      "high": 1937.3,
+      "low": 1836.04,
+      "turnover": 209534843400,
+      "volume": 1771099900,
+      "changeRate": 0
     }
   ],
 
-  // === 指数实时快照 (2026-06-17收盘) ===
+  // === 指数实时快照 (2026-06-18收盘) ===
   quotes: {
-    "868008.WI": {name:"万得微盘股指数", close:530728.24, change:-2.10, turnover:19549491600},
-    "000688.SH": {name:"科创50", close:1840.82, change:4.69}
+    "868008.WI": {name:"万得微盘股指数", close:529565.99, change:-0.22, turnover:19802583900},
+    "000688.SH": {name:"科创50", close:1911.51, change:3.84}
   },
 
   // === v6 核心日频指标 ===
-  // 数据日期：2026-06-17 收盘
+  // 数据日期：2026-06-18 收盘
   // 数据来源：Wind MCP + analytics_data
 };
 
 AUTO_DATA.v6 = {
   // --- 相对净值（微盘/科创50，归一化到100）---
   relKc50: {
-    current: 28831.07745461262,
-    ma243: 40133.63757967171,
-    ma243Position: -0.2816231173319811,
-    slope20: -122.43997816936498,
-    tValue20: -2.323414724617142,
-    r2_20: 0.2307118952194378,
+    current: 27704.06589554855,
+    ma243: 40073.29116124117,
+    ma243Position: -0.3086650711049188,
+    slope20: -165.2154868888475,
+    tValue20: -2.7173315012595896,
+    r2_20: 0.29088884114531877,
     aboveMA243: false,
     slopePositive: false
   },
   // --- 相对净值（微盘/沪深300，归一化到100）---
   relHs300: {
-    current: 10762.244316511165,
-    ma243: 11901.434796134212,
-    ma243Position: -0.0957187514897847,
-    slope20: -79.59949439365691,
-    tValue20: -8.4679027567223,
+    current: 10716.48838432896,
+    ma243: 11901.9721511449,
+    ma243Position: -0.09960397753929406,
+    slope20: -77.64113096186074,
+    tValue20: -8.480449873480621,
     aboveMA243: false,
     slopePositive: false
   },
   // --- 换手率（近一年251个交易日样本）---
   turnover: {
-    current: 2.6814,
-    percentile1y: 0.018656716417910446,
-    median1y: 4.01,
+    current: 2.731,
+    percentile1y: 0.029850746268656716,
+    median1y: 4.0086,
     note: "近一年(251个交易日)分位"
   },
   // --- 小票成交占比（自由流通市值后20%）---
-  smallCapRatio: 1.68,
+  smallCapRatio: 1.52,
   // --- 全A中位数涨跌幅 ---
-  allAMedianChg: -1.19,
+  allAMedianChg: -0.76,
   // --- 市场集中度 ---
-  hhi: 0.1678,
-  hhiPercentile1y: 0.9,
+  hhi: 0.1851,
+  hhiPercentile1y: 0.98,
   // --- 横截面分化度 ---
-  iqr: 3.2800000000000002,
-  p75: 0.66,
-  p25: -2.62,
+  iqr: 3.34,
+  p75: 0.98,
+  p25: -2.36,
   // --- 基金连续修复天数 ---
   fundRepairDays: 4,
   // --- 涨跌家数 ---
-  upCount: 1720,
-  downCount: 3732,
-  limitDownCount: 21,
+  upCount: 2018,
+  downCount: 3395,
+  limitDownCount: 42,
   // --- 10年国债 ---
   bond_10y: 1.743,
 
   // === 连续性确认序列（近10日）===
   dailySeries: {
     breadth: [
-          {
-                "date": "2026-06-04",
-                "up": 1339,
-                "down": 4120,
-                "limitUp": 90,
-                "limitDown": 34
-          },
           {
                 "date": "2026-06-05",
                 "up": 3276,
@@ -10340,19 +10333,22 @@ AUTO_DATA.v6 = {
                 "down": 3732,
                 "limitUp": 98,
                 "limitDown": 21
+          },
+          {
+                "date": "2026-06-18",
+                "up": 2018,
+                "down": 3395,
+                "limitUp": 103,
+                "limitDown": 42
           }
     ],
     allAMedian: [
           {
-                "date": "2026-06-17",
-                "median": -1.19
+                "date": "2026-06-18",
+                "median": -0.76
           }
     ],
     fund006195: [
-          {
-                "date": "2026-06-03",
-                "nav": 3.5186
-          },
           {
                 "date": "2026-06-04",
                 "nav": 3.5199
@@ -10394,52 +10390,7 @@ AUTO_DATA.v6 = {
                 "nav": 3.6383
           }
     ],
-    allATurnover: [
-          {
-                "date": "2026-06-03",
-                "turnover": 3153124583800
-          },
-          {
-                "date": "2026-06-04",
-                "turnover": 2779163742100
-          },
-          {
-                "date": "2026-06-05",
-                "turnover": 3100690304700
-          },
-          {
-                "date": "2026-06-08",
-                "turnover": 2823428976900
-          },
-          {
-                "date": "2026-06-09",
-                "turnover": 2666732928300
-          },
-          {
-                "date": "2026-06-10",
-                "turnover": 2644143270900
-          },
-          {
-                "date": "2026-06-11",
-                "turnover": 2574932584500
-          },
-          {
-                "date": "2026-06-12",
-                "turnover": 3236111011400
-          },
-          {
-                "date": "2026-06-15",
-                "turnover": 3050741533200
-          },
-          {
-                "date": "2026-06-16",
-                "turnover": 3086346944200
-          },
-          {
-                "date": "2026-06-17",
-                "turnover": 3114039049900
-          }
-    ]
+    allATurnover: []
   }
 };
 
@@ -10535,39 +10486,39 @@ AUTO_DATA.v6 = {
 // === 微盘量化产品跟踪 ===
 const FUND_PRODUCTS = [
   { tier: "微盘暴露型", name: "诺安多策略A", code: "320016", type: "混合型-偏股",
-    navDate: "2026-06-17", nav: 3.139, dayChange: -2.00, dayChangeT1: -0.03, dayChangeT2: -0.50, week1: -2.70, month1: -14.63,
-    status: "高暴露微盘", statusNote: "Wind自动更新 2026-06-17" },
+    navDate: "2026-06-18", nav: 3.124, dayChange: -0.48, dayChangeT1: -2.00, dayChangeT2: -0.03, week1: -1.82, month1: -12.12,
+    status: "高暴露微盘", statusNote: "Wind自动更新 2026-06-18" },
   { tier: "微盘暴露型", name: "中信保诚景气优选A", code: "009853", type: "混合型-偏股",
-    navDate: "2026-06-17", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
+    navDate: "2026-06-18", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
     status: "待接入", statusNote: "数据待接入" },
   { tier: "微盘暴露型", name: "中信保诚多策略A", code: "011282", type: "混合型-偏股",
-    navDate: "2026-06-17", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
+    navDate: "2026-06-18", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
     status: "待接入", statusNote: "数据待接入" },
   { tier: "稳健分散型", name: "金元顺安元启", code: "004685", type: "混合型-灵活",
     navDate: "2026-06-17", nav: 6.3755, dayChange: -1.73, dayChangeT1: -0.28, dayChangeT2: -0.37, week1: -2.05, month1: -8.59,
-    status: "人肉量化天花板", statusNote: "Wind自动更新 2026-06-17" },
+    status: "人肉量化天花板", statusNote: "Wind自动更新 2026-06-18" },
   { tier: "稳健分散型", name: "建信灵活配置A", code: "000270", type: "混合型-灵活",
-    navDate: "2026-06-17", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
+    navDate: "2026-06-18", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
     status: "待接入", statusNote: "数据待接入" },
   { tier: "稳健分散型", name: "华夏新锦绣A", code: "002871", type: "混合型-灵活",
-    navDate: "2026-06-17", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
+    navDate: "2026-06-18", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
     status: "待接入", statusNote: "数据待接入" },
   { tier: "风格对照型", name: "万家精选A", code: "519185", type: "混合型-偏股",
-    navDate: "2026-06-17", nav: 2.0644, dayChange: -1.07, dayChangeT1: -2.11, dayChangeT2: -2.18, week1: -3.52, month1: 0.23,
-    status: "黄海管理", statusNote: "Wind自动更新 2026-06-17" },
+    navDate: "2026-06-18", nav: 2.0138, dayChange: -2.45, dayChangeT1: -1.07, dayChangeT2: -2.11, week1: -6.43, month1: 0.22,
+    status: "黄海管理", statusNote: "Wind自动更新 2026-06-18" },
   { tier: "风格对照型", name: "富国创新科技A", code: "002692", type: "偏股混合型",
-    navDate: "2026-06-17", nav: 5.911, dayChange: 2.23, dayChangeT1: 3.81, dayChangeT2: 7.55, week1: 11.36, month1: 22.97,
-    status: "科技成长主动权益", statusNote: "Wind自动更新 2026-06-17" },
+    navDate: "2026-06-18", nav: 6.123, dayChange: 3.59, dayChangeT1: 2.23, dayChangeT2: 3.81, week1: 17.28, month1: 32.88,
+    status: "科技成长主动权益", statusNote: "Wind自动更新 2026-06-18" },
   { tier: "微盘量化", name: "国金量化多因子A", code: "006195", type: "股票型",
-    navDate: "2026-06-17", nav: 3.6383, dayChange: 1.24, dayChangeT1: 1.32, dayChangeT2: 3.68, week1: 6.95, month1: -0.87,
-    status: "微盘量化标杆", statusNote: "Wind自动更新 2026-06-17" },
+    navDate: "2026-06-18", nav: 3.6466, dayChange: 0.23, dayChangeT1: 1.24, dayChangeT2: 1.32, week1: 7.31, month1: 2.44,
+    status: "微盘量化标杆", statusNote: "Wind自动更新 2026-06-18" },
   { tier: "微盘量化", name: "国金量化精选A", code: "014805", type: "混合型-偏股",
-    navDate: "2026-06-17", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
+    navDate: "2026-06-18", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
     status: "待接入", statusNote: "数据待接入" },
   { tier: "微盘量化", name: "大成动态量化A", code: "003147", type: "混合型-灵活",
-    navDate: "2026-06-17", nav: 1.6849, dayChange: 0.10, dayChangeT1: 1.52, dayChangeT2: 3.06, week1: 5.34, month1: -3.21,
-    status: "市值下沉型", statusNote: "Wind自动更新 2026-06-17" },
+    navDate: "2026-06-18", nav: 1.7004, dayChange: 0.92, dayChangeT1: 0.10, dayChangeT2: 1.52, week1: 6.65, month1: 0.69,
+    status: "市值下沉型", statusNote: "Wind自动更新 2026-06-18" },
   { tier: "微盘量化", name: "富荣价值精选A", code: "006109", type: "混合型-灵活",
-    navDate: "2026-06-17", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
+    navDate: "2026-06-18", nav: null, dayChange: null, dayChangeT1: null, dayChangeT2: null, week1: null, month1: null,
     status: "待接入", statusNote: "数据待接入" }
 ];
